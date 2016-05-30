@@ -22,8 +22,10 @@ import java.util.UUID;
 
 import org.apache.james.mailbox.hbase.HBaseId;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.SimpleMailboxACL;
+import org.apache.james.mailbox.model.SimpleMailboxAnnotation;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 
 /**
@@ -212,6 +214,18 @@ public class HBaseMailbox implements Mailbox<HBaseId> {
     @Override
     public void setACL(MailboxACL acl) {
         // TODO ACL support
+    }
+
+    @Override
+    public MailboxAnnotation getAnnotation() {
+        // TODO Auto-generated method stub
+        return SimpleMailboxAnnotation.EMPTY;
+    }
+
+    @Override
+    public void setAnnotation(MailboxAnnotation anno) {
+        // TODO Auto-generated method stub
+        
     }
     
 }

@@ -53,6 +53,8 @@ import org.apache.james.mailbox.model.MailboxACL.MailboxACLCommand;
 import org.apache.james.mailbox.model.MailboxACL.MailboxACLEntryKey;
 import org.apache.james.mailbox.model.MailboxACL.MailboxACLRight;
 import org.apache.james.mailbox.model.MailboxACL.MailboxACLRights;
+import org.apache.james.mailbox.model.MailboxAnnotation;
+import org.apache.james.mailbox.model.MailboxAnnotation.MailboxAnnotationCommand;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MailboxQuery;
@@ -355,6 +357,17 @@ public class MailboxEventAnalyserTest {
         public void setRights(MailboxPath mailboxPath,
                 MailboxACLCommand mailboxACLCommand, MailboxSession session)
                 throws MailboxException {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        @Override
+        public MailboxAnnotation getMetadata(MailboxPath mailboxPath, MailboxSession session) {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        @Override
+        public void setMetadata(MailboxPath mailboxPath, MailboxAnnotationCommand mailboxAnnotationCommand,
+                MailboxSession session) {
             throw new NotImplementedException("Not implemented");
         }
     };

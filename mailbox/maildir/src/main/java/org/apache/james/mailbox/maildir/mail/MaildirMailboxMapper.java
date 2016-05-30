@@ -36,6 +36,8 @@ import org.apache.james.mailbox.maildir.MaildirId;
 import org.apache.james.mailbox.maildir.MaildirMessageName;
 import org.apache.james.mailbox.maildir.MaildirStore;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
+import org.apache.james.mailbox.model.MailboxAnnotation.MailboxAnnotationCommand;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
@@ -334,4 +336,16 @@ public class MaildirMailboxMapper extends NonTransactionalMapper implements Mail
         folder.setACL(session, newACL);
         mailbox.setACL(newACL);
     }
+
+    @Override
+    public void setMetadata(Mailbox<MaildirId> mailbox, MailboxAnnotationCommand mailboxAnnoCommand)
+            throws MailboxException {
+        mailbox.setAnnotation(mailbox.getAnnotation().update(mailboxAnnoCommand));
+    }
+
+    @Override
+    public MailboxAnnotation getMetadata(Mailbox<MaildirId> mailbox) throws MailboxException {
+        return mailbox.getAnnotation();
+    }
+
 }

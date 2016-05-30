@@ -23,9 +23,10 @@ import java.util.List;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxPath;
-import org.apache.james.mailbox.store.mail.model.MailboxId;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.mailbox.store.mail.model.MailboxId;
 import org.apache.james.mailbox.store.transaction.Mapper;
 
 /**
@@ -100,4 +101,19 @@ public interface MailboxMapper<Id extends MailboxId> extends Mapper {
      * @throws MailboxException 
      */
     List<Mailbox<Id>> list() throws MailboxException;
+
+    /*
+     * TODO: Those comment should be deteled whenever the ticket is approved
+     * 
+     * BEGIN: Added by Quynhnn for RFC-5464 
+     */
+    MailboxAnnotation getMetadata(Mailbox<Id> mailbox) throws MailboxException;
+
+    void setMetadata(Mailbox<Id> mailbox, MailboxAnnotation.MailboxAnnotationCommand mailboxAnnoCommand) throws MailboxException;
+    /*
+     * TODO: Those comment should be deteled whenever the ticket is approved
+     * 
+     * END: Added by Quynhnn for RFC-5464 
+     */
+    
 }

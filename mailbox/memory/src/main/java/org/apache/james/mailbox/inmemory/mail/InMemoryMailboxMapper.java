@@ -28,6 +28,8 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.inmemory.InMemoryId;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
+import org.apache.james.mailbox.model.MailboxAnnotation.MailboxAnnotationCommand;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -147,4 +149,16 @@ public class InMemoryMailboxMapper implements MailboxMapper<InMemoryId> {
     public void updateACL(Mailbox<InMemoryId> mailbox, MailboxACL.MailboxACLCommand mailboxACLCommand) throws MailboxException{
         mailbox.setACL(mailbox.getACL().apply(mailboxACLCommand));
     }
+
+    @Override
+    public void setMetadata(Mailbox<InMemoryId> mailbox, MailboxAnnotationCommand mailboxAnnoCommand)
+            throws MailboxException {
+        mailbox.setAnnotation(mailbox.getAnnotation().update(mailboxAnnoCommand));
+    }
+
+    @Override
+    public MailboxAnnotation getMetadata(Mailbox<InMemoryId> mailbox) throws MailboxException {
+        return mailbox.getAnnotation();
+    }
+
 }

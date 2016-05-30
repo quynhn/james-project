@@ -54,6 +54,8 @@ import org.apache.james.mailbox.hbase.HBaseId;
 import org.apache.james.mailbox.hbase.HBaseNonTransactionalMapper;
 import org.apache.james.mailbox.hbase.mail.model.HBaseMailbox;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
+import org.apache.james.mailbox.model.MailboxAnnotation.MailboxAnnotationCommand;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -388,4 +390,16 @@ public class HBaseMailboxMapper extends HBaseNonTransactionalMapper implements M
     public void updateACL(Mailbox<HBaseId> mailbox, MailboxACL.MailboxACLCommand mailboxACLCommand) throws MailboxException {
         mailbox.setACL(mailbox.getACL().apply(mailboxACLCommand));
     }
+
+    @Override
+    public void setMetadata(Mailbox<HBaseId> mailbox, MailboxAnnotationCommand mailboxAnnoCommand)
+            throws MailboxException {
+        mailbox.setAnnotation(mailbox.getAnnotation().update(mailboxAnnoCommand));
+    }
+
+    @Override
+    public MailboxAnnotation getMetadata(Mailbox<HBaseId> mailbox) throws MailboxException {
+        return mailbox.getAnnotation();
+    }
+
 }

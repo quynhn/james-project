@@ -19,6 +19,7 @@
 package org.apache.james.mailbox.store.mail.model;
 
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
 
 /**
  * Models long term mailbox data.
@@ -88,4 +89,17 @@ public interface Mailbox<Id extends MailboxId> {
      */
     void setACL(MailboxACL acl);
     
+    /*
+     * TODO: Those comment should be deteled whenever the ticket is approved
+     * 
+     * BEGIN: Added by Quynhnn for RFC-5464 
+     */
+    MailboxAnnotation getAnnotation();
+    
+    void setAnnotation(MailboxAnnotation anno);
+    /*
+     * TODO: Those comment should be deteled whenever the ticket is approved
+     * 
+     * END: Added by Quynhnn for RFC-5464 
+     */
 }

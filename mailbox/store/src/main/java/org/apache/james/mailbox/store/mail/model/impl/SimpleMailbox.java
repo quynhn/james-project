@@ -19,10 +19,12 @@
 package org.apache.james.mailbox.store.mail.model.impl;
 
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.SimpleMailboxACL;
-import org.apache.james.mailbox.store.mail.model.MailboxId;
+import org.apache.james.mailbox.model.SimpleMailboxAnnotation;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.mailbox.store.mail.model.MailboxId;
 
 public class SimpleMailbox<Id extends MailboxId> implements Mailbox<Id> {
 
@@ -32,6 +34,7 @@ public class SimpleMailbox<Id extends MailboxId> implements Mailbox<Id> {
     private String name;
     private final long uidValidity;
     private MailboxACL acl = SimpleMailboxACL.EMPTY;
+    private MailboxAnnotation anno = SimpleMailboxAnnotation.EMPTY;
 
     public SimpleMailbox(MailboxPath path, long uidValidity) {
         this.namespace = path.getNamespace();
@@ -167,5 +170,25 @@ public class SimpleMailbox<Id extends MailboxId> implements Mailbox<Id> {
     public void setACL(MailboxACL acl) {
         this.acl = acl;
     }
+
+    /*
+     * TODO: Those comment should be deteled whenever the ticket is approved
+     * 
+     * BEGIN: Added by Quynhnn for RFC-5464 
+     */
+    @Override
+    public MailboxAnnotation getAnnotation() {
+        return this.anno;
+    }
+
+    @Override
+    public void setAnnotation(MailboxAnnotation anno) {
+        this.anno = anno;
+    }
+    /*
+     * TODO: Those comment should be deteled whenever the ticket is approved
+     * 
+     * END: Added by Quynhnn for RFC-5464 
+     */
 
 }

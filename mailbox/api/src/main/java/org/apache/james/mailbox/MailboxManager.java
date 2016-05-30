@@ -27,6 +27,7 @@ import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.exception.UnsupportedRightException;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MailboxQuery;
@@ -328,4 +329,18 @@ public interface MailboxManager extends RequestAware, MailboxListenerSupport {
      */
     List<MailboxPath> list(MailboxSession session) throws MailboxException;
 
+    /*
+     * TODO: Those comment should be deteled whenever the ticket is approved
+     * 
+     * BEGIN: Added by Quynhnn for RFC-5464 
+     */
+    MailboxAnnotation getMetadata(MailboxPath mailboxPath, MailboxSession session) throws MailboxException;
+
+    void setMetadata(MailboxPath mailboxPath, MailboxAnnotation.MailboxAnnotationCommand mailboxAnnotationCommand, MailboxSession session) throws MailboxException;
+
+    /*
+     * TODO: Those comment should be deteled whenever the ticket is approved
+     * 
+     * END: Added by Quynhnn for RFC-5464 
+     */
 }

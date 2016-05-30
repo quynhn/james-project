@@ -25,6 +25,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.cassandra.mail.CassandraModSeqProvider;
 import org.apache.james.mailbox.cassandra.mail.CassandraUidProvider;
 import org.apache.james.mailbox.cassandra.modules.CassandraAclModule;
+import org.apache.james.mailbox.cassandra.modules.CassandraAnnotationModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMailboxCounterModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMailboxModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMessageModule;
@@ -51,7 +52,8 @@ public class CassandraMailboxManagerTest extends AbstractMailboxManagerTest {
         new CassandraMailboxCounterModule(),
         new CassandraUidModule(),
         new CassandraModSeqModule(),
-        new CassandraSubscriptionModule()));
+        new CassandraSubscriptionModule(),
+        new CassandraAnnotationModule()));
 
     /**
      * Setup the mailboxManager.

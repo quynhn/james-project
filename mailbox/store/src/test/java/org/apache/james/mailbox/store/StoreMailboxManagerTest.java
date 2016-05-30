@@ -19,12 +19,15 @@
 
 package org.apache.james.mailbox.store;
 
+import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
 import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
+import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -97,6 +100,11 @@ public class StoreMailboxManagerTest {
             new SimpleMailbox<TestId>(new MailboxPath("namespace2", null, "name"), UID_VALIDITY))).isFalse();
     }
 
-
+    @Test
+    public void getMetadata() throws MailboxException {
+        MailboxSession session = storeMailboxManager.createSystemSession("test", LoggerFactory.getLogger("Test"));
+        MailboxPath path = new MailboxPath("namespace", "user", "name");
+        System.out.println(storeMailboxManager.getMetadata(path, session));
+    }
 }
 

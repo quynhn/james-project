@@ -45,6 +45,8 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
+import org.apache.james.mailbox.model.MailboxAnnotation.MailboxAnnotationCommand;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxMetaData.Selectability;
@@ -54,8 +56,8 @@ import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.model.SimpleMailboxACL;
 import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
-import org.apache.james.mailbox.store.event.DelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.DefaultDelegatingMailboxListener;
+import org.apache.james.mailbox.store.event.DelegatingMailboxListener;
 import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -690,6 +692,29 @@ public class StoreMailboxManager<Id extends MailboxId> implements MailboxManager
                 @Override
                 public void runVoid() throws MailboxException {
                     mapper.updateACL(mailbox, mailboxACLCommand);
+                }
+            }
+        );
+    }
+
+    @Override
+    public MailboxAnnotation getMetadata(MailboxPath mailboxPath,
+            MailboxSession session) throws MailboxException {
+        final MailboxMapper<Id> mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        final Mailbox<Id> mailbox = mapper.findMailboxByPath(mailboxPath);
+        return mapper.getMetadata(mailbox);
+    }
+
+    @Override
+    public void setMetadata(MailboxPath mailboxPath, final MailboxAnnotationCommand mailboxAnnotationCommand,
+            MailboxSession session) throws MailboxException {
+        final MailboxMapper<Id> mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
+        final Mailbox<Id> mailbox = mapper.findMailboxByPath(mailboxPath);
+        mapper.execute(
+            new Mapper.VoidTransaction() {
+                @Override
+                public void runVoid() throws MailboxException {
+                    mapper.setMetadata(mailbox, mailboxAnnotationCommand);
                 }
             }
         );

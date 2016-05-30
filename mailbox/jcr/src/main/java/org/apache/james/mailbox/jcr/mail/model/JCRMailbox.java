@@ -27,8 +27,10 @@ import org.apache.james.mailbox.jcr.JCRId;
 import org.apache.james.mailbox.jcr.JCRImapConstants;
 import org.apache.james.mailbox.jcr.Persistent;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.SimpleMailboxACL;
+import org.apache.james.mailbox.model.SimpleMailboxAnnotation;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.slf4j.Logger;
 
@@ -321,6 +323,18 @@ public class JCRMailbox implements Mailbox<JCRId>, JCRImapConstants, Persistent{
     @Override
     public void setACL(MailboxACL acl) {
         // TODO ACL support
+    }
+
+    @Override
+    public MailboxAnnotation getAnnotation() {
+        // TODO Auto-generated method stub
+        return SimpleMailboxAnnotation.EMPTY;
+    }
+
+    @Override
+    public void setAnnotation(MailboxAnnotation anno) {
+        // TODO Auto-generated method stub
+        
     }
     
 }

@@ -5,6 +5,7 @@ import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.cassandra.CassandraMailboxSessionMapperFactory;
 import org.apache.james.mailbox.cassandra.modules.CassandraAclModule;
+import org.apache.james.mailbox.cassandra.modules.CassandraAnnotationModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMailboxCounterModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMailboxModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMessageModule;
@@ -24,7 +25,8 @@ public class CassandraMapperProvider implements MapperProvider<CassandraId> {
         new CassandraMessageModule(),
         new CassandraMailboxCounterModule(),
         new CassandraModSeqModule(),
-        new CassandraUidModule()));
+        new CassandraUidModule(),
+        new CassandraAnnotationModule()));
 
     @Override
     public MailboxMapper<CassandraId> createMailboxMapper() throws MailboxException {

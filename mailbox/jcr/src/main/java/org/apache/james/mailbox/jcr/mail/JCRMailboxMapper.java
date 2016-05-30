@@ -41,6 +41,8 @@ import org.apache.james.mailbox.jcr.JCRId;
 import org.apache.james.mailbox.jcr.MailboxSessionJCRRepository;
 import org.apache.james.mailbox.jcr.mail.model.JCRMailbox;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
+import org.apache.james.mailbox.model.MailboxAnnotation.MailboxAnnotationCommand;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -241,4 +243,16 @@ public class JCRMailboxMapper extends AbstractJCRScalingMapper implements Mailbo
     public void updateACL(Mailbox<JCRId> mailbox, MailboxACL.MailboxACLCommand mailboxACLCommand) throws MailboxException {
         mailbox.setACL(mailbox.getACL().apply(mailboxACLCommand));
     }
+
+    @Override
+    public void setMetadata(Mailbox<JCRId> mailbox, MailboxAnnotationCommand mailboxAnnoCommand)
+            throws MailboxException {
+        mailbox.setAnnotation(mailbox.getAnnotation().update(mailboxAnnoCommand));
+    }
+
+    @Override
+    public MailboxAnnotation getMetadata(Mailbox<JCRId> mailbox) throws MailboxException {
+        return mailbox.getAnnotation();
+    }
+
 }

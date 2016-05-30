@@ -4,10 +4,11 @@ import java.util.List;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
-import org.apache.james.mailbox.store.mail.model.MailboxId;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
+import org.apache.james.mailbox.store.mail.model.MailboxId;
 
 /**
  * A MailboxMapper implementation that uses a MailboxByPathCache to cache the information
@@ -88,5 +89,14 @@ public class CachingMailboxMapper<Id extends MailboxId> implements MailboxMapper
 		cache.invalidate(mailbox);
 	}
 
+	@Override
+    public MailboxAnnotation getMetadata(Mailbox<Id> mailbox) throws MailboxException {
+        return mailbox.getAnnotation();
+    }
+
+    @Override
+    public void setMetadata(Mailbox<Id> mailbox, MailboxAnnotation.MailboxAnnotationCommand mailboxAnnotationCommand) throws MailboxException {
+        mailbox.setAnnotation(mailbox.getAnnotation().update(mailboxAnnotationCommand));
+    }
 
 }

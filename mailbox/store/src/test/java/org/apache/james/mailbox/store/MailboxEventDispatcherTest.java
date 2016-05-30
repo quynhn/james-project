@@ -30,8 +30,10 @@ import org.apache.james.mailbox.MailboxListener;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.mailbox.model.SimpleMailboxACL;
+import org.apache.james.mailbox.model.SimpleMailboxAnnotation;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -113,6 +115,25 @@ public class MailboxEventDispatcherTest {
         @Override
         public void setACL(MailboxACL acl) {
         }
+
+        /*
+         * TODO: Those comment should be deteled whenever the ticket is approved
+         * 
+         * BEGIN: Added by Quynhnn for RFC-5464 
+         */
+        @Override
+        public MailboxAnnotation getAnnotation() {
+            return SimpleMailboxAnnotation.EMPTY;
+        }
+
+        @Override
+        public void setAnnotation(MailboxAnnotation anno) {
+        }
+        /*
+         * TODO: Those comment should be deteled whenever the ticket is approved
+         * 
+         * END: Added by Quynhnn for RFC-5464 
+         */
 
     };
     

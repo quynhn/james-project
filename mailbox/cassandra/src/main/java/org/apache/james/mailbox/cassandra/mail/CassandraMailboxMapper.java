@@ -45,6 +45,7 @@ import org.apache.james.mailbox.cassandra.table.CassandraMailboxTable.MailboxBas
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -135,6 +136,18 @@ public class CassandraMailboxMapper implements MailboxMapper<CassandraId> {
         new CassandraACLMapper(mailbox, session, maxRetry).updateACL(mailboxACLCommand);
     }
 
+    
+    @Override
+    public void setMetadata(Mailbox<CassandraId> mailbox, MailboxAnnotation.MailboxAnnotationCommand command) throws MailboxException {
+        new CassandraAnnotationMapper(mailbox, session, maxRetry).updateAnnotation(command);
+    }
+
+    
+    @Override
+    public MailboxAnnotation getMetadata(Mailbox<CassandraId> mailbox) throws MailboxException {
+        return new CassandraAnnotationMapper(mailbox, session, maxRetry).getAnnotation();
+    }
+
     @Override
     public void endRequest() {
         // Do nothing
@@ -149,7 +162,21 @@ public class CassandraMailboxMapper implements MailboxMapper<CassandraId> {
             row.getLong(UIDVALIDITY));
         mailbox.setMailboxId(CassandraId.of(row.getUUID(ID)));
         mailbox.setACL(new CassandraACLMapper(mailbox, session, maxRetry).getACL());
+        
+        /*
+         * TODO: Those comment should be deteled whenever the ticket is approved
+         * 
+         * BEGIN: Added by Quynhnn for RFC-5464 
+         */
+        mailbox.setAnnotation(new CassandraAnnotationMapper(mailbox, session, maxRetry).getAnnotation());
+        /*
+         * TODO: Those comment should be deteled whenever the ticket is approved
+         * 
+         * END: Added by Quynhnn for RFC-5464 
+         */
+
         return mailbox;
+        
     }
 
     private String constructEscapedRegexForMailboxNameMatching(MailboxPath path) {

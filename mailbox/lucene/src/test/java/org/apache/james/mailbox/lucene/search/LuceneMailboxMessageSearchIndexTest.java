@@ -35,8 +35,10 @@ import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
 import org.apache.james.mailbox.model.MailboxACL;
+import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.SimpleMailboxACL;
+import org.apache.james.mailbox.model.SimpleMailboxAnnotation;
 import org.apache.james.mailbox.model.SearchQuery.AddressType;
 import org.apache.james.mailbox.model.SearchQuery.DateResolution;
 import org.apache.james.mailbox.model.SearchQuery.Sort.SortClause;
@@ -755,6 +757,17 @@ public class LuceneMailboxMessageSearchIndexTest {
          */
         @Override
         public void setACL(MailboxACL acl) {
+            throw new UnsupportedOperationException("Not supported");
+        }
+
+        @Override
+        public MailboxAnnotation getAnnotation() {
+            // TODO Auto-generated method stub
+            return SimpleMailboxAnnotation.EMPTY;
+        }
+
+        @Override
+        public void setAnnotation(MailboxAnnotation anno) {
             throw new UnsupportedOperationException("Not supported");
         }
 
