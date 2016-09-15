@@ -128,7 +128,7 @@ public class VacationReplyTest {
 
     @Test(expected = NullPointerException.class)
     public void vacationReplyShouldThrowOnNullOriginalEMailAddress() throws Exception {
-        VacationReply.builder(FakeMail.builder().build())
+        VacationReply.builder(FakeMail.defaultFakeMail())
             .receivedMailRecipient(null);
     }
 

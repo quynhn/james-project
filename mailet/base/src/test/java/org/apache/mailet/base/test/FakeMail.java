@@ -172,6 +172,10 @@ public class FakeMail implements Mail {
         }
     }
 
+    public static FakeMail defaultFakeMail() throws MessagingException {
+        return FakeMail.builder().build();
+    }
+
     private MimeMessage msg;
     private Collection<MailAddress> recipients;
     private String name;

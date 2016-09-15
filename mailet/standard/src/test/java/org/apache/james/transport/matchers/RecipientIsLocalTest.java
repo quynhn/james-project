@@ -79,6 +79,6 @@ public class RecipientIsLocalTest {
 
     @Test
     public void matchShouldNotMatchMailWithNoRecipient() throws Exception {
-        assertThat(testee.match(FakeMail.builder().build())).isEmpty();
+        assertThat(testee.match(FakeMail.defaultFakeMail())).isEmpty();
     }
 }
