@@ -14,7 +14,7 @@
   </div>
   <script>
     function createChart(x, y, title, height) {
-	if (height < 400) height = 400;
+      if (height < 400) height = 400;
 
       return {
         data: [{
@@ -24,8 +24,9 @@
           orientation: 'h'
         }],
         layout: {
+          hovermode: 'closest',
           title: title,
-	  height: height,
+          height: height,
           xaxis: {
             title: 'Percent',
             showgrid: false,
@@ -39,7 +40,7 @@
     }
 
     function getTaskPercent(task) {
-      if (task.hasOwnProperty('size'))  {
+      if (task.hasOwnProperty('size')) {
         return task.size;
       }
 
@@ -67,10 +68,10 @@
         var title = data.name;
         var height = 10;
 
-        data.children.forEach(function (value) {
+        data.children.forEach(function(value) {
           x.push(getTaskPercent(value));
           y.push(value.name);
-	  height = height + 40;
+          height = height + 40;
 
           if (value.hasOwnProperty('children')) {
             dataToScan.push(value);
@@ -90,10 +91,28 @@
 
       charts.forEach(function(chart, index) {
         var div = document.createElement('div');
-        div.id = 'chart-' + index;
+        var divID = 'chart-' + index;
+        div.id = divID;
+        var subDiv = document.createElement('div');
+        subDiv.id = chart.layout.title;
+        div.appendChild(subDiv);
+
         document.getElementById('myDiv').appendChild(div);
 
         Plotly.newPlot(div.id, chart.data, chart.layout);
+
+        div.on('plotly_click', function(data) {
+          var pts = '';
+          for (var i = 0; i < data.points.length; i++) {
+            //pts = 'x = '+data.points[i].x +'\ny = '+ data.points[i].y + '\n\n';
+            pts = data.points[i].y;
+          }
+          if (document.getElementById(pts)) {
+            window.location.href = '#' + pts;
+          }
+        });
+
+
       });
     }
 
@@ -111,4 +130,3 @@
 </body>
 
 </html>
-
