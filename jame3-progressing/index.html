@@ -13,7 +13,7 @@
     <!-- Plotly chart will be drawn inside this DIV -->
   </div>
   <script>
-    function createChart(x, y, title, height) {
+    function createChart(x, y, text, title, height) {
 			if (!height) {
 				height = 210;
 			} else if (height && (height < 400)) {
@@ -21,13 +21,15 @@
 			}
 
       return {
-        data: [{
+        data: [
+        {
+	  name: 'Completion',
           type: 'bar',
-//color: key,	
-//marker: list(color=c("blue","grey","darkred","green","orange","black","purple","yellow")),
           x: x,
           y: y,
-          orientation: 'h'
+          orientation: 'h',
+					text: text,
+					hoverinfo: 'x + y + text'
         }],
         layout: {
           hovermode: 'closest',
@@ -39,7 +41,8 @@
           xaxis: {
             title: 'Percent',
             showgrid: false,
-            zeroline: false
+            zeroline: false,
+						range: [0, 100]
           },
           margin: {
             l: 400
@@ -76,12 +79,15 @@
         var data = dataToScan.pop();
         var x = [];
         var y = [];
+        var text = [];
         var title = data.name;
         var height = 10;
 
         data.children.forEach(function(value) {
           x.push(getTaskPercent(value));
           y.push(value.name);
+					text.push('Complexity: ' + value.complexity);
+		
           height = height + 40;
 
           if (value.hasOwnProperty('children')) {
@@ -89,12 +95,15 @@
           }
         });
 
+        x.unshift(getTaskPercent(data));
+        y.unshift('Summarize');
+				text.unshift('');
+
         if (x.length) {
-          charts.push(createChart(x, y, title, height));
+          charts.push(createChart(x, y, text, title, height));
         }
       }
 
-			charts.push(createChart([getTaskPercent(jsonData)], ['summarize'], jsonData.name + '(summarize)'));
       return charts;
     }
 

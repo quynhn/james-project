@@ -2,98 +2,117 @@
  "name": "3.0 release",
  "children": [
    {
-     "name" : "Use only mailbox-api from jmap",
-     "completion" : 100
+     "name" : "Remove design violation by using only mailbox-api from jmap",
+     "completion" : 100,
+     "complexity" : 10
    },
    {
-     "name" : "Marketing James 3.0 website",
-     "completion" : 15
+     "name" : "Make a marketing James 3.0 website",
+     "completion" : 15.12,
+     "complexity" : 10
    },
    {
-     "name" : "Message unique Id",
-     "completion" : 20
+     "name" : "Assign a unique Id to message entity (and handle move and move to trash)",
+     "completion" : 20.5,
+     "complexity" : 10
    },
    {
      "name" : "deploy James @ Linagora",
-     "completion" : 11
+     "completion" : 11,
+     "complexity" : 10
    },
    {
-     "name" : "load and endurance testing",
-     "completion" : 10
+     "name" : "write Gatling load and endurance testing",
+     "completion" : 10,
+     "complexity" : 10
    },
    {
-     "name" : "hasAttachment in search",
-     "completion" : 12
+     "name" : "implement hasAttachment in search",
+     "completion" : 12,
+     "complexity" : 10
    },
    {
-     "name" : "jmap support report",
-     "completion" : 13
+     "name" : "publish a completion status documentation along James 3.0 release notes",
+     "completion" : 13,
+     "complexity" : 10
    },
    {
-     "name" : "Vacation partial update",
-     "completion" : 14
+     "name" : "Finish Vacation partial update (PR pending)",
+     "completion" : 14,
+     "complexity" : 10
    },
    {
-     "name" : "INBOX-298 : handle generated-bodyText",
-     "completion" : 15
+     "name" : "INBOX-298 : handle generated-bodyText property in jmap messages",
+     "completion" : 15,
+     "complexity" : 10
    },
    {
-     "name" : "Complete IMAP METADATA",
-     "completion" : 80
+     "name" : "Complete IMAP METADATA implementation",
+     "completion" : 80,
+     "complexity" : 5
    },
    {
-     "name" : "Docker 1.12 and swarm capabilities to speedup build",
-     "completion" : 18
+     "name" : "Make use of Docker 1.12 and swarm capabilities to speedup build",
+     "completion" : 18,
+     "complexity" : 10
    },
    {
-     "name" : "cleanup james public repositories",
-     "completion" : 17
+     "name" : "cleanup james public repositories and tag frequently",
+     "completion" : 17,
+     "complexity" : 10
    },
    {
-     "name" : "tag often",
-     "completion" : 16
+     "name" : "handle PR build on apache github repository",
+     "completion" : 16,
+     "complexity" : 10
    },
    {
-     "name" : "handle PR build on apache github",
-     "completion" : 19
+     "name" : "sanitize every supported mailets",
+     "completion" : 19,
+     "complexity" : 10
    },
    {
-     "name" : "James logo for contest",
-     "completion" : 50
-   },
-   {
-     "name" : "Implement a Guice JPA + ES module",
-     "completion" : 21
+     "name" : "re-submit a new James logo for contest",
+     "completion" : 50,
+     "complexity" : 10
    },
    {
      "name" : "make sure default (JPA + ES) backends work well",
-     "completion" : 22
+     "completion" : 21,
+     "complexity" : 10
+   },
+   {
+     "name" : "Implement a Guice JPA + ES module",
+     "completion" : 22,
+     "complexity" : 10
    },
    {
      "name" : "make a security audit",
-     "completion" : 23
+     "completion" : 23,
+     "complexity" : 10
    },
    {
      "name" : "bug triaging",
-     "completion" : 24
+     "completion" : 24,
+     "complexity" : 10
    },
   {
-   "name": "Sub task 1",
+   "name": "Mailet refactor",
    "children": [
-      {"name": "mailet A", "completion": 100},
-      {"name": "mailet B", "completion": 100},
-      {"name": "mailet C", "completion": 50},
-      {"name": "mailet D", "completion": 0}
-     ]
+      {"name": "RemoveMailAttributes", "completion": 80, "complexity" : 1},
+      {"name": "RecipientRewriteTable", "completion": 80, "complexity" : 5}
+     ],
+     "complexity" : 40
     },
   {
-   "name": "Sub task 2",
+   "name": "Matcher refactor",
    "children": [
-      {"name": "mailet A", "completion": 50},
-      {"name": "mailet B", "completion": 30},
-      {"name": "mailet C", "completion": 50},
-      {"name": "mailet D", "completion": 0}
-     ]
+      {"name": "Matcher A", "completion": 50, "complexity" : 11},
+      {"name": "Matcher B", "completion": 30, "complexity" : 11},
+      {"name": "Matcher C", "completion": 50, "complexity" : 11},
+      {"name": "Matcher D", "completion": 0, "complexity" : 11}
+     ],
+     "complexity" : 50
     }
  ]
 }
