@@ -28,6 +28,7 @@
 <indexer>
    <!-- supported providers are: -->
    <!-- lazyIndex, elasticsearch -->
-   <!--  -->
-  <provider>lazyIndex</provider>
+   <!--
+  <provider>lazyIndex</provider>-->
+  <provider>elasticsearch</provider>
 </indexer>

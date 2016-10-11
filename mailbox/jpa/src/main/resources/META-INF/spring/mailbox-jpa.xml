@@ -37,6 +37,7 @@
         <constructor-arg index="4" ref="aclResolver"/>
         <constructor-arg index="5" ref="groupMembershipResolver"/>
         <constructor-arg index="6" ref="messageParser"/>
+        <property name="messageSearchIndex" ref="elasticsearch-listener"/>
         <property name="quotaManager" ref="quotaManager"/>
         <property name="quotaRootResolver" ref="quotaRootResolver"/>
         <property name="quotaUpdater" ref="quotaUpdater"/>

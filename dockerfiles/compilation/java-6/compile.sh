@@ -38,15 +38,16 @@ if [ -z "$SHA1" ]; then
 fi
 
 # Sources retrieval
+
 git clone $ORIGIN/.
-git checkout $SHA1
+#git checkout $SHA1
 
 # Compilation
 
 if [ "$SKIPTESTS" = "skipTests" ]; then
-   mvn package -DskipTests -Pjpa
+   mvn package -DskipTests -Pjpa,elasticsearch,with-assembly
 else
-   mvn package -Pjpa
+   mvn package -Pjpa,elasticsearch,with-assembly
 fi
 
 # Retrieve result

@@ -31,6 +31,8 @@
     <!--<import resource="classpath:META-INF/spring/mailbox-index-lucene.xml" />-->
     <import resource="classpath:META-INF/spring/mailbox-jpa.xml"/>
 
+    <import resource="classpath:META-INF/spring/mailbox-elasticsearch.xml"/>
+
     <!-- TODO: update spring context creation to match new Jackrabbit version -->
     <!--<import resource="classpath:META-INF/spring/mailbox-jcr.xml" />-->
 
@@ -61,7 +63,6 @@
 
     <beans profile="cassandra">
         <import resource="classpath:META-INF/spring/mailbox-cassandra.xml"/>
-        <import resource="classpath:META-INF/spring/mailbox-elasticsearch.xml"/>
         <import resource="classpath:META-INF/spring/kafka.xml"/>
     </beans>
 </beans>

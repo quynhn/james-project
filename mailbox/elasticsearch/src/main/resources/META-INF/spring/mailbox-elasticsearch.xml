@@ -15,19 +15,20 @@
   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
   KIND, either express or implied.  See the License for the
   specific language governing permissions and limitations
-  under the License.    
+  under the License.
 -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-          
+
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders" value="true"/>
         <property name ="location" value="classpath:elasticsearch.properties"/>
     </bean>
 
+    <bean id="newSingleThreadExecutor" class="java.util.concurrent.Executors" factory-method="newSingleThreadExecutor"/>
     <bean id="elasticsearch-listener" class="org.apache.james.mailbox.elasticsearch.events.ElasticSearchListeningMessageSearchIndex">
         <constructor-arg index="0" ref="messageMapperFactory"/>
         <constructor-arg index="1" ref="elasticsearch-indexer"/>
@@ -35,17 +36,25 @@
         <constructor-arg index="3" ref="elasticsearch-json"/>
     </bean>
 
+    <bean id="deleteByQueryPerformer" class="org.apache.james.mailbox.elasticsearch.DeleteByQueryPerformer">
+        <constructor-arg index="0" ref="elasticsearch-clientprovider-2"/>
+        <constructor-arg index="1" ref="newSingleThreadExecutor"/>
+    </bean>
     <bean id="elasticsearch-indexer" class="org.apache.james.mailbox.elasticsearch.ElasticSearchIndexer">
         <constructor-arg index="0" ref="elasticsearch-clientprovider-2"/>
+        <constructor-arg index="1" ref="deleteByQueryPerformer" />
     </bean>
 
     <bean id="elasticsearch-json" class="org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson">
         <constructor-arg index="0" ref="text-extractor"/>
     </bean>
 
+    <bean id="mailboxIdFactory" class="org.apache.james.mailbox.jpa.JPAId.Factory" />
+
     <bean id="elasticsearch-searcher" class="org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher">
         <constructor-arg index="0" ref="elasticsearch-clientprovider-2"/>
         <constructor-arg index="1" ref="query-converter"/>
+        <constructor-arg index="2" ref="mailboxIdFactory"/>
     </bean>
 
     <bean id="elasticsearch-clientprovider-0" class="org.apache.james.mailbox.elasticsearch.ClientProviderImpl">
@@ -53,12 +62,17 @@
         <constructor-arg index="1" value="${elasticsearch.port}"/>
     </bean>
 
+    <bean id="elasticsearch-client"
+          class="org.elasticsearch.client.Client"
+          factory-bean="elasticsearch-clientprovider-0"
+          factory-method="get" />
+
     <bean id="elasticsearch-clientprovider-2" class="org.apache.james.mailbox.elasticsearch.NodeMappingFactory" factory-method="applyMapping">
         <constructor-arg index="0" ref="elasticsearch-clientprovider-1"/>
     </bean>
 
     <bean id="elasticsearch-clientprovider-1" class="org.apache.james.mailbox.elasticsearch.IndexCreationFactory" factory-method="createIndex">
-        <constructor-arg index="0" ref="elasticsearch-clientprovider-0"/>
+        <constructor-arg index="0" ref="elasticsearch-client"/>
     </bean>
 
     <bean id="query-converter" class="org.apache.james.mailbox.elasticsearch.query.QueryConverter">
