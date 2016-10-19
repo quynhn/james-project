@@ -19,7 +19,7 @@
 
 S: \* OK IMAP4rev1 Server ready
 
-C: a0000 LOGIN imapuser@domain password
+C: a0000 LOGIN imapuser password
 S: a0000 OK LOGIN completed.
 
 C: 10 CREATE appendexpunge
