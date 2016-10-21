@@ -63,7 +63,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 import javax.mail.util.SharedByteArrayInputStream;
 
@@ -74,13 +73,13 @@ import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId.Factory;
-import org.apache.james.mailbox.cassandra.table.CassandraMessageTable;
 import org.apache.james.mailbox.cassandra.table.CassandraMessageTable.Attachments;
 import org.apache.james.mailbox.cassandra.table.CassandraMessageTable.Properties;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.Cid;
 import org.apache.james.mailbox.model.ComposedMessageId;
+import org.apache.james.mailbox.model.ComposedMessageIdWithFlags;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -274,7 +273,8 @@ public class CassandraMessageDAO {
 
     private Pair<MailboxMessage, Stream<MessageAttachmentById>> message(Row row, FetchType fetchType) {
         try {
-            ComposedMessageId messageId = retrieveComposedMessageId(messageIdFactory.of(row.getUUID(MESSAGE_ID))).join();
+            ComposedMessageIdWithFlags messageIdWithFlags = retrieveComposedMessageId(messageIdFactory.of(row.getUUID(MESSAGE_ID))).join();
+            ComposedMessageId messageId = messageIdWithFlags.getComposedMessageId();
 
             SimpleMailboxMessage message =
                     new SimpleMailboxMessage(
@@ -283,7 +283,7 @@ public class CassandraMessageDAO {
                             row.getLong(FULL_CONTENT_OCTETS),
                             row.getInt(BODY_START_OCTET),
                             buildContent(row, fetchType),
-                            getFlags(row),
+                            new FlagsExtractor(row).getFlags(),
                             getPropertyBuilder(row),
                             messageId.getMailboxId(),
                             ImmutableList.of());
@@ -293,20 +293,6 @@ public class CassandraMessageDAO {
         } catch (MailboxException e) {
             throw Throwables.propagate(e);
         }
-    }
-
-
-    private Flags getFlags(Row row) {
-        Flags flags = new Flags();
-        for (String flag : CassandraMessageTable.Flag.ALL) {
-            if (row.getBool(flag)) {
-                flags.add(CassandraMessageTable.Flag.JAVAX_MAIL_FLAG.get(flag));
-            }
-        }
-        row.getSet(CassandraMessageTable.Flag.USER_FLAGS, String.class)
-            .stream()
-            .forEach(flags::add);
-        return flags;
     }
 
     private PropertyBuilder getPropertyBuilder(Row row) {
@@ -344,7 +330,7 @@ public class CassandraMessageDAO {
                 .build();
     }
 
-    private CompletableFuture<ComposedMessageId> retrieveComposedMessageId(CassandraMessageId messageId) throws MailboxException {
+    private CompletableFuture<ComposedMessageIdWithFlags> retrieveComposedMessageId(CassandraMessageId messageId) throws MailboxException {
         return messageIdToImapUidDAO.retrieve(messageId, Optional.empty())
                 .thenApply(Throwing.function(stream -> {
                     return stream.findFirst()
