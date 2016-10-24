@@ -22,7 +22,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.mailbox.cassandra.CassandraId;
@@ -63,10 +62,11 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
 
     @Override
     public List<Message> find(List<MessageId> messageIds, FetchType fetchType) {
-        List<CassandraMessageId> cassandraMessageIds = messageIds.stream()
-            .map(id -> (CassandraMessageId) id)
-            .collect(Collectors.toList());
-        return messageDAO.retrieveMessages(cassandraMessageIds, fetchType, Optional.empty()).join()
+        List<ComposedMessageIdWithMetaData> composedMessageIds = messageIds.stream()
+            .map(messageId -> imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.empty()))
+            .flatMap(CompletableFuture::join)
+            .collect(Guavate.toImmutableList());
+        return messageDAO.retrieveMessages(composedMessageIds, fetchType, Optional.empty()).join()
                 .map(pair -> Pair.of(pair.getLeft(), new AttachmentLoader(attachmentMapper).getAttachments(pair.getRight().collect(Guavate.toImmutableList()))))
                 .map(Throwing.function(pair -> {
                     return SimpleMailboxMessage.cloneWithAttachments(pair.getLeft(), 

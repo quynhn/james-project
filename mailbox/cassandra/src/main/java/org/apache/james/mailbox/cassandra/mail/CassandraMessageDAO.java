@@ -83,7 +83,6 @@ import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Where;
-import com.github.fge.lambdas.Throwing;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
@@ -94,16 +93,14 @@ public class CassandraMessageDAO {
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final CassandraTypesProvider typesProvider;
     private final Factory messageIdFactory;
-    private final CassandraMessageIdToImapUidDAO messageIdToImapUidDAO;
     private final PreparedStatement insert;
     private final PreparedStatement delete;
 
     @Inject
-    public CassandraMessageDAO(Session session, CassandraTypesProvider typesProvider, CassandraMessageId.Factory messageIdFactory, CassandraMessageIdToImapUidDAO messageIdToImapUidDAO) {
+    public CassandraMessageDAO(Session session, CassandraTypesProvider typesProvider, CassandraMessageId.Factory messageIdFactory) {
         this.cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
         this.typesProvider = typesProvider;
         this.messageIdFactory = messageIdFactory;
-        this.messageIdToImapUidDAO = messageIdToImapUidDAO;
         this.insert = prepareInsert(session);
         this.delete = prepareDelete(session);
     }
@@ -176,13 +173,13 @@ public class CassandraMessageDAO {
         return ByteBuffer.wrap(ByteStreams.toByteArray(stream));
     }
     
-    public CompletableFuture<Stream<Pair<MailboxMessage, Stream<MessageAttachmentById>>>> retrieveMessages(List<CassandraMessageId> messageIds, FetchType fetchType, Optional<Integer> limit) {
+    public CompletableFuture<Stream<Pair<MailboxMessage, Stream<MessageAttachmentById>>>> retrieveMessages(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Optional<Integer> limit) {
         return retrieveRows(messageIds, fetchType, limit)
                 .thenApply(resultSet -> CassandraUtils.convertToStream(resultSet)
-                        .map(row -> message(row, fetchType)));
+                        .map(row -> message(row, messageIds, fetchType)));
     }
 
-    private CompletableFuture<ResultSet> retrieveRows(List<CassandraMessageId> messageIds, FetchType fetchType, Optional<Integer> limit) {
+    private CompletableFuture<ResultSet> retrieveRows(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Optional<Integer> limit) {
         return cassandraAsyncExecutor.execute(
                 buildSelectQueryWithLimit(
                         buildQuery(messageIds, fetchType), 
@@ -190,17 +187,20 @@ public class CassandraMessageDAO {
                 );
     }
     
-    private Where buildQuery(List<CassandraMessageId> messageIds, FetchType fetchType) {
+    private Where buildQuery(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType) {
         return select(retrieveFields(fetchType))
                 .from(TABLE_NAME)
                 .where(in(MESSAGE_ID, messageIds.stream()
+                        .map(ComposedMessageIdWithMetaData::getComposedMessageId)
+                        .map(ComposedMessageId::getMessageId)
+                        .map(messageId -> (CassandraMessageId) messageId)
                         .map(CassandraMessageId::get)
                         .collect(Collectors.toList())));
     }
 
-    private Pair<MailboxMessage, Stream<MessageAttachmentById>> message(Row row, FetchType fetchType) {
+    private Pair<MailboxMessage, Stream<MessageAttachmentById>> message(Row row, List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType) {
         try {
-            ComposedMessageIdWithMetaData messageIdWithMetaData = retrieveComposedMessageId(messageIdFactory.of(row.getUUID(MESSAGE_ID))).join();
+            ComposedMessageIdWithMetaData messageIdWithMetaData = retrieveComposedMessageId(messageIdFactory.of(row.getUUID(MESSAGE_ID)), messageIds);
             ComposedMessageId messageId = messageIdWithMetaData.getComposedMessageId();
 
             SimpleMailboxMessage message =
@@ -257,12 +257,11 @@ public class CassandraMessageDAO {
                 .build();
     }
 
-    private CompletableFuture<ComposedMessageIdWithMetaData> retrieveComposedMessageId(CassandraMessageId messageId) throws MailboxException {
-        return messageIdToImapUidDAO.retrieve(messageId, Optional.empty())
-                .thenApply(Throwing.function(stream -> {
-                    return stream.findFirst()
-                        .orElseThrow(() -> new MailboxException("Message not found: " + messageId));
-                }));
+    private ComposedMessageIdWithMetaData retrieveComposedMessageId(CassandraMessageId messageId, List<ComposedMessageIdWithMetaData> messageIds) throws MailboxException {
+        return messageIds.stream()
+            .filter(composedMessage -> composedMessage.isMatching(messageId))
+            .findFirst()
+            .orElseThrow(() -> new MailboxException("Message not found: " + messageId));
     }
 
     private String[] retrieveFields(FetchType fetchType) {
