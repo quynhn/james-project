@@ -48,7 +48,7 @@ import org.apache.james.mailbox.cassandra.mail.utils.MessageDeletedDuringFlagsUp
 import org.apache.james.mailbox.cassandra.table.CassandraMailboxCountersTable;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.ComposedMessageId;
-import org.apache.james.mailbox.model.ComposedMessageIdWithFlags;
+import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.MessageRange;
@@ -133,8 +133,8 @@ public class CassandraMessageMapper implements MessageMapper {
             .ifPresent(composedMessageId -> deleteUsingMailboxId(composedMessageId));
     }
 
-    private void deleteUsingMailboxId(ComposedMessageIdWithFlags composedMessageIdWithFlags) {
-        ComposedMessageId composedMessageId = composedMessageIdWithFlags.getComposedMessageId();
+    private void deleteUsingMailboxId(ComposedMessageIdWithMetaData composedMessageIdWithMetaData) {
+        ComposedMessageId composedMessageId = composedMessageIdWithMetaData.getComposedMessageId();
         CassandraMessageId messageId = (CassandraMessageId) composedMessageId.getMessageId();
         CassandraId mailboxId = (CassandraId) composedMessageId.getMailboxId();
         MessageUid uid = composedMessageId.getUid();
@@ -143,12 +143,12 @@ public class CassandraMessageMapper implements MessageMapper {
             .join();
         
         decrementCount(mailboxId);
-        if (!composedMessageIdWithFlags.getFlags().contains(Flag.SEEN)) {
+        if (!composedMessageIdWithMetaData.getFlags().contains(Flag.SEEN)) {
             decrementUnseen(mailboxId);
         }
     }
 
-    private Optional<ComposedMessageIdWithFlags> retrieveMessageId(CassandraId mailboxId, MailboxMessage message) {
+    private Optional<ComposedMessageIdWithMetaData> retrieveMessageId(CassandraId mailboxId, MailboxMessage message) {
         return messageIdDAO.retrieve(mailboxId, message.getUid()).join();
     }
 
@@ -161,15 +161,15 @@ public class CassandraMessageMapper implements MessageMapper {
                 .iterator();
     }
 
-    private List<ComposedMessageIdWithFlags> retrieveMessageIds(CassandraId mailboxId, MessageRange messageRange) {
+    private List<ComposedMessageIdWithMetaData> retrieveMessageIds(CassandraId mailboxId, MessageRange messageRange) {
         return messageIdDAO.retrieveMessages(mailboxId, messageRange)
                 .join()
                 .collect(Guavate.toImmutableList());
     }
 
-    private Stream<SimpleMailboxMessage> retrieveMessages(List<ComposedMessageIdWithFlags> messageIds, FetchType fetchType, Optional<Integer> limit) {
+    private Stream<SimpleMailboxMessage> retrieveMessages(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Optional<Integer> limit) {
         return messageDAO.retrieveMessages(messageIds.stream()
-                    .map(ComposedMessageIdWithFlags::getComposedMessageId)
+                    .map(ComposedMessageIdWithMetaData::getComposedMessageId)
                     .map(ComposedMessageId::getMessageId)
                     .map(messageId -> (CassandraMessageId) messageId)
                     .collect(Guavate.toImmutableList()), 
@@ -187,7 +187,7 @@ public class CassandraMessageMapper implements MessageMapper {
         return retrieveMessages(retrieveMessageIds(mailboxId, MessageRange.all()), FetchType.Metadata, Optional.empty())
                 .filter(MailboxMessage::isRecent)
                 .flatMap(message -> imapUidDAO.retrieve((CassandraMessageId) message.getMessageId(), Optional.ofNullable(mailboxId)).join())
-                .map(ComposedMessageIdWithFlags::getComposedMessageId)
+                .map(ComposedMessageIdWithMetaData::getComposedMessageId)
                 .map(ComposedMessageId::getUid)
                 .sorted()
                 .collect(Collectors.toList());
@@ -199,7 +199,7 @@ public class CassandraMessageMapper implements MessageMapper {
         return retrieveMessages(retrieveMessageIds(mailboxId, MessageRange.all()), FetchType.Metadata, Optional.empty())
                 .filter(message -> !message.isSeen())
                 .flatMap(message -> imapUidDAO.retrieve((CassandraMessageId) message.getMessageId(), Optional.ofNullable(mailboxId)).join())
-                .map(ComposedMessageIdWithFlags::getComposedMessageId)
+                .map(ComposedMessageIdWithMetaData::getComposedMessageId)
                 .map(ComposedMessageId::getUid)
                 .sorted()
                 .findFirst()
@@ -310,12 +310,13 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     private CompletableFuture<Void> insertIds(MailboxMessage message, CassandraId mailboxId) {
-        ComposedMessageIdWithFlags composedMessageIdWithFlags = ComposedMessageIdWithFlags.builder()
+        ComposedMessageIdWithMetaData composedMessageIdWithMetaData = ComposedMessageIdWithMetaData.builder()
                 .composedMessageId(new ComposedMessageId(mailboxId, (CassandraMessageId) message.getMessageId(), message.getUid()))
                 .flags(message.createFlags())
+                .modSeq(message.getModSeq())
                 .build();
-        return CompletableFuture.allOf(messageIdDAO.insert(composedMessageIdWithFlags),
-                imapUidDAO.insert(composedMessageIdWithFlags));
+        return CompletableFuture.allOf(messageIdDAO.insert(composedMessageIdWithMetaData),
+                imapUidDAO.insert(composedMessageIdWithMetaData));
     }
 
     private void manageUnseenMessageCounts(Mailbox mailbox, Flags oldFlags, Flags newFlags) {

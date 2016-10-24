@@ -79,7 +79,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.Cid;
 import org.apache.james.mailbox.model.ComposedMessageId;
-import org.apache.james.mailbox.model.ComposedMessageIdWithFlags;
+import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -273,8 +273,8 @@ public class CassandraMessageDAO {
 
     private Pair<MailboxMessage, Stream<MessageAttachmentById>> message(Row row, FetchType fetchType) {
         try {
-            ComposedMessageIdWithFlags messageIdWithFlags = retrieveComposedMessageId(messageIdFactory.of(row.getUUID(MESSAGE_ID))).join();
-            ComposedMessageId messageId = messageIdWithFlags.getComposedMessageId();
+            ComposedMessageIdWithMetaData messageIdWithMetaData = retrieveComposedMessageId(messageIdFactory.of(row.getUUID(MESSAGE_ID))).join();
+            ComposedMessageId messageId = messageIdWithMetaData.getComposedMessageId();
 
             SimpleMailboxMessage message =
                     new SimpleMailboxMessage(
@@ -330,7 +330,7 @@ public class CassandraMessageDAO {
                 .build();
     }
 
-    private CompletableFuture<ComposedMessageIdWithFlags> retrieveComposedMessageId(CassandraMessageId messageId) throws MailboxException {
+    private CompletableFuture<ComposedMessageIdWithMetaData> retrieveComposedMessageId(CassandraMessageId messageId) throws MailboxException {
         return messageIdToImapUidDAO.retrieve(messageId, Optional.empty())
                 .thenApply(Throwing.function(stream -> {
                     return stream.findFirst()
