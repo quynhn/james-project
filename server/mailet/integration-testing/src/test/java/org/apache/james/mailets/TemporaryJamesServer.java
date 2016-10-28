@@ -27,7 +27,7 @@ import java.nio.file.Paths;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.IOUtils;
-import org.apache.james.GuiceJamesServer;
+import org.apache.james.GuiceJmapJamesServer;
 import org.apache.james.MemoryJamesServerMain;
 import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.modules.TestJMAPServerModule;
@@ -40,13 +40,13 @@ public class TemporaryJamesServer {
 
     private static final int LIMIT_TO_3_MESSAGES = 3;
 
-    private final GuiceJamesServer jamesServer;
+    private final GuiceJmapJamesServer jamesServer;
 
 
     public TemporaryJamesServer(TemporaryFolder temporaryFolder, MailetContainer mailetContainer) throws Exception {
         appendMailetConfigurations(temporaryFolder, mailetContainer);
 
-        jamesServer = new GuiceJamesServer()
+        jamesServer = new GuiceJmapJamesServer()
             .combineWith(MemoryJamesServerMain.inMemoryServerModule)
             .overrideWith(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES),
                     new TemporaryFilesystemModule(temporaryFolder));
