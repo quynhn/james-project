@@ -145,8 +145,8 @@ public class CassandraMessageMapper implements MessageMapper {
         }
     }
 
-    private Optional<ComposedMessageIdWithMetaData> retrieveMessageId(CassandraId mailboxId, MailboxMessage message) {
-        return messageIdDAO.retrieve(mailboxId, message.getUid()).join();
+    private CompletableFuture<Optional<ComposedMessageIdWithMetaData>> retrieveMessageId(CassandraId mailboxId, MailboxMessage message) {
+        return messageIdDAO.retrieve(mailboxId, message.getUid());
     }
 
     @Override
@@ -211,7 +211,7 @@ public class CassandraMessageMapper implements MessageMapper {
     public MessageMetaData move(Mailbox destinationMailbox, MailboxMessage original) throws MailboxException {
         CassandraId originalMailboxId = (CassandraId) original.getMailboxId();
         MessageMetaData messageMetaData = copy(destinationMailbox, original);
-        retrieveMessageId(originalMailboxId, original)
+        retrieveMessageId(originalMailboxId, original).join()
                 .ifPresent(messageId -> deleteUsingMailboxId(messageId));
         return messageMetaData;
     }
