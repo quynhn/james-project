@@ -40,11 +40,12 @@ public class MessageAttachmentById {
         private AttachmentId attachmentId;
         private Optional<String> name;
         private Optional<Cid> cid;
-        private Boolean isInline;
+        private Optional<Boolean> isInline;
 
         private Builder() {
             name = Optional.empty();
             cid = Optional.empty();
+            isInline = Optional.empty();
         }
 
         public Builder attachmentId(AttachmentId attachmentId) {
@@ -71,19 +72,17 @@ public class MessageAttachmentById {
         }
 
         public Builder isInline(boolean isInline) {
-            this.isInline = isInline;
+            this.isInline = Optional.of(isInline);
             return this;
         }
 
         public MessageAttachmentById build() {
             Preconditions.checkState(attachmentId != null, "'attachmentId' is mandatory");
-            if (isInline == null) {
-                isInline = false;
-            }
-            if (isInline && !cid.isPresent()) {
+            boolean builtIsInLine = isInline.orElse(false);
+            if (builtIsInLine && !cid.isPresent()) {
                 throw new IllegalStateException("'cid' is mandatory for inline attachments");
             }
-            return new MessageAttachmentById(attachmentId, name, cid, isInline);
+            return new MessageAttachmentById(attachmentId, name, cid, builtIsInLine);
         }
     }
 
