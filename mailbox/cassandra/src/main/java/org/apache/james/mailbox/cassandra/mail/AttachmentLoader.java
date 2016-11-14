@@ -29,6 +29,7 @@ import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.AttachmentId;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
+import org.apache.james.util.OptionalConverter;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
@@ -51,7 +52,7 @@ public class AttachmentLoader {
                     MessageAttachment.builder()
                         .attachment(attachmentByIdMap.get(attachment.getAttachmentId()))
                         .name(attachment.getName().orElse(null))
-                        .cid(com.google.common.base.Optional.fromNullable(attachment.getCid().orElse(null)))
+                        .cid(OptionalConverter.toGuava(attachment.getCid()))
                         .isInline(attachment.isInline())
                         .build())
                 );
