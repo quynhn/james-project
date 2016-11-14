@@ -22,11 +22,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class CassandraIdTest {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void beanShouldRespectBeanContract() {
@@ -41,5 +46,11 @@ public class CassandraIdTest {
         CassandraId cassandraId = new CassandraId.Factory().fromString(id.toString());
 
         assertThat(cassandraId.asUuid()).isEqualTo(id);
+    }
+
+    @Test
+    public void fromStringShouldThrowWhenParameterIsNotAnUUID() {
+        expectedException.expect(IllegalArgumentException.class);
+        new CassandraId.Factory().fromString("not an UUID");
     }
 }
