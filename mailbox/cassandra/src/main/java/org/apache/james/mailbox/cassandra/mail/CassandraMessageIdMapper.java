@@ -70,10 +70,10 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             .flatMap(CompletableFuture::join)
             .collect(Guavate.toImmutableList());
         return messageDAO.retrieveMessages(composedMessageIds, fetchType, Optional.empty()).join()
-                .map(loadAttachments())
-                .map(toMailboxMessages())
-                .sorted(Comparator.comparing(MailboxMessage::getUid))
-                .collect(Guavate.toImmutableList());
+            .map(loadAttachments())
+            .map(toMailboxMessages())
+            .sorted(Comparator.comparing(MailboxMessage::getUid))
+            .collect(Guavate.toImmutableList());
     }
 
     private Function<Pair<MailboxMessage, Stream<MessageAttachmentById>>, Pair<MailboxMessage, Stream<MessageAttachment>>> loadAttachments() {
@@ -82,7 +82,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
 
     private FunctionChainer<Pair<MailboxMessage, Stream<MessageAttachment>>, SimpleMailboxMessage> toMailboxMessages() {
         return Throwing.function(pair -> {
-            return SimpleMailboxMessage.cloneWithAttachments(pair.getLeft(), 
+            return SimpleMailboxMessage.cloneWithAttachments(pair.getLeft(),
                     pair.getRight().collect(Guavate.toImmutableList()));
         });
     }
@@ -101,31 +101,42 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
         messageDAO.save(mailboxMapper.findMailboxById(mailboxId), mailboxMessage).join();
         CassandraMessageId messageId = (CassandraMessageId) mailboxMessage.getMessageId();
         ComposedMessageIdWithMetaData composedMessageIdWithMetaData = ComposedMessageIdWithMetaData.builder()
-                    .composedMessageId(new ComposedMessageId(mailboxId, messageId, mailboxMessage.getUid()))
-                    .flags(mailboxMessage.createFlags())
-                    .modSeq(mailboxMessage.getModSeq())
-                    .build();
+            .composedMessageId(new ComposedMessageId(mailboxId, messageId, mailboxMessage.getUid()))
+            .flags(mailboxMessage.createFlags())
+            .modSeq(mailboxMessage.getModSeq())
+            .build();
         CompletableFuture.allOf(imapUidDAO.insert(composedMessageIdWithMetaData),
-                messageIdDAO.insert(composedMessageIdWithMetaData))
-        .join();
+            messageIdDAO.insert(composedMessageIdWithMetaData))
+            .join();
+    }
+
+    @Override
+    public void delete(MessageId messageId, List<MailboxId> mailboxIds) {
+        CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
+        mailboxIds.stream()
+            .forEach(mailboxId -> retrieveAndDeleteIndices(cassandraMessageId, Optional.of((CassandraId) mailboxId)).join());
+    }
+
+
+    private CompletableFuture<Void> retrieveAndDeleteIndices(CassandraMessageId messageId, Optional<CassandraId> mailboxId) {
+        return imapUidDAO.retrieve(messageId, mailboxId)
+            .thenAccept(composedMessageIds -> composedMessageIds
+                    .map(ComposedMessageIdWithMetaData::getComposedMessageId)
+                    .forEach(composedMessageId -> deleteIds(composedMessageId))
+                    );
     }
 
     @Override
     public void delete(MessageId messageId) {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
         messageDAO.delete(cassandraMessageId).join();
-        imapUidDAO.retrieve(cassandraMessageId, Optional.empty())
-            .thenAccept(composedMessageIds -> composedMessageIds
-                .map(ComposedMessageIdWithMetaData::getComposedMessageId)
-                .forEach(composedMessageId -> deleteIds(composedMessageId))
-                )
-            .join();
+        retrieveAndDeleteIndices(cassandraMessageId, Optional.empty()).join();
     }
 
     private CompletableFuture<Void> deleteIds(ComposedMessageId composedMessageId) {
         CassandraMessageId messageId = (CassandraMessageId) composedMessageId.getMessageId();
         CassandraId mailboxId = (CassandraId) composedMessageId.getMailboxId();
         return CompletableFuture.allOf(imapUidDAO.delete(messageId, mailboxId),
-                messageIdDAO.delete(mailboxId, composedMessageId.getUid()));
+            messageIdDAO.delete(mailboxId, composedMessageId.getUid()));
     }
 }
