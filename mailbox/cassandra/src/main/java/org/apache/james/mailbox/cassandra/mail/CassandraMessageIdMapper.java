@@ -115,9 +115,12 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     public void delete(MessageId messageId) {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
         messageDAO.delete(cassandraMessageId).join();
-        imapUidDAO.retrieve(cassandraMessageId, Optional.empty()).join()
-            .map(ComposedMessageIdWithMetaData::getComposedMessageId)
-            .forEach(composedMessageId -> deleteIds(composedMessageId).join());
+        imapUidDAO.retrieve(cassandraMessageId, Optional.empty())
+            .thenAccept(composedMessageIds -> composedMessageIds
+                .map(ComposedMessageIdWithMetaData::getComposedMessageId)
+                .forEach(composedMessageId -> deleteIds(composedMessageId))
+                )
+            .join();
     }
 
     private CompletableFuture<Void> deleteIds(ComposedMessageId composedMessageId) {
