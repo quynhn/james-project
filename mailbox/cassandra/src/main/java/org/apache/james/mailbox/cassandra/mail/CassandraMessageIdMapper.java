@@ -40,7 +40,6 @@ import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageIdMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
-import org.apache.james.mailbox.store.mail.model.Message;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 
 import com.github.fge.lambdas.Throwing;
@@ -65,7 +64,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public List<Message> find(List<MessageId> messageIds, FetchType fetchType) {
+    public List<MailboxMessage> find(List<MessageId> messageIds, FetchType fetchType) {
         List<ComposedMessageIdWithMetaData> composedMessageIds = messageIds.stream()
             .map(messageId -> imapUidDAO.retrieve((CassandraMessageId) messageId, Optional.empty()))
             .flatMap(CompletableFuture::join)
