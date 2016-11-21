@@ -128,7 +128,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             .build();
         CompletableFuture.allOf(imapUidDAO.insert(composedMessageIdWithMetaData),
             messageIdDAO.insert(composedMessageIdWithMetaData))
-            .join();
+        .join();
     }
 
     @Override
