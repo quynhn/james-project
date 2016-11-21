@@ -51,6 +51,8 @@ import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.fge.lambdas.functions.FunctionChainer;
@@ -59,7 +61,9 @@ import com.google.common.base.Throwables;
 
 public class CassandraMessageIdMapper implements MessageIdMapper {
 
-    public static final boolean DEFAULT_STOP_IF_UPDATED = true;
+    private static final int MAX_RETRY = 1000;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CassandraMessageIdMapper.class);
+
     private final MailboxMapper mailboxMapper;
     private final AttachmentMapper attachmentMapper;
     private final CassandraMessageIdToImapUidDAO imapUidDAO;
@@ -207,7 +211,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
 
     private void flagsUpdateWithRetry(Flags newState, MessageManager.FlagsUpdateMode updateMode, ComposedMessageIdWithMetaData composedMessageId) {
         try {
-            new FunctionRunnerWithRetry(1000)
+            new FunctionRunnerWithRetry(MAX_RETRY)
                 .execute(() -> tryFlagsUpdate(newState, updateMode, composedMessageId, oldModSeq(composedMessageId.getComposedMessageId())));
         } catch (LightweightTransactionException e) {
             Throwables.propagate(e);
@@ -223,14 +227,16 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     private Boolean tryFlagsUpdate(Flags newState, MessageManager.FlagsUpdateMode updateMode, ComposedMessageIdWithMetaData composedMessageId, long oldModSeq) {
+        MailboxId mailboxId = composedMessageId.getComposedMessageId().getMailboxId();
         try {
-            long newModSeq = modSeqProvider.nextModSeq(mailboxSession, composedMessageId.getComposedMessageId().getMailboxId());
+            long newModSeq = modSeqProvider.nextModSeq(mailboxSession, mailboxId);
             return updateFlags(new ComposedMessageIdWithMetaData(
                         composedMessageId.getComposedMessageId(),
                         new FlagsUpdateCalculator(composedMessageId.getFlags(), updateMode).buildNewFlags(newState),
                         newModSeq),
                     oldModSeq);
         } catch (MailboxException e) {
+            LOGGER.error("Error while getting next ModSeq on mailbox: ", mailboxId);
             return false;
         }
     }
