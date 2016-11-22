@@ -245,10 +245,10 @@ public class CassandraMessageDAO {
 
     private Stream<MessageAttachmentById> attachmentByIds(List<UDTValue> udtValues) {
         return udtValues.stream()
-            .map(this::attachmentIdFrom);
+            .map(this::messageAttachmentByIdFrom);
     }
 
-    private MessageAttachmentById attachmentIdFrom(UDTValue udtValue) {
+    private MessageAttachmentById messageAttachmentByIdFrom(UDTValue udtValue) {
         return MessageAttachmentById.builder()
                 .attachmentId(AttachmentId.from(udtValue.getString(Attachments.ID)))
                 .name(udtValue.getString(Attachments.NAME))
