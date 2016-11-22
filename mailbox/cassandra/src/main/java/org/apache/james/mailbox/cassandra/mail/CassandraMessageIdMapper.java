@@ -168,53 +168,24 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     @Override
     public Map<MailboxId, UpdatedFlags> setFlags(Flags newState, MessageManager.FlagsUpdateMode updateMode, MessageId messageId) throws MailboxException {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
-        List<ComposedMessageIdWithMetaData> initialComposedMessageIds = imapUidDAO.retrieve(cassandraMessageId, Optional.empty()).join()
-                .collect(Guavate.toImmutableList());
 
-        initialComposedMessageIds.stream()
-            .forEach(composedMessageId -> flagsUpdateWithRetry(newState, updateMode, composedMessageId));
-
-        return retrieveUpdatedFlags(cassandraMessageId, initialFlags(initialComposedMessageIds));
+        return imapUidDAO.retrieve(cassandraMessageId, Optional.empty()).join()
+            .map(composedMessageId -> flagsUpdateWithRetry(newState, updateMode, composedMessageId))
+            .collect(Guavate.toImmutableMap(Pair<MailboxId, UpdatedFlags>::getLeft, 
+                            Pair<MailboxId, UpdatedFlags>::getRight));
     }
 
-    private List<Pair<ComposedMessageId, Flags>> initialFlags(List<ComposedMessageIdWithMetaData> initialComposedMessageIds) {
-        return initialComposedMessageIds.stream()
-                .map(composedMessageId -> Pair.of(composedMessageId.getComposedMessageId(), composedMessageId.getFlags()))
-                .collect(Guavate.toImmutableList());
-    }
-
-    private Map<MailboxId, UpdatedFlags> retrieveUpdatedFlags(CassandraMessageId cassandraMessageId, List<Pair<ComposedMessageId, Flags>> initialFlags) {
-        return imapUidDAO.retrieve(cassandraMessageId, Optional.empty())
-            .thenApply(composedMessageIds -> composedMessageIds
-                    .map(composedMessageId -> createUpdatedFlags(composedMessageId, initialFlags))
-                    .collect(Guavate.toImmutableMap(Pair<MailboxId, UpdatedFlags>::getLeft, 
-                            Pair<MailboxId, UpdatedFlags>::getRight))
-            )
-            .join();
-    }
-
-    private Pair<MailboxId, UpdatedFlags> createUpdatedFlags(ComposedMessageIdWithMetaData composedMessageId, List<Pair<ComposedMessageId, Flags>> initialFlags) {
-        return Pair.of(
-                composedMessageId.getComposedMessageId().getMailboxId(),
-                new UpdatedFlags(composedMessageId.getComposedMessageId().getUid(),
-                    composedMessageId.getModSeq(),
-                    initialFlagsFor(composedMessageId.getComposedMessageId(), initialFlags).orElse(composedMessageId.getFlags()),
-                    composedMessageId.getFlags()));
-    }
-
-    private Optional<Flags> initialFlagsFor(ComposedMessageId key, List<Pair<ComposedMessageId, Flags>> initialFlags) {
-        return initialFlags.stream()
-                .filter(initialFlag -> initialFlag.getLeft().equals(key))
-                .map(Pair::getRight)
-                .findFirst();
-    }
-
-    private void flagsUpdateWithRetry(Flags newState, MessageManager.FlagsUpdateMode updateMode, ComposedMessageIdWithMetaData composedMessageId) {
+    private Pair<MailboxId, UpdatedFlags> flagsUpdateWithRetry(Flags newState, MessageManager.FlagsUpdateMode updateMode, ComposedMessageIdWithMetaData composedMessageId) {
         try {
-            new FunctionRunnerWithRetry(MAX_RETRY)
-                .execute(() -> tryFlagsUpdate(newState, updateMode, composedMessageId, oldModSeq(composedMessageId.getComposedMessageId())));
+            Pair<Flags, Long> newFlagsWithModSeq = new FunctionRunnerWithRetry(MAX_RETRY)
+                .executeAndRetrieveObject(() -> tryFlagsUpdate(newState, updateMode, composedMessageId, oldModSeq(composedMessageId.getComposedMessageId())));
+            return Pair.of(composedMessageId.getComposedMessageId().getMailboxId(),
+                    new UpdatedFlags(composedMessageId.getComposedMessageId().getUid(),
+                        newFlagsWithModSeq.getRight(),
+                        composedMessageId.getFlags(),
+                        newFlagsWithModSeq.getLeft()));
         } catch (LightweightTransactionException e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -226,18 +197,22 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
         }
     }
 
-    private Boolean tryFlagsUpdate(Flags newState, MessageManager.FlagsUpdateMode updateMode, ComposedMessageIdWithMetaData composedMessageId, long oldModSeq) {
+    private Optional<Pair<Flags, Long>> tryFlagsUpdate(Flags newState, MessageManager.FlagsUpdateMode updateMode, ComposedMessageIdWithMetaData composedMessageId, long oldModSeq) {
         MailboxId mailboxId = composedMessageId.getComposedMessageId().getMailboxId();
         try {
             long newModSeq = modSeqProvider.nextModSeq(mailboxSession, mailboxId);
-            return updateFlags(new ComposedMessageIdWithMetaData(
+            Flags newFlags = new FlagsUpdateCalculator(composedMessageId.getFlags(), updateMode).buildNewFlags(newState);
+            ComposedMessageIdWithMetaData composedMessageIdWithMetaData = new ComposedMessageIdWithMetaData(
                         composedMessageId.getComposedMessageId(),
-                        new FlagsUpdateCalculator(composedMessageId.getFlags(), updateMode).buildNewFlags(newState),
-                        newModSeq),
-                    oldModSeq);
+                        newFlags,
+                        newModSeq);
+            if (updateFlags(composedMessageIdWithMetaData, oldModSeq)) {
+                return Optional.of(Pair.of(newFlags, newModSeq));
+            }
+            return Optional.empty();
         } catch (MailboxException e) {
             LOGGER.error("Error while getting next ModSeq on mailbox: ", mailboxId);
-            return false;
+            return Optional.empty();
         }
     }
 
