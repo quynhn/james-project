@@ -210,7 +210,7 @@ public class CassandraMessageMapper implements MessageMapper {
         CassandraId originalMailboxId = (CassandraId) original.getMailboxId();
         MessageMetaData messageMetaData = copy(destinationMailbox, original);
         retrieveMessageId(originalMailboxId, original).join()
-                .ifPresent(messageId -> deleteUsingMailboxId(messageId));
+                .ifPresent(this::deleteUsingMailboxId);
         return messageMetaData;
     }
 
@@ -294,7 +294,7 @@ public class CassandraMessageMapper implements MessageMapper {
 
     private CompletableFuture<Void> insertIds(MailboxMessage message, CassandraId mailboxId) {
         ComposedMessageIdWithMetaData composedMessageIdWithMetaData = ComposedMessageIdWithMetaData.builder()
-                .composedMessageId(new ComposedMessageId(mailboxId, (CassandraMessageId) message.getMessageId(), message.getUid()))
+                .composedMessageId(new ComposedMessageId(mailboxId, message.getMessageId(), message.getUid()))
                 .flags(message.createFlags())
                 .modSeq(message.getModSeq())
                 .build();
