@@ -49,7 +49,6 @@ import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
-import org.apache.james.backends.cassandra.utils.CassandraConstants;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.CassandraId;
@@ -168,7 +167,7 @@ public class CassandraMessageIdToImapUidDAO {
     public CompletableFuture<Boolean> updateMetadata(ComposedMessageIdWithMetaData composedMessageIdWithMetaData, long oldModSeq) {
         ComposedMessageId composedMessageId = composedMessageIdWithMetaData.getComposedMessageId();
         Flags flags = composedMessageIdWithMetaData.getFlags();
-        return cassandraAsyncExecutor.executeSingleRow(update.bind()
+        return cassandraAsyncExecutor.executeReturnApplied(update.bind()
                 .setLong(MOD_SEQ, composedMessageIdWithMetaData.getModSeq())
                 .setBool(ANSWERED, flags.contains(Flag.ANSWERED))
                 .setBool(DELETED, flags.contains(Flag.DELETED))
@@ -182,18 +181,13 @@ public class CassandraMessageIdToImapUidDAO {
                 .setUUID(MAILBOX_ID, ((CassandraId) composedMessageId.getMailboxId()).asUuid())
                 .setLong(IMAP_UID, composedMessageId.getUid().asLong())
                 .setLong(MOD_SEQ_CONDITION, oldModSeq)
-                .enableTracing())
-            .thenApply(optional -> optional
-                        .map(row -> row.getBool(CassandraConstants.LIGHTWEIGHT_TRANSACTION_APPLIED))
-                        .orElse(false));
+                .enableTracing());
     }
 
     public CompletableFuture<Stream<ComposedMessageIdWithMetaData>> retrieve(CassandraMessageId messageId, Optional<CassandraId> mailboxId) {
         return selectStatement(messageId, mailboxId)
-                .thenApply(resultSet -> {
-                    return CassandraUtils.convertToStream(resultSet)
-                            .map(this::toComposedMessageIdWithFlags);
-                });
+                .thenApply(resultSet -> CassandraUtils.convertToStream(resultSet)
+                        .map(this::toComposedMessageIdWithFlags));
     }
 
     private ComposedMessageIdWithMetaData toComposedMessageIdWithFlags(Row row) {
