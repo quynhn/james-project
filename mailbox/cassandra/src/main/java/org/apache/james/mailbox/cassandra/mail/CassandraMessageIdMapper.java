@@ -36,11 +36,9 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
 import org.apache.james.mailbox.exception.MailboxException;
-import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MailboxId;
-import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.FlagsUpdateCalculator;
@@ -101,15 +99,14 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             .sorted(Comparator.comparing(MailboxMessage::getUid));
     }
 
-    private Function<Pair<MailboxMessage, Stream<MessageAttachmentById>>, Pair<MailboxMessage, Stream<MessageAttachment>>> loadAttachments() {
-        return pair -> Pair.of(pair.getLeft(), new AttachmentLoader(attachmentMapper).getAttachments(pair.getRight().collect(Guavate.toImmutableList())));
+    private Function<Pair<MailboxMessage, Stream<CassandraMessageDAO.MessageAttachment>>, Pair<MailboxMessage, Stream<org.apache.james.mailbox.model.MessageAttachment>>> loadAttachments() {
+        return pair -> Pair.of(pair.getLeft(),
+            new AttachmentLoader(attachmentMapper).getAttachments(pair.getRight().collect(Guavate.toImmutableSet())).stream());
     }
 
-    private FunctionChainer<Pair<MailboxMessage, Stream<MessageAttachment>>, SimpleMailboxMessage> toMailboxMessages() {
-        return Throwing.function(pair -> {
-            return SimpleMailboxMessage.cloneWithAttachments(pair.getLeft(),
-                    pair.getRight().collect(Guavate.toImmutableList()));
-        });
+    private FunctionChainer<Pair<MailboxMessage, Stream<org.apache.james.mailbox.model.MessageAttachment>>, SimpleMailboxMessage> toMailboxMessages() {
+        return Throwing.function(pair -> SimpleMailboxMessage.cloneWithAttachments(pair.getLeft(),
+                pair.getRight().collect(Guavate.toImmutableList())));
     }
 
     @Override
@@ -121,7 +118,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public void save(MailboxMessage mailboxMessage) throws MailboxNotFoundException, MailboxException {
+    public void save(MailboxMessage mailboxMessage) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailboxMessage.getMailboxId();
         messageDAO.save(mailboxMapper.findMailboxById(mailboxId), mailboxMessage).join();
         CassandraMessageId messageId = (CassandraMessageId) mailboxMessage.getMessageId();
@@ -138,7 +135,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     @Override
     public void delete(MessageId messageId, List<MailboxId> mailboxIds) {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
-        mailboxIds.stream()
+        mailboxIds
             .forEach(mailboxId -> retrieveAndDeleteIndices(cassandraMessageId, Optional.of((CassandraId) mailboxId)).join());
     }
 
@@ -147,8 +144,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
         return imapUidDAO.retrieve(messageId, mailboxId)
             .thenAccept(composedMessageIds -> composedMessageIds
                     .map(ComposedMessageIdWithMetaData::getComposedMessageId)
-                    .forEach(composedMessageId -> deleteIds(composedMessageId))
-                    );
+                    .forEach(this::deleteIds));
     }
 
     @Override
@@ -166,13 +162,12 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public Map<MailboxId, UpdatedFlags> setFlags(Flags newState, MessageManager.FlagsUpdateMode updateMode, MessageId messageId) throws MailboxException {
+    public Map<MailboxId, UpdatedFlags> setFlags(MessageId messageId, Flags newState, MessageManager.FlagsUpdateMode updateMode) throws MailboxException {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
 
         return imapUidDAO.retrieve(cassandraMessageId, Optional.empty()).join()
             .map(composedMessageId -> flagsUpdateWithRetry(newState, updateMode, composedMessageId))
-            .collect(Guavate.toImmutableMap(Pair<MailboxId, UpdatedFlags>::getLeft, 
-                            Pair<MailboxId, UpdatedFlags>::getRight));
+            .collect(Guavate.toImmutableMap(Pair::getLeft, Pair::getRight));
     }
 
     private Pair<MailboxId, UpdatedFlags> flagsUpdateWithRetry(Flags newState, MessageManager.FlagsUpdateMode updateMode, ComposedMessageIdWithMetaData composedMessageId) {
