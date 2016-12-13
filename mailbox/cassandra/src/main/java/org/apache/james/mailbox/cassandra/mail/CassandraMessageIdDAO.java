@@ -261,10 +261,8 @@ public class CassandraMessageIdDAO {
 
     private CompletableFuture<Stream<ComposedMessageIdWithMetaData>> toMessageIds(CompletableFuture<ResultSet> completableFuture) {
         return completableFuture
-            .thenApply(resultSet ->  { 
-                return CassandraUtils.convertToStream(resultSet)
-                    .map(this::fromRowToComposedMessageIdWithFlags);
-            });
+            .thenApply(resultSet -> CassandraUtils.convertToStream(resultSet)
+                .map(this::fromRowToComposedMessageIdWithFlags));
     }
 
     private ComposedMessageIdWithMetaData fromRowToComposedMessageIdWithFlags(Row row) {
