@@ -162,10 +162,12 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public Map<MailboxId, UpdatedFlags> setFlags(MessageId messageId, Flags newState, MessageManager.FlagsUpdateMode updateMode) throws MailboxException {
+    public Map<MailboxId, UpdatedFlags> setFlags(MessageId messageId, List<MailboxId> mailboxIds, Flags newState, MessageManager.FlagsUpdateMode updateMode) throws MailboxException {
         CassandraMessageId cassandraMessageId = (CassandraMessageId) messageId;
 
-        return imapUidDAO.retrieve(cassandraMessageId, Optional.empty()).join()
+        return mailboxIds.stream()
+            .map(mailboxId -> (CassandraId) mailboxId)
+            .flatMap(mailboxId -> imapUidDAO.retrieve(cassandraMessageId, Optional.of(mailboxId)).join())
             .map(composedMessageId -> flagsUpdateWithRetry(newState, updateMode, composedMessageId))
             .collect(Guavate.toImmutableMap(Pair::getLeft, Pair::getRight));
     }
