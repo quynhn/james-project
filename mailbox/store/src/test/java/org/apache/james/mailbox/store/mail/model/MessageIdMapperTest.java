@@ -333,8 +333,7 @@ public class MessageIdMapperTest<T extends MapperProvider> {
 
     @ContractTest
     public void setFlagsShouldReturnReplaceFlags() throws Exception {
-        Flags messageFlags = new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.FLAGGED)
-            .add("userflag")
+        Flags messageFlags = new FlagsBuilder().add(Flags.Flag.RECENT, Flags.Flag.FLAGGED)
             .build();
 
         message1.setUid(mapperProvider.generateMessageUid());
