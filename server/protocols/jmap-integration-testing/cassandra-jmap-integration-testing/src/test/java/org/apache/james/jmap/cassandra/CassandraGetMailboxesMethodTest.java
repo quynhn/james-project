@@ -25,7 +25,6 @@ import org.apache.james.jmap.methods.integration.GetMailboxesMethodTest;
 import org.junit.Ignore;
 import org.junit.Rule;
 
-@Ignore("needs messageIdManager cassandra impl")
 public class CassandraGetMailboxesMethodTest extends GetMailboxesMethodTest {
 
     @Rule 

@@ -26,7 +26,6 @@ import org.apache.james.util.date.ZonedDateTimeProvider;
 import org.junit.Ignore;
 import org.junit.Rule;
 
-@Ignore("needs messageIdManager cassandra impl")
 public class CassandraJmapAuthenticationTest extends JMAPAuthenticationTest {
 
     @Rule 

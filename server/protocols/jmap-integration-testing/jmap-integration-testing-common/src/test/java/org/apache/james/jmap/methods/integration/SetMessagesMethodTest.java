@@ -609,6 +609,7 @@ public abstract class SetMessagesMethodTest {
         await();
 
         String serializedMessageId = message.getMessageId().serialize();
+        System.out.println("serializedMessageId: " + serializedMessageId);
         given()
             .header("Authorization", accessToken.serialize())
             .body(String.format("[[\"setMessages\", {\"update\": {\"%s\" : { \"isAnswered\" : true } } }, \"#0\"]]", serializedMessageId))

@@ -25,7 +25,6 @@ import org.apache.james.jmap.VacationIntegrationTest;
 import org.junit.Ignore;
 import org.junit.Rule;
 
-@Ignore("needs messageIdManager cassandra impl")
 public class CassandraVacationIntegrationTest extends VacationIntegrationTest {
 
 
