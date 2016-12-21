@@ -23,7 +23,6 @@ import org.apache.james.JmapJamesServer;
 import org.apache.james.jmap.FixedDateZonedDateTimeProvider;
 import org.apache.james.jmap.JMAPAuthenticationTest;
 import org.apache.james.util.date.ZonedDateTimeProvider;
-import org.junit.Ignore;
 import org.junit.Rule;
 
 public class CassandraJmapAuthenticationTest extends JMAPAuthenticationTest {

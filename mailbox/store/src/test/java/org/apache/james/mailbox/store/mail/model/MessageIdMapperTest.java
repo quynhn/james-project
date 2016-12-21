@@ -355,6 +355,55 @@ public class MessageIdMapperTest<T extends MapperProvider> {
     }
 
     @ContractTest
+    public void setFlagsShouldReturnUpdatedFlagsWhenRemoveMode() throws Exception {
+        Flags messageFlags = new FlagsBuilder().add(Flags.Flag.RECENT, Flags.Flag.FLAGGED)
+            .build();
+
+        message1.setUid(mapperProvider.generateMessageUid());
+        message1.setFlags(messageFlags);
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
+        sut.save(message1);
+
+        MessageId messageId = message1.getMessageId();
+        Flags newFlags = new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.FLAGGED)
+            .add("userflag")
+            .build();
+
+        Map<MailboxId, UpdatedFlags> flags = sut.setFlags(messageId, ImmutableList.of(message1.getMailboxId()), newFlags, FlagsUpdateMode.REMOVE);
+
+        long modSeq = mapperProvider.highestModSeq(benwaInboxMailbox);
+        UpdatedFlags expectedUpdatedFlags = new UpdatedFlags(message1.getUid(), modSeq, messageFlags, new Flags(Flags.Flag.RECENT));
+
+        assertThat(flags).contains(MapEntry.entry(benwaInboxMailbox.getMailboxId(), expectedUpdatedFlags));
+    }
+
+    @ContractTest
+    public void setFlagsShouldUpdateMessageFlagsWhenRemoveMode() throws Exception {
+        Flags messageFlags = new FlagsBuilder().add(Flags.Flag.RECENT, Flags.Flag.FLAGGED)
+            .build();
+
+        message1.setUid(mapperProvider.generateMessageUid());
+        message1.setFlags(messageFlags);
+        message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
+        sut.save(message1);
+
+        MessageId messageId = message1.getMessageId();
+        Flags newFlags = new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.FLAGGED)
+            .add("userflag")
+            .build();
+
+        Map<MailboxId, UpdatedFlags> flags = sut.setFlags(messageId, ImmutableList.of(message1.getMailboxId()), newFlags, FlagsUpdateMode.REMOVE);
+
+        long modSeq = mapperProvider.highestModSeq(benwaInboxMailbox);
+        UpdatedFlags expectedUpdatedFlags = new UpdatedFlags(message1.getUid(), modSeq, messageFlags, new Flags(Flags.Flag.RECENT));
+
+        List<MailboxMessage> messages = sut.find(ImmutableList.of(messageId), MessageMapper.FetchType.Body);
+        assertThat(messages).hasSize(1);
+        assertThat(messages.get(0).isRecent()).isTrue();
+        assertThat(messages.get(0).isFlagged()).isFalse();
+    }
+
+    @ContractTest
     public void setFlagsShouldReturnEmptyWhenMailboxIdsIsEmpty() throws Exception {
         message1.setUid(mapperProvider.generateMessageUid());
         message1.setModSeq(mapperProvider.generateModSeq(benwaInboxMailbox));
