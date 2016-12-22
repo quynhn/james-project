@@ -496,6 +496,9 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     private boolean belongsToCurrentUser(Mailbox mailbox, MailboxSession session) {
+        if (session.getType() == SessionType.System) {
+            return true;
+        }
         return session.getUser().isSameUser(mailbox.getUser());
     }
 
