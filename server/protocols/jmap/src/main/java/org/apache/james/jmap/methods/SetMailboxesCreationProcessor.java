@@ -140,7 +140,7 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
     private void ensureValidMailboxName(MailboxCreateRequest mailboxRequest, MailboxSession mailboxSession) {
         String name = mailboxRequest.getName();
         if (name.length() >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE) {
-            throw new MailboxNameException(String.format("The mailbox '%s' is over limitation: %s", name, MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE));
+            throw new MailboxNameException(String.format("The mailbox name length '%s' is over limitation: %s", name, MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE));
         }
         char pathDelimiter = mailboxSession.getPathDelimiter();
         if (name.contains(String.valueOf(pathDelimiter))) {

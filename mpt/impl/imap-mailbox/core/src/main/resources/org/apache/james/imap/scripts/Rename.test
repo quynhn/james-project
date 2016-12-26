@@ -2608,3 +2608,15 @@ C: A140 DELETE moved
 S: A140 OK DELETE completed\.
 C: A141 DELETE moved
 S: A141 NO (.)*
+
+C: A142 CREATE newmailbox
+S: A142 OK CREATE completed.
+
+C: A143 RENAME newmailbox {256}
+S: \+
+C: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+C: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba
+S: A143 BAD RENAME too long mailbox name. Illegal arguments.
+
+C: A144 CREATE newmailbox1
+S: A144 OK CREATE completed.

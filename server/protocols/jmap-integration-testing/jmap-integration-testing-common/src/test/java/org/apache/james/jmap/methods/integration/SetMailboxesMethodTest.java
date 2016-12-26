@@ -337,15 +337,15 @@ public abstract class SetMailboxesMethodTest {
         given()
             .header("Authorization", this.accessToken.serialize())
             .body(requestBody)
-            .when()
+        .when()
             .post("/jmap")
-            .then()
+        .then()
             .statusCode(200)
             .body(NAME, equalTo("mailboxesSet"))
             .body(ARGUMENTS + ".notCreated", aMapWithSize(1))
             .body(ARGUMENTS + ".notCreated", hasEntry(equalTo("create-id01"), Matchers.allOf(
                     hasEntry(equalTo("type"), equalTo("invalidArguments")),
-                    hasEntry(equalTo("description"), equalTo("The mailbox '" + overLimitName + "' is over limitation: " + MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE)))
+                    hasEntry(equalTo("description"), equalTo("The mailbox name length '" + overLimitName + "' is over limitation: " + MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE)))
             ));
     }
 
@@ -371,15 +371,15 @@ public abstract class SetMailboxesMethodTest {
         given()
             .header("Authorization", this.accessToken.serialize())
             .body(requestBody)
-            .when()
+        .when()
             .post("/jmap")
-            .then()
+        .then()
             .statusCode(200)
             .body(NAME, equalTo("mailboxesSet"))
             .body(ARGUMENTS + ".notUpdated", aMapWithSize(1))
             .body(ARGUMENTS + ".notUpdated", hasEntry(equalTo(mailboxId), Matchers.allOf(
                     hasEntry(equalTo("type"), equalTo("invalidArguments")),
-                    hasEntry(equalTo("description"), equalTo("The mailbox '" + overLimitName + "' is over limitation: " + MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE)))
+                    hasEntry(equalTo("description"), equalTo("The mailbox name length '" + overLimitName + "' is over limitation: " + MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE)))
             ));
     }
 

@@ -62,18 +62,18 @@ C: 20 CREATE {256}
 S: \+
 C: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 C: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba
-S: 20 BAD CREATE failed. Illegal arguments.
+S: 20 BAD CREATE too long mailbox name. Illegal arguments.
 
 C: 21 DELETE {256}
 S: \+
 C: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 C: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba
-S: 21 BAD DELETE failed. Illegal arguments.
+S: 21 BAD DELETE too long mailbox name. Illegal arguments.
 
 # Cleanup
 C: a1 DELETE test1.subfolder1
 S: a1 OK DELETE completed.
-C: a1 DELETE test1
+C: a1 DELETE test1  
 S: a1 OK DELETE completed.
 C: a1 DELETE test.subfolder
 S: a1 OK DELETE completed.

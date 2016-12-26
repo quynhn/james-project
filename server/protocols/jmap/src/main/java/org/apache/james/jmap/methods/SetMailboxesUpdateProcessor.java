@@ -146,8 +146,8 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
         if (nameMatchesSystemMailbox(updateRequest)) {
             throw new MailboxNameException(String.format("The mailbox '%s' is a system mailbox.", updateRequest.getName().get()));
         }
-        if (nameOverLimitation(updateRequest)) {
-            throw new MailboxNameException(String.format("The mailbox '%s' is over limitation: %s", updateRequest.getName().get(), MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE));
+        if (nameLengthOverLimitation(updateRequest)) {
+            throw new MailboxNameException(String.format("The mailbox name length '%s' is over limitation: %s", updateRequest.getName().get(), MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE));
         }
     }
 
@@ -164,7 +164,7 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
                 .isPresent() ;
     }
 
-    private boolean nameOverLimitation(MailboxUpdateRequest updateRequest) {
+    private boolean nameLengthOverLimitation(MailboxUpdateRequest updateRequest) {
         return updateRequest.getName()
             .filter(name -> name.length() >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE)
             .isPresent() ;

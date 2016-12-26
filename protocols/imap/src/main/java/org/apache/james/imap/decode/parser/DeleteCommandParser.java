@@ -46,8 +46,8 @@ public class DeleteCommandParser extends AbstractImapCommandParser {
      */
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
         String mailboxName = request.mailbox();
-        if (mailboxName.length() > MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE) {
-            throw new DecodingException(HumanReadableText.ILLEGAL_ARGUMENTS, "The mailbox name is over limit: " + mailboxName);
+        if (mailboxName.length() >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE) {
+            throw new DecodingException(HumanReadableText.FAILURE_MAILBOX_NAME, "The mailbox name is over limit: " + mailboxName);
         }
         request.eol();
 
