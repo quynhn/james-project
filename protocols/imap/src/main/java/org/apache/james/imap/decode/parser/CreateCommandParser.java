@@ -22,11 +22,13 @@ import org.apache.james.imap.api.ImapCommand;
 import org.apache.james.imap.api.ImapConstants;
 import org.apache.james.imap.api.ImapMessage;
 import org.apache.james.imap.api.ImapSessionUtils;
+import org.apache.james.imap.api.display.HumanReadableText;
 import org.apache.james.imap.api.process.ImapSession;
 import org.apache.james.imap.decode.ImapRequestLineReader;
 import org.apache.james.imap.decode.base.AbstractImapCommandParser;
 import org.apache.james.imap.message.request.CreateRequest;
 import org.apache.james.mailbox.MailboxSession;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.protocols.imap.DecodingException;
 
 /**
@@ -46,6 +48,9 @@ public class CreateCommandParser extends AbstractImapCommandParser {
      */
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
         String mailboxName = request.mailbox();
+        if (mailboxName.length() > MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE) {
+            throw new DecodingException(HumanReadableText.ILLEGAL_ARGUMENTS, "The mailbox name is over limit: " + mailboxName);
+        }
 
         MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
 

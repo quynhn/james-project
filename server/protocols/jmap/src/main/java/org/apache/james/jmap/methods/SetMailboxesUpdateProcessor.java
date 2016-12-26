@@ -42,6 +42,7 @@ import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 
@@ -145,6 +146,9 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
         if (nameMatchesSystemMailbox(updateRequest)) {
             throw new MailboxNameException(String.format("The mailbox '%s' is a system mailbox.", updateRequest.getName().get()));
         }
+        if (nameOverLimitation(updateRequest)) {
+            throw new MailboxNameException(String.format("The mailbox '%s' is over limitation: %s", updateRequest.getName().get(), MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE));
+        }
     }
 
     private boolean nameMatchesSystemMailbox(MailboxUpdateRequest updateRequest) {
@@ -158,6 +162,12 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
         return updateRequest.getName()
                 .filter(name -> name.contains(String.valueOf(pathDelimiter)))
                 .isPresent() ;
+    }
+
+    private boolean nameOverLimitation(MailboxUpdateRequest updateRequest) {
+        return updateRequest.getName()
+            .filter(name -> name.length() >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE)
+            .isPresent() ;
     }
 
     private void validateParent(Mailbox mailbox, MailboxUpdateRequest updateRequest, MailboxSession mailboxSession) throws MailboxException, MailboxHasChildException {
