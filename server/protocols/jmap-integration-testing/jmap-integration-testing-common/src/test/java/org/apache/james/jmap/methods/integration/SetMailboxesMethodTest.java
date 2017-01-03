@@ -318,8 +318,8 @@ public abstract class SetMailboxesMethodTest {
     }
 
     @Test
-    public void setMailboxesShouldNotCreatedWhenOverLimitName() {
-        String overLimitName = StringUtils.leftPad("a", MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE, "b");
+    public void setMailboxesShouldNotCreateWhenOverLimitName() {
+        String overLimitName = StringUtils.repeat("a", MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE);
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -350,8 +350,8 @@ public abstract class SetMailboxesMethodTest {
     }
 
     @Test
-    public void setMailboxesShouldNotUpdatedMailboxWhenOverLimitName() {
-        String overLimitName = StringUtils.leftPad("a", MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE, "b");
+    public void setMailboxesShouldNotUpdateMailboxWhenOverLimitName() {
+        String overLimitName = StringUtils.repeat("a", MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE);
         jmapServer.serverProbe().createMailbox("#private", username, "myBox");
         Mailbox mailbox = jmapServer.serverProbe().getMailbox("#private", username, "myBox");
         String mailboxId = mailbox.getMailboxId().serialize();
