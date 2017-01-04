@@ -25,7 +25,6 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.apache.james.jmap.exceptions.MailboxNameException;
 import org.apache.james.jmap.exceptions.MailboxParentNotFoundException;
 import org.apache.james.jmap.model.MailboxCreationId;
 import org.apache.james.jmap.model.MailboxFactory;
@@ -41,8 +40,8 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
+import org.apache.james.mailbox.exception.MailboxNameException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
-import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxId.Factory;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -137,11 +136,8 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
         }
     }
 
-    private void ensureValidMailboxName(MailboxCreateRequest mailboxRequest, MailboxSession mailboxSession) {
+    private void ensureValidMailboxName(MailboxCreateRequest mailboxRequest, MailboxSession mailboxSession) throws MailboxNameException {
         String name = mailboxRequest.getName();
-        if (name.length() >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE) {
-            throw new MailboxNameException(String.format("The mailbox name length '%s' is over limitation: %s", name, MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE));
-        }
         char pathDelimiter = mailboxSession.getPathDelimiter();
         if (name.contains(String.valueOf(pathDelimiter))) {
             throw new MailboxNameException(String.format("The mailbox '%s' contains an illegal character: '%c'", name, pathDelimiter));

@@ -24,7 +24,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 import org.apache.james.jmap.exceptions.MailboxHasChildException;
-import org.apache.james.jmap.exceptions.MailboxNameException;
 import org.apache.james.jmap.exceptions.MailboxParentNotFoundException;
 import org.apache.james.jmap.exceptions.SystemMailboxNotUpdatableException;
 import org.apache.james.jmap.model.MailboxFactory;
@@ -41,8 +40,8 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.SubscriptionManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
+import org.apache.james.mailbox.exception.MailboxNameException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
-import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 
@@ -146,9 +145,6 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
         if (nameMatchesSystemMailbox(updateRequest)) {
             throw new MailboxNameException(String.format("The mailbox '%s' is a system mailbox.", updateRequest.getName().get()));
         }
-        if (nameLengthOverLimitation(updateRequest)) {
-            throw new MailboxNameException(String.format("The mailbox name length '%s' is over limitation: %s", updateRequest.getName().get(), MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE));
-        }
     }
 
     private boolean nameMatchesSystemMailbox(MailboxUpdateRequest updateRequest) {
@@ -162,12 +158,6 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
         return updateRequest.getName()
                 .filter(name -> name.contains(String.valueOf(pathDelimiter)))
                 .isPresent() ;
-    }
-
-    private boolean nameLengthOverLimitation(MailboxUpdateRequest updateRequest) {
-        return updateRequest.getName()
-            .filter(name -> name.length() >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE)
-            .isPresent() ;
     }
 
     private void validateParent(Mailbox mailbox, MailboxUpdateRequest updateRequest, MailboxSession mailboxSession) throws MailboxException, MailboxHasChildException {

@@ -46,6 +46,7 @@ import org.apache.james.mailbox.exception.AnnotationException;
 import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
+import org.apache.james.mailbox.exception.MailboxNameException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxAnnotation;
@@ -504,6 +505,9 @@ public class StoreMailboxManager implements MailboxManager {
         if (length == 0) {
             mailboxSession.getLog().warn("Ignoring mailbox with empty name");
         } else {
+            if (length >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE) {
+                throw new MailboxNameException(String.format("The mailbox name length '%s' is over limitation: %s", mailboxPath.getName(), MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE));
+            }
             if (mailboxPath.getName().charAt(length - 1) == getDelimiter())
                 mailboxPath.setName(mailboxPath.getName().substring(0, length - 1));
             if (mailboxExists(mailboxPath, mailboxSession))
@@ -541,6 +545,9 @@ public class StoreMailboxManager implements MailboxManager {
     @Override
     public void deleteMailbox(final MailboxPath mailboxPath, final MailboxSession session) throws MailboxException {
         session.getLog().info("deleteMailbox " + mailboxPath);
+        if (mailboxPath.getName().length() >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE) {
+            throw new MailboxNameException(String.format("The mailbox name length '%s' is over limitation: %s", mailboxPath.getName(), MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE));
+        }
         final MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
 
         Mailbox mailbox = mapper.execute(new Mapper.Transaction<Mailbox>() {
@@ -569,6 +576,9 @@ public class StoreMailboxManager implements MailboxManager {
         final Logger log = session.getLog();
         if (log.isDebugEnabled())
             log.debug("renameMailbox " + from + " to " + to);
+        if (to.getName().length() >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE) {
+            throw new MailboxNameException(String.format("The mailbox name length '%s' is over limitation: %s", to.getName(), MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE));
+        }
         if (mailboxExists(to, session)) {
             throw new MailboxExistsException(to.toString());
         }
