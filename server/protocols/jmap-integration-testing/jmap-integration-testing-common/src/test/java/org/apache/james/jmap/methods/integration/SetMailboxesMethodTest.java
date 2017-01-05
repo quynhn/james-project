@@ -319,7 +319,7 @@ public abstract class SetMailboxesMethodTest {
 
     @Test
     public void setMailboxesShouldNotCreateWhenOverLimitName() {
-        String overLimitName = StringUtils.repeat("a", MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE);
+        String overLimitName = StringUtils.repeat("a", MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH);
         String requestBody =
             "[" +
                 "  [ \"setMailboxes\"," +
@@ -345,13 +345,13 @@ public abstract class SetMailboxesMethodTest {
             .body(ARGUMENTS + ".notCreated", aMapWithSize(1))
             .body(ARGUMENTS + ".notCreated", hasEntry(equalTo("create-id01"), Matchers.allOf(
                     hasEntry(equalTo("type"), equalTo("invalidArguments")),
-                    hasEntry(equalTo("description"), equalTo("The mailbox name length '" + overLimitName + "' is over limitation: " + MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE)))
+                    hasEntry(equalTo("description"), equalTo("The mailbox name length '" + overLimitName + "' is over limitation: " + MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH)))
             ));
     }
 
     @Test
     public void setMailboxesShouldNotUpdateMailboxWhenOverLimitName() {
-        String overLimitName = StringUtils.repeat("a", MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE);
+        String overLimitName = StringUtils.repeat("a", MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH);
         jmapServer.serverProbe().createMailbox("#private", username, "myBox");
         Mailbox mailbox = jmapServer.serverProbe().getMailbox("#private", username, "myBox");
         String mailboxId = mailbox.getMailboxId().serialize();
@@ -379,7 +379,7 @@ public abstract class SetMailboxesMethodTest {
             .body(ARGUMENTS + ".notUpdated", aMapWithSize(1))
             .body(ARGUMENTS + ".notUpdated", hasEntry(equalTo(mailboxId), Matchers.allOf(
                     hasEntry(equalTo("type"), equalTo("invalidArguments")),
-                    hasEntry(equalTo("description"), equalTo("The mailbox name length '" + overLimitName + "' is over limitation: " + MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE)))
+                    hasEntry(equalTo("description"), equalTo("The mailbox name length '" + overLimitName + "' is over limitation: " + MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH)))
             ));
     }
 

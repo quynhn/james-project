@@ -47,9 +47,6 @@ public class RenameCommandParser extends AbstractImapCommandParser {
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
         final String existingName = request.mailbox();
         final String newName = request.mailbox();
-        if (newName.length() >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_SIZE) {
-            throw new DecodingException(HumanReadableText.FAILURE_MAILBOX_NAME, "The mailbox name is over limit: " + newName);
-        }
         request.eol();
         return new RenameRequest(command, existingName, newName, tag);
     }
