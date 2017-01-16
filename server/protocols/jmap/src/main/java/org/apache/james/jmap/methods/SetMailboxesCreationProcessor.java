@@ -42,6 +42,8 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNameException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.exception.TooLongMailboxNameException;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxId.Factory;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -111,10 +113,16 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
                 creationIdsToCreatedMailboxId.put(mailboxCreationId, mailbox.get().getId());
             } else {
                 builder.notCreated(mailboxCreationId, SetError.builder()
-                        .type("anErrorOccurred")
-                        .description("An error occurred when creating the mailbox")
-                        .build());
+                    .type("anErrorOccurred")
+                    .description("An error occurred when creating the mailbox")
+                    .build());
             }
+        } catch (TooLongMailboxNameException e) {
+            String message = String.format("The mailbox name length '%s' is over limitation: %s", mailboxCreationId.getCreationId(), MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH);
+            builder.notCreated(mailboxCreationId, SetError.builder()
+                .type("invalidArguments")
+                .description(message)
+                .build());
         } catch (MailboxNameException | MailboxParentNotFoundException e) {
             builder.notCreated(mailboxCreationId, SetError.builder()
                     .type("invalidArguments")

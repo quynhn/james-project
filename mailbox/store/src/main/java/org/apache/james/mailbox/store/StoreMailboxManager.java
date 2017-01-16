@@ -48,6 +48,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNameException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.exception.TooLongMailboxNameException;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxAnnotationKey;
@@ -916,7 +917,7 @@ public class StoreMailboxManager implements MailboxManager {
 
     private void validateMailboxName(String mailboxName) throws MailboxNameException {
         if (mailboxName.length() >= MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH) {
-            throw new MailboxNameException(String.format("The mailbox name length '%s' is over limitation: %s", mailboxName, MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH));
+            throw new TooLongMailboxNameException("too long mailbox name");
         }
     }
 }

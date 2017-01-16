@@ -42,6 +42,8 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNameException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.exception.TooLongMailboxNameException;
+import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 
@@ -92,6 +94,12 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
                     .type("invalidArguments")
                     .description("Cannot update a system mailbox.")
                     .build());
+        } catch (TooLongMailboxNameException e) {
+            String message = String.format("The mailbox name length '%s' is over limitation: %s", mailboxId, MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH);
+            responseBuilder.notUpdated(mailboxId, SetError.builder()
+                .type("invalidArguments")
+                .description(message)
+                .build());
         } catch (MailboxNameException e) {
             responseBuilder.notUpdated(mailboxId, SetError.builder()
                     .type("invalidArguments")
