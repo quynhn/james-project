@@ -46,6 +46,7 @@ public class CreateCommandParser extends AbstractImapCommandParser {
      */
     protected ImapMessage decode(ImapCommand command, ImapRequestLineReader request, String tag, ImapSession session) throws DecodingException {
         String mailboxName = request.mailbox();
+
         MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
 
         // Check if we have an mailboxsession. This is a workaround for
