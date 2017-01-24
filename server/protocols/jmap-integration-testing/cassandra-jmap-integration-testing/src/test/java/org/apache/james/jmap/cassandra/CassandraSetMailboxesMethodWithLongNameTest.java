@@ -21,10 +21,10 @@ package org.apache.james.jmap.cassandra;
 
 import org.apache.james.CassandraJmapTestRule;
 import org.apache.james.JmapJamesServer;
-import org.apache.james.jmap.methods.integration.SetMailboxesErrorWithLongNameMethodTest;
+import org.apache.james.jmap.methods.integration.SetMailboxesMethodErrorWithLongNameTest;
 import org.junit.Rule;
 
-public class CassandraSetMailboxesWithLongNameMethodTest extends SetMailboxesErrorWithLongNameMethodTest {
+public class CassandraSetMailboxesMethodWithLongNameTest extends SetMailboxesMethodErrorWithLongNameTest {
 
     @Rule
     public CassandraJmapTestRule rule = new CassandraJmapTestRule();
