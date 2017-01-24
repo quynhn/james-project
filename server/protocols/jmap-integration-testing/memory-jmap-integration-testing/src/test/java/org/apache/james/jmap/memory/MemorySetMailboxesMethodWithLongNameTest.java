@@ -21,10 +21,10 @@ package org.apache.james.jmap.memory;
 
 import org.apache.james.JmapJamesServer;
 import org.apache.james.MemoryJmapTestRule;
-import org.apache.james.jmap.methods.integration.SetMailboxesSuccessWithLongNameMethodTest;
+import org.apache.james.jmap.methods.integration.SetMailboxesMethodSuccessWithLongNameTest;
 import org.junit.Rule;
 
-public class MemorySetMailboxesWithLongNameMethodTest extends SetMailboxesSuccessWithLongNameMethodTest {
+public class MemorySetMailboxesMethodWithLongNameTest extends SetMailboxesMethodSuccessWithLongNameTest {
     @Rule
     public MemoryJmapTestRule memoryJmap = new MemoryJmapTestRule();
 
