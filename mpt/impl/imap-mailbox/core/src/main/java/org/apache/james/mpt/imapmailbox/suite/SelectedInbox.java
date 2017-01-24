@@ -60,12 +60,6 @@ public class SelectedInbox extends BaseSelectedInbox {
     public void testCreateUS() throws Exception {
         scriptTest("Create", Locale.US);
     }
-
-    @Test
-    public void testWithLongMailboxNameUS() throws Exception {
-        scriptTest("CreateWithLongName", Locale.US);
-    }
-
     @Test
     public void testExamineEmptyUS() throws Exception {
         scriptTest("ExamineEmpty", Locale.US);
@@ -135,7 +129,7 @@ public class SelectedInbox extends BaseSelectedInbox {
     public void testCreateITALY() throws Exception {
         scriptTest("Create", Locale.ITALY);
     }
-    
+
     @Test
     public void testExamineEmptyITALY() throws Exception {
         scriptTest("ExamineEmpty", Locale.ITALY);
