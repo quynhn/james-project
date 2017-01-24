@@ -44,6 +44,7 @@ import org.apache.james.mailbox.cassandra.table.CassandraMailboxTable;
 import org.apache.james.mailbox.cassandra.table.CassandraMailboxTable.MailboxBase;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.exception.TooLongMailboxNameException;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -54,6 +55,7 @@ import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.base.Preconditions;
 
@@ -84,11 +86,15 @@ public class CassandraMailboxMapper implements MailboxMapper {
 
     @Override
     public Mailbox findMailboxByPath(MailboxPath path) throws MailboxException {
-        ResultSet resultSet = session.execute(select(FIELDS).from(TABLE_NAME).where(eq(PATH, path.toString())));
-        if (resultSet.isExhausted()) {
-            throw new MailboxNotFoundException(path);
-        } else {
-            return mailbox(resultSet.one());
+        try {
+            ResultSet resultSet = session.execute(select(FIELDS).from(TABLE_NAME).where(eq(PATH, path.toString())));
+            if (resultSet.isExhausted()) {
+                throw new MailboxNotFoundException(path);
+            } else {
+                return mailbox(resultSet.one());
+            }
+        } catch (InvalidQueryException e) {
+            throw new TooLongMailboxNameException("too long mailbox name");
         }
     }
 
