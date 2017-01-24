@@ -120,10 +120,9 @@ public class SetMailboxesDestructionProcessor implements SetMailboxesProcessor {
                 .description(String.format("The mailbox '%s' is a system mailbox.", entry.getKey().serialize()))
                 .build());
         } catch (TooLongMailboxNameException e) {
-            String message = String.format("The mailbox name length '%s' is over limitation: %s", entry.getKey(), MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH);
             builder.notDestroyed(entry.getKey(), SetError.builder()
                 .type("invalidArguments")
-                .description(message)
+                .description("The mailbox name length is too long")
                 .build());
         } catch (MailboxException e) {
             String message = String.format("An error occurred when deleting the mailbox '%s'", entry.getKey().serialize());
