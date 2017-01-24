@@ -95,7 +95,7 @@ public class SetMailboxesUpdateProcessor implements SetMailboxesProcessor {
                     .description("Cannot update a system mailbox.")
                     .build());
         } catch (TooLongMailboxNameException e) {
-            String message = String.format("The mailbox name length '%s' is over limitation: %s", mailboxId, MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH);
+            String message = String.format("The mailbox name length is over limitation: %s", MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH);
             responseBuilder.notUpdated(mailboxId, SetError.builder()
                 .type("invalidArguments")
                 .description(message)

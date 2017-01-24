@@ -118,7 +118,7 @@ public class SetMailboxesCreationProcessor implements SetMailboxesProcessor {
                     .build());
             }
         } catch (TooLongMailboxNameException e) {
-            String message = String.format("The mailbox name length '%s' is over limitation: %s", mailboxCreationId.getCreationId(), MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH);
+            String message = String.format("The mailbox name length is over limitation: %s", MailboxConstants.DEFAULT_LIMIT_MAILBOX_NAME_LENGTH);
             builder.notCreated(mailboxCreationId, SetError.builder()
                 .type("invalidArguments")
                 .description(message)
