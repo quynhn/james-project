@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.mailbox.cassandra.CassandraId;
@@ -65,6 +66,9 @@ import com.google.common.base.Preconditions;
 public class CassandraMailboxMapper implements MailboxMapper {
 
     public static final String WILDCARD = "%";
+
+    public static final String VALUES_MAY_NOT_BE_LARGER_THAN_64_K = "Index expression values may not be larger than 64K";
+
     private final Session session;
     private final int maxRetry;
     private final CassandraTypesProvider typesProvider;
@@ -94,7 +98,10 @@ public class CassandraMailboxMapper implements MailboxMapper {
                 return mailbox(resultSet.one());
             }
         } catch (InvalidQueryException e) {
-            throw new TooLongMailboxNameException("too long mailbox name");
+            if (StringUtils.containsIgnoreCase(e.getMessage(), VALUES_MAY_NOT_BE_LARGER_THAN_64_K)) {
+                throw new TooLongMailboxNameException("too long mailbox name");
+            }
+            throw new MailboxException("It has error with cassandra storage", e);
         }
     }
 
