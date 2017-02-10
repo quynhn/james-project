@@ -120,7 +120,7 @@ public class CassandraMailboxMapper implements MailboxMapper {
     public List<Mailbox> findMailboxWithPathLike(MailboxPath path) throws MailboxException {
         Pattern regex = Pattern.compile(constructEscapedRegexForMailboxNameMatching(path));
         return getMailboxFilteredByNamespaceAndUserStream(path.getNamespace(), path.getUser())
-            .filter((row) -> regex.matcher(row.getString(NAME)).matches())
+            .filter((row) -> regex.matcher(row.getString(NAME).toLowerCase()).matches())
             .map(this::mailbox)
             .collect(Collectors.toList());
     }

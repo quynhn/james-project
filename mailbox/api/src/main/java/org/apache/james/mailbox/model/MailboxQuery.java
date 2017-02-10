@@ -201,10 +201,10 @@ public final class MailboxQuery {
             if (name == null) {
                 result = false;
             } else {
-                result = pattern.matcher(name).matches();
+                result = pattern.matcher(name.toLowerCase()).matches();
             }
         } else {
-            result = expression.equals(name);
+            result = expression.equalsIgnoreCase(name);
         }
         return result;
     }
