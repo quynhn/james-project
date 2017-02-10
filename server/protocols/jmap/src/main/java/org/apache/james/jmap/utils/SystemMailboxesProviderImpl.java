@@ -55,7 +55,7 @@ public class SystemMailboxesProviderImpl implements SystemMailboxesProvider {
     }
 
     public Stream<MessageManager> getMailboxByRole(Role aRole, MailboxSession session) throws MailboxException {
-        MailboxPath mailboxPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, session.getUser().getUserName(), aRole.serialize());
+        MailboxPath mailboxPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, session.getUser().getUserName(), aRole.getDefaultMailbox());
         try {
             return Stream.of(mailboxManager.getMailbox(mailboxPath, session));
         } catch (MailboxNotFoundException e) {
@@ -67,7 +67,7 @@ public class SystemMailboxesProviderImpl implements SystemMailboxesProvider {
         ThrowingFunction<MailboxPath, MessageManager> loadMailbox = path -> mailboxManager.getMailbox(path, session);
         MailboxQuery mailboxQuery = MailboxQuery.builder(session)
             .privateUserMailboxes()
-            .expression(aRole.serialize())
+            .expression(aRole.getDefaultMailbox())
             .build();
         return mailboxManager.search(mailboxQuery, session)
             .stream()
