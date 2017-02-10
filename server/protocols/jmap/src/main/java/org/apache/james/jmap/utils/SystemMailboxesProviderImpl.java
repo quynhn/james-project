@@ -44,7 +44,7 @@ public class SystemMailboxesProviderImpl implements SystemMailboxesProvider {
         this.mailboxManager = mailboxManager;
     }
 
-    public Stream<MessageManager> listMailboxes(Role aRole, MailboxSession session) throws MailboxException {
+    public Stream<MessageManager> getMailboxByRole(Role aRole, MailboxSession session) throws MailboxException {
         MailboxPath mailboxPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, session.getUser().getUserName(), aRole.serialize());
         try {
             return Stream.of(mailboxManager.getMailbox(mailboxPath, session));
