@@ -95,6 +95,7 @@ public class DefaultMailboxesProvisioningFilter implements Filter {
     private void createMailbox(MailboxPath mailboxPath, MailboxSession session) {
         try {
             mailboxManager.createMailbox(mailboxPath, session);
+            mailboxManager.getMailbox(mailboxPath, session);
         } catch (MailboxException e) {
             throw Throwables.propagate(e);
         }
