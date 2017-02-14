@@ -41,6 +41,7 @@ import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.backends.cassandra.utils.CassandraUtils;
 import org.apache.james.mailbox.cassandra.CassandraId;
+import org.apache.james.mailbox.cassandra.mail.utils.MailboxBaseTupleUtil;
 import org.apache.james.mailbox.cassandra.table.CassandraMailboxTable;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -51,13 +52,12 @@ import org.apache.james.util.CompletableFutureUtil;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.UDTValue;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 public class CassandraMailboxDAO {
 
     private final CassandraAsyncExecutor executor;
-    private final CassandraTypesProvider typesProvider;
+    private final MailboxBaseTupleUtil mailboxBaseTupleUtil;
     private final Session session;
     private final int maxAclRetry;
     private final PreparedStatement readStatement;
@@ -68,7 +68,7 @@ public class CassandraMailboxDAO {
 
     public CassandraMailboxDAO(Session session, CassandraTypesProvider typesProvider, int maxAclRetry) {
         this.executor = new CassandraAsyncExecutor(session);
-        this.typesProvider = typesProvider;
+        this.mailboxBaseTupleUtil = new MailboxBaseTupleUtil(typesProvider);
         this.session = session;
         this.insertStatement = prepareInsert(session);
         this.updateStatement = prepareUpdate(session);
@@ -116,7 +116,7 @@ public class CassandraMailboxDAO {
             .setUUID(ID, cassandraId.asUuid())
             .setString(NAME, mailbox.getName())
             .setLong(UIDVALIDITY, mailbox.getUidValidity())
-            .setUDTValue(MAILBOX_BASE, createMailboxBaseUDT(mailbox.getNamespace(), mailbox.getUser()))
+            .setUDTValue(MAILBOX_BASE, mailboxBaseTupleUtil.createMailboxBaseUDT(mailbox.getNamespace(), mailbox.getUser()))
             .setString(PATH, path(mailbox).asString()));
     }
 
@@ -125,14 +125,7 @@ public class CassandraMailboxDAO {
             .setUUID(ID, mailboxId.asUuid())
             .setString(PATH, mailboxPath.asString())
             .setString(NAME, mailboxPath.getName())
-            .setUDTValue(MAILBOX_BASE, createMailboxBaseUDT(mailboxPath.getNamespace(), mailboxPath.getUser())));
-    }
-
-    private UDTValue createMailboxBaseUDT(String namespace, String user) {
-        return typesProvider.getDefinedUserType(CassandraMailboxTable.MAILBOX_BASE)
-            .newValue()
-            .setString(CassandraMailboxTable.MailboxBase.NAMESPACE, namespace)
-            .setString(CassandraMailboxTable.MailboxBase.USER, user);
+            .setUDTValue(MAILBOX_BASE, mailboxBaseTupleUtil.createMailboxBaseUDT(mailboxPath.getNamespace(), mailboxPath.getUser())));
     }
 
     public CompletableFuture<Void> delete(CassandraId mailboxId) {
