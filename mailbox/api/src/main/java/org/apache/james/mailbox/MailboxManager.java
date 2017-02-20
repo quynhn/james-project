@@ -29,6 +29,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.exception.UnsupportedRightException;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxAnnotation;
 import org.apache.james.mailbox.model.MailboxAnnotationKey;
@@ -468,4 +469,6 @@ public interface MailboxManager extends RequestAware, MailboxListenerSupport {
     void updateAnnotations(MailboxPath mailboxPath, MailboxSession session, List<MailboxAnnotation> mailboxAnnotations) throws MailboxException, AnnotationException;
     
     boolean hasChildren(MailboxPath mailboxPath, MailboxSession session) throws MailboxException;
+
+    void saveFlags(ApplicableFlag flag, MailboxSession session) throws MailboxException;
 }

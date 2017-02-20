@@ -37,6 +37,7 @@ import org.apache.james.mailbox.MessageManager.MetaData.FetchGroup;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.manager.MailboxManagerFixture;
 import org.apache.james.mailbox.mock.MockMailboxSession;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.FetchGroupImpl;
 import org.apache.james.mailbox.model.MailboxQuery;
@@ -358,6 +359,22 @@ public abstract class AbstractCombinationManagerTest {
         assertThat(messageManager2.getMessages(MessageRange.all(), FetchGroupImpl.MINIMAL, session))
             .hasSize(1)
             .extractingResultOf("getMessageId").containsOnly(messageId);
+    }
+
+    @Test
+    public void appendMessageFromMessageManagerShouldUpdateMailboxFlag() throws Exception {
+        Flags messageFlag = new Flags(Flag.ANSWERED);
+        //messageFlag.
+        FlagsUpdateCalculator flagsUpdateCalculator = new FlagsUpdateCalculator(messageFlag, FlagsUpdateMode.ADD);
+        Flags newFlags = flagsUpdateCalculator.buildNewFlags(messageManager1.getMailboxFlags(session).getFlags());
+        messageManager1.appendMessage(new ByteArrayInputStream(MAIL_CONTENT), new Date(), session, false, messageFlag).getMessageId();
+
+        ApplicableFlag mailboxFlag = messageManager1.getMailboxFlags(session);
+
+        assertThat(mailboxFlag).isNotNull();
+        assertThat(mailboxFlag.getMailboxId()).isEqualTo(mailbox1.getMailboxId());
+        System.out.println("New flag: " + newFlags.contains(Flag.ANSWERED) + " || " + newFlags.contains(Flag.DELETED));
+        assertThat(mailboxFlag.getFlags().contains(Flag.ANSWERED)).isTrue();
     }
 
     private Predicate<MessageResult> messageInMailbox2() {

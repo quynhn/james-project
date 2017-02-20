@@ -16,33 +16,46 @@
  * specific language governing permissions and limitations      *
  * under the License.                                           *
  ****************************************************************/
-package org.apache.james.mailbox.cassandra.table;
+
+package org.apache.james.mailbox.model;
+
+import java.util.Set;
 
 import javax.mail.Flags;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Objects;
 
-public interface Flag {
+public class ApplicableFlag {
+    private final MailboxId mailboxId;
+    private final Flags flags;
 
-    String ANSWERED = "flagAnswered";
-    String DELETED = "flagDeleted";
-    String DRAFT = "flagDraft";
-    String RECENT = "flagRecent";
-    String SEEN = "flagSeen";
-    String FLAGGED = "flagFlagged";
-    String USER = "flagUser";
-    String USER_FLAGS = "userFlags";
+    public ApplicableFlag(MailboxId mailboxId, Flags flags) {
+        this.mailboxId = mailboxId;
+        this.flags = flags;
+    }
 
-    String[] ALL = { ANSWERED, DELETED, DRAFT, RECENT, SEEN, FLAGGED, USER };
-    String[] ALL_APPLICABLE_FLAG = { ANSWERED, DELETED, DRAFT, SEEN, FLAGGED };
+    public MailboxId getMailboxId() {
+        return mailboxId;
+    }
 
-    ImmutableMap<String, Flags.Flag> JAVAX_MAIL_FLAG = ImmutableMap.<String, Flags.Flag>builder()
-        .put(ANSWERED, Flags.Flag.ANSWERED)
-        .put(DELETED, Flags.Flag.DELETED)
-        .put(DRAFT, Flags.Flag.DRAFT)
-        .put(RECENT, Flags.Flag.RECENT)
-        .put(SEEN, Flags.Flag.SEEN)
-        .put(FLAGGED, Flags.Flag.FLAGGED)
-        .put(USER, Flags.Flag.USER)
-        .build();
+    public Flags getFlags() {
+        return flags;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof ApplicableFlag) {
+            ApplicableFlag that = (ApplicableFlag) o;
+
+            return Objects.equal(this.mailboxId, that.mailboxId)
+                && Objects.equal(this.flags, that.flags);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hashCode(mailboxId, flags);
+    }
+
 }

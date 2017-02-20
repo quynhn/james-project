@@ -28,6 +28,8 @@ import java.util.concurrent.CompletionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.mail.Flags;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.mailbox.cassandra.CassandraId;
@@ -35,6 +37,7 @@ import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxExistsException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.exception.TooLongMailboxNameException;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -59,10 +62,12 @@ public class CassandraMailboxMapper implements MailboxMapper {
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final CassandraMailboxPathDAO mailboxPathDAO;
     private final CassandraMailboxDAO mailboxDAO;
+    private final CassandraApplicableFlagDAO applicableFlagDAO;
     private final Session session;
 
-    public CassandraMailboxMapper(Session session, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathDAO mailboxPathDAO, int maxRetry) {
+    public CassandraMailboxMapper(Session session, CassandraMailboxDAO mailboxDAO, CassandraMailboxPathDAO mailboxPathDAO, CassandraApplicableFlagDAO applicableFlagDAO, int maxRetry) {
         this.maxRetry = maxRetry;
+        this.applicableFlagDAO = applicableFlagDAO;
         this.cassandraAsyncExecutor = new CassandraAsyncExecutor(session);
         this.mailboxDAO = mailboxDAO;
         this.mailboxPathDAO = mailboxPathDAO;
@@ -198,6 +203,19 @@ public class CassandraMailboxMapper implements MailboxMapper {
     public void updateACL(Mailbox mailbox, MailboxACL.MailboxACLCommand mailboxACLCommand) throws MailboxException {
         CassandraId cassandraId = (CassandraId) mailbox.getMailboxId();
         new CassandraACLMapper(cassandraId, session, cassandraAsyncExecutor, maxRetry).updateACL(mailboxACLCommand);
+    }
+
+    @Override
+    public ApplicableFlag getMailboxFlag(MailboxId mailboxId) throws MailboxException {
+        return applicableFlagDAO.retrieveId((CassandraId) mailboxId)
+            .join()
+            .orElse(new ApplicableFlag(mailboxId, new Flags()));
+    }
+
+    @Override
+    public void saveMailboxFlag(ApplicableFlag flag) throws MailboxException {
+        applicableFlagDAO.insert(flag)
+            .join();
     }
 
     @Override

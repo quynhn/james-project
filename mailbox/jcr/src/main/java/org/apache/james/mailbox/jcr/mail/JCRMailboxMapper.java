@@ -39,6 +39,7 @@ import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.jcr.AbstractJCRScalingMapper;
 import org.apache.james.mailbox.jcr.MailboxSessionJCRRepository;
 import org.apache.james.mailbox.jcr.mail.model.JCRMailbox;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -252,5 +253,15 @@ public class JCRMailboxMapper extends AbstractJCRScalingMapper implements Mailbo
     @Override
     public void updateACL(Mailbox mailbox, MailboxACL.MailboxACLCommand mailboxACLCommand) throws MailboxException {
         mailbox.setACL(mailbox.getACL().apply(mailboxACLCommand));
+    }
+
+    @Override
+    public ApplicableFlag getMailboxFlag(MailboxId mailboxId) throws MailboxException {
+        return null;
+    }
+
+    @Override
+    public void saveMailboxFlag(ApplicableFlag flag) throws MailboxException {
+
     }
 }

@@ -29,6 +29,7 @@ import javax.mail.Flags;
 
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.UnsupportedCriteriaException;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxId;
@@ -185,6 +186,17 @@ public interface MessageManager {
      * @throws MailboxException
      */
     MetaData getMetaData(boolean resetRecent, MailboxSession mailboxSession, MessageManager.MetaData.FetchGroup fetchGroup) throws MailboxException;
+
+    /**
+     * Get current flags for the mailbox but it does not include RECENT flag <br/>
+     * The flag of mailbox should be union by all flags of all messages belong to mailbox
+     *
+     * @param mailboxSession
+     *             context, not null
+     * @return flags of mailbox
+     * @throws MailboxException
+     */
+    ApplicableFlag getMailboxFlags(MailboxSession mailboxSession) throws MailboxException;
 
     /**
      * Meta data about the current state of the mailbox.

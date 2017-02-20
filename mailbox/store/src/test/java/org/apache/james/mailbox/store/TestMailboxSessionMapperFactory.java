@@ -37,6 +37,7 @@ import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.SubscriptionException;
 import org.apache.james.mailbox.manager.MailboxManagerFixture;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -144,6 +145,16 @@ public class TestMailboxSessionMapperFactory extends MailboxSessionMapperFactory
 
             @Override
             public List<Mailbox> list() throws MailboxException {
+                throw new NotImplementedException();
+            }
+
+            @Override
+            public ApplicableFlag getMailboxFlag(MailboxId mailboxId) throws MailboxException {
+                throw new NotImplementedException();
+            }
+
+            @Override
+            public void saveMailboxFlag(ApplicableFlag flag) throws MailboxException {
                 throw new NotImplementedException();
             }
 

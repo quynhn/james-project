@@ -47,6 +47,7 @@ public class CassandraMailboxMapperTest {
     public static final int OPERATION_COUNT = 10;
     private CassandraCluster cassandra;
     private CassandraMailboxPathDAO mailboxPathDAO;
+    private CassandraApplicableFlagDAO applicableFlagDAO;
     private CassandraMailboxMapper testee;
 
     @Before
@@ -56,7 +57,7 @@ public class CassandraMailboxMapperTest {
 
         CassandraMailboxDAO mailboxDAO = new CassandraMailboxDAO(cassandra.getConf(), cassandra.getTypesProvider(), MAX_RETRY);
         mailboxPathDAO = new CassandraMailboxPathDAO(cassandra.getConf(), cassandra.getTypesProvider());
-        testee = new CassandraMailboxMapper(cassandra.getConf(), mailboxDAO, mailboxPathDAO, MAX_RETRY);
+        testee = new CassandraMailboxMapper(cassandra.getConf(), mailboxDAO, mailboxPathDAO, applicableFlagDAO, MAX_RETRY);
     }
 
     @After

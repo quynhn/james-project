@@ -33,6 +33,7 @@ import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.jpa.JPAId;
 import org.apache.james.mailbox.jpa.JPATransactionalMapper;
 import org.apache.james.mailbox.jpa.mail.model.JPAMailbox;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -206,5 +207,15 @@ public class JPAMailboxMapper extends JPATransactionalMapper implements MailboxM
     @Override
     public void updateACL(Mailbox mailbox, MailboxACL.MailboxACLCommand mailboxACLCommand) throws MailboxException {
         mailbox.setACL(mailbox.getACL().apply(mailboxACLCommand));
+    }
+
+    @Override
+    public ApplicableFlag getMailboxFlag(MailboxId mailboxId) throws MailboxException {
+        return null;
+    }
+
+    @Override
+    public void saveMailboxFlag(ApplicableFlag flag) throws MailboxException {
+
     }
 }

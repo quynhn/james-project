@@ -49,6 +49,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.Content;
 import org.apache.james.mailbox.model.Headers;
@@ -320,6 +321,11 @@ public class MailboxEventAnalyserTest {
                 public MailboxPath getMailboxPath() {
                     return null;
                 }
+
+                @Override
+                public ApplicableFlag getMailboxFlags(MailboxSession mailboxSession) throws MailboxException {
+                    throw new UnsupportedOperationException("Not implemented");
+                }
             };
         }
 
@@ -414,6 +420,11 @@ public class MailboxEventAnalyserTest {
 
         @Override
         public MailboxSession loginAsOtherUser(String adminUserId, String passwd, String realUserId, Logger log) throws BadCredentialsException, MailboxException {
+            throw new UnsupportedOperationException("Not implemented");
+        }
+
+        @Override
+        public void saveFlags(ApplicableFlag flag, MailboxSession session) throws MailboxException {
             throw new UnsupportedOperationException("Not implemented");
         }
     };

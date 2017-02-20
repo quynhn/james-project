@@ -102,15 +102,6 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
         IdRange[] knownSequences = request.getKnownSequenceSet();
         UidRange[] knownUids = request.getKnownUidSet();
 
-        // Check if a QRESYNC parameter was used and if so if QRESYNC was enabled before.
-        // If it was not enabled before its needed to return a BAD response
-        //
-        // From RFC5162 3.1. QRESYNC Parameter to SELECT/EXAMINE
-        //
-        //    A server MUST respond with a tagged BAD response if the Quick
-        //    Resynchronization parameter to SELECT/EXAMINE command is specified
-        //    and the client hasn't issued "ENABLE QRESYNC" in the current
-        //    connection.
         if (lastKnownUidValidity != null && !EnableProcessor.getEnabledCapabilities(session).contains(ImapConstants.SUPPORTS_QRESYNC)) {
             taggedBad(command, tag, responder, HumanReadableText.QRESYNC_NOT_ENABLED);
             return;
@@ -164,15 +155,8 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
                 final MailboxSession mailboxSession = ImapSessionUtils.getMailboxSession(session);
                 final MessageManager mailbox = mailboxManager.getMailbox(fullMailboxPath, mailboxSession);
                
-                
-                //  If the provided UIDVALIDITY matches that of the selected mailbox, the
-                //  server then checks the last known modification sequence.
-                //
-                //  The server sends the client any pending flag changes (using FETCH
-                //  responses that MUST contain UIDs) and expunges those that have
-                //  occurred in this mailbox since the provided modification sequence.
-                SearchQuery sq = new SearchQuery();
-                sq.andCriteria(SearchQuery.modSeqGreaterThan(request.getKnownModSeq()));
+//                SearchQuery sq = new SearchQuery();
+//                sq.andCriteria(SearchQuery.modSeqGreaterThan(request.getKnownModSeq()));
                 
                 UidRange[] uidSet = request.getUidSet();
 
@@ -186,32 +170,6 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
                 }
                 
                 if (uidSet != null) {
-                    // RFC5162 3.1. QRESYNC Parameter to SELECT/EXAMINE
-                    //
-                    // Message sequence match data:
-                    //
-                    //      A client MAY provide a parenthesized list of a message sequence set
-                    //      and the corresponding UID sets.  Both MUST be provided in ascending
-                    //      order.  The server uses this data to restrict the range for which it
-                    //      provides expunged message information.
-                    //
-                    //
-                    //      Conceptually, the client provides a small sample of sequence numbers
-                    //      for which it knows the corresponding UIDs.  The server then compares
-                    //      each sequence number and UID pair the client provides with the
-                    //      current state of the mailbox.  If a pair matches, then the client
-                    //      knows of any expunges up to, and including, the message, and thus
-                    //      will not include that range in the VANISHED response, even if the
-                    //      "mod-sequence-value" provided by the client is too old for the server
-                    //      to have data of when those messages were expunged.
-                    //
-                    //      Thus, if the Nth message number in the first set in the list is 4,
-                    //      and the Nth UID in the second set in the list is 8, and the mailbox's
-                    //      fourth message has UID 8, then no UIDs equal to or less than 8 are
-                    //      present in the VANISHED response.  If the (N+1)th message number is
-                    //      12, and the (N+1)th UID is 24, and the (N+1)th message in the mailbox
-                    //      has UID 25, then the lowest UID included in the VANISHED response
-                    //      would be 9.
                     if (knownSequences != null && knownUids != null) {
                         
                         // Add all uids which are contained in the knownuidsset to a List so we can later access them via the index
@@ -221,9 +179,7 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
                                 knownUidsList.add(uid);
                             }
                         }
-                       
-                        
-                        
+
                         // loop over the known sequences and check the UID for MSN X again the known UID X 
                         MessageUid firstUid = MessageUid.MIN_VALUE;
                         int index = 0;
@@ -248,7 +204,6 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
                                     done = true;
                                     break;
                                 }
-
                             }
 
                             // We found the first uid to start with 
@@ -271,8 +226,6 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
                                 break;
                             }
                         }
-                        
-                        
                     }
                     
                     List<MessageRange> ranges = new ArrayList<MessageRange>();
@@ -283,31 +236,7 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
                             ranges.add(normalizedMessageSet);
                         }
                     }
-                    
-                    
-                    
-                    // TODO: Reconsider if we can do something to make the handling better. Maybe at least cache the triplets for the expunged
-                    //       while have the server running. This could maybe allow us to not return every expunged message all the time
-                    //  
-                    //      As we don't store the <<MSN, UID>, <MODSEQ>> in a permanent way its the best to just ignore it here.
-                    //
-                    //      From RFC5162 4.1. Server Implementations That Don't Store Extra State
-                    //
-                    //
-                    //          Strictly speaking, a server implementation that doesn't remember mod-
-                    //          sequences associated with expunged messages can be considered
-                    //          compliant with this specification.  Such implementations return all
-                    //          expunged messages specified in the UID set of the UID FETCH
-                    //          (VANISHED) command every time, without paying attention to the
-                    //          specified CHANGEDSINCE mod-sequence.  Such implementations are
-                    //          discouraged, as they can end up returning VANISHED responses that are
-                    //          bigger than the result of a UID SEARCH command for the same UID set.
-                    //
-                    //          Clients that use the message sequence match data can reduce the scope
-                    //          of this VANISHED response substantially in the typical case where
-                    //          expunges have not happened, or happen only toward the end of the
-                    //          mailbox.
-                    //
+
                     respondVanished(mailboxSession, mailbox, ranges, modSeq, metaData , responder);
                 }
                 taggedOk(responder, tag, command, metaData, HumanReadableText.SELECT);
@@ -402,11 +331,6 @@ abstract class AbstractSelectionProcessor<M extends AbstractMailboxSelectionRequ
         final SelectedMailbox currentMailbox = session.getSelected();
         if (currentMailbox == null || !currentMailbox.getPath().equals(mailboxPath)) {
             
-            // QRESYNC EXTENSION
-            //
-            // Response with the CLOSE return-code when the currently selected mailbox is closed implicitly using the SELECT/EXAMINE command on another mailbox
-            //
-            // See rfc5162 3.7. CLOSED Response Code
             if (currentMailbox != null) {
                 getStatusResponseFactory().untaggedOk(HumanReadableText.QRESYNC_CLOSED, ResponseCode.closed());
             }

@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.MailboxACL.MailboxACLCommand;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -107,4 +108,13 @@ public class TransactionalMailboxMapper implements MailboxMapper {
         return wrapped.list();
     }
 
+    @Override
+    public ApplicableFlag getMailboxFlag(MailboxId mailboxId) throws MailboxException {
+        return wrapped.getMailboxFlag(mailboxId);
+    }
+
+    @Override
+    public void saveMailboxFlag(ApplicableFlag flag) throws MailboxException {
+        wrapped.saveMailboxFlag(flag);
+    }
 }

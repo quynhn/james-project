@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -110,7 +111,17 @@ public class CachingMailboxMapper implements MailboxMapper {
 		mailbox.setACL(mailbox.getACL().apply(mailboxACLCommand));
 	}
 
-	private void invalidate(Mailbox mailbox) {
+    @Override
+    public ApplicableFlag getMailboxFlag(MailboxId mailboxId) throws MailboxException {
+        return underlying.getMailboxFlag(mailboxId);
+    }
+
+    @Override
+    public void saveMailboxFlag(ApplicableFlag flag) throws MailboxException {
+        underlying.saveMailboxFlag(flag);
+    }
+
+    private void invalidate(Mailbox mailbox) {
 		cache.invalidate(mailbox);
 	}
 

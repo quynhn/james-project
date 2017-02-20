@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.MailboxNotFoundException;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -111,4 +112,22 @@ public interface MailboxMapper extends Mapper {
      * @throws MailboxException 
      */
     List<Mailbox> list() throws MailboxException;
+
+    /**
+     * Return the flag of mailbox, it should be union all flags of messages belong to the selected mailbox
+     *
+     * @param mailboxId
+     *          The selected mailbox
+     * @return ApplicableFlag
+     * @throws MailboxException
+     */
+    ApplicableFlag getMailboxFlag(MailboxId mailboxId) throws MailboxException;
+
+    /**
+     * Insert/Update the flag of mailbox
+     * @param flag
+     *          The new flag of mailbox should be
+     * @throws MailboxException
+     */
+    void saveMailboxFlag(ApplicableFlag flag) throws MailboxException;
 }

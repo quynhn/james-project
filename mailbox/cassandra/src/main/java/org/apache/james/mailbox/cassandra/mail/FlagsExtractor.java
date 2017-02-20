@@ -45,4 +45,16 @@ public class FlagsExtractor {
         return flags;
     }
 
+    public Flags getApplicableFlags() {
+        Flags flags = new Flags();
+        for (String flag : Flag.ALL_APPLICABLE_FLAG) {
+            if (row.getBool(flag)) {
+                flags.add(Flag.JAVAX_MAIL_FLAG.get(flag));
+            }
+        }
+        row.getSet(Flag.USER_FLAGS, String.class)
+            .stream()
+            .forEach(flags::add);
+        return flags;
+    }
 }

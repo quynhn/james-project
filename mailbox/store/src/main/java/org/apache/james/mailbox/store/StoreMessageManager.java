@@ -50,6 +50,7 @@ import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.exception.ReadOnlyException;
 import org.apache.james.mailbox.exception.UnsupportedRightException;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.Attachment;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.MailboxACL;
@@ -70,6 +71,7 @@ import org.apache.james.mailbox.quota.QuotaManager;
 import org.apache.james.mailbox.quota.QuotaRootResolver;
 import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.AttachmentMapper;
+import org.apache.james.mailbox.store.mail.MailboxMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
@@ -379,6 +381,10 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
                 // Check if we need to trim the flags
                 trimFlags(flags, mailboxSession);
 
+                //Update mailbox flag
+                Flags oldFlag = getMailboxFlags(mailboxSession).getFlags();
+                FlagsUpdateCalculator flagsUpdateCalculator = new FlagsUpdateCalculator(flags, FlagsUpdateMode.ADD);
+                ddd
             }
             if (isRecent) {
                 flags.add(Flags.Flag.RECENT);
@@ -855,5 +861,12 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
     @Override
     public MailboxPath getMailboxPath() throws MailboxException {
         return new StoreMailboxPath(getMailboxEntity());
+    }
+
+    @Override
+    public ApplicableFlag getMailboxFlags(MailboxSession session) throws MailboxException {
+        MailboxId mailboxId = getId();
+        MailboxMapper mailboxMapper = mapperFactory.getMailboxMapper(session);
+        return mailboxMapper.getMailboxFlag(mailboxId);
     }
 }

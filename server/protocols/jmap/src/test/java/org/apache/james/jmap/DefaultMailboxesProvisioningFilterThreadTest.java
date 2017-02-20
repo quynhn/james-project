@@ -29,6 +29,7 @@ import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.exception.BadCredentialsException;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.mock.MockMailboxSession;
+import org.apache.james.mailbox.model.ApplicableFlag;
 import org.apache.james.mailbox.model.MailboxACL.MailboxACLCommand;
 import org.apache.james.mailbox.model.MailboxACL.MailboxACLEntryKey;
 import org.apache.james.mailbox.model.MailboxACL.MailboxACLRight;
@@ -267,6 +268,11 @@ public class DefaultMailboxesProvisioningFilterThreadTest {
         @Override
         public MailboxSession loginAsOtherUser(String adminUserId, String passwd, String realUserId, Logger log) throws BadCredentialsException, MailboxException {
             return null;
+        }
+
+        @Override
+        public void saveFlags(ApplicableFlag flag, MailboxSession session) throws MailboxException {
+
         }
     }
 }
