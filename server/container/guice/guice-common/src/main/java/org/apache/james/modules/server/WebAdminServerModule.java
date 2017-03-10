@@ -40,6 +40,7 @@ import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.authentication.AuthenticationFilter;
 import org.apache.james.webadmin.authentication.JwtFilter;
 import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
+import org.apache.james.webadmin.routes.DomainMappingRoutes;
 import org.apache.james.webadmin.routes.DomainRoutes;
 import org.apache.james.webadmin.routes.UserMailboxesRoutes;
 import org.apache.james.webadmin.routes.UserRoutes;
@@ -67,6 +68,7 @@ public class WebAdminServerModule extends AbstractModule {
         routesMultibinder.addBinding().to(DomainRoutes.class);
         routesMultibinder.addBinding().to(UserRoutes.class);
         routesMultibinder.addBinding().to(UserMailboxesRoutes.class);
+        routesMultibinder.addBinding().to(DomainMappingRoutes.class);
 
         Multibinder.newSetBinder(binder(), ConfigurationPerformer.class).addBinding().to(WebAdminServerModuleConfigurationPerformer.class);
         Multibinder.newSetBinder(binder(), GuiceProbe.class).addBinding().to(WebAdminGuiceProbe.class);

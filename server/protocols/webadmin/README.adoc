@@ -213,3 +213,45 @@ Response codes :
  - 204 : The user do not have mailboxes anymore
  - 404 : The user name does not exist
  - 500 : Internal error
+
+ == Administrating domain mapping
+
+ === Creating a domain mapping
+
+ .bash
+ ====
+ curl -XPUT http://ip:port/domain_mappings
+ ====
+
+ The body looks like :
+
+ .json
+ ====
+ { "realDomain": "email.com", "aliases": ["linagora.com"] }
+ ====
+
+ Response codes :
+  - 200 : The domain mapping success on creating
+  - 400 : Invalid input body
+  - 404 : The user name does not exist
+  - 500 : Internal error
+
+ === Get all domain mappings
+
+ .bash
+ ====
+ curl -XGET http://ip:port/domain_mappings
+ ====
+
+ The answer looks like :
+
+ .json
+ ====
+ {"realDomain": ["alias"],}
+ ====
+
+ Response codes :
+  - 200 : The domain mappings list was successfully retrieved
+  - 404 : The user name does not exist
+  - 500 : Internal error
+
