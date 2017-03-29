@@ -122,7 +122,7 @@ public class UidMsnMapperTest {
     }
 
     @Test
-    public void isEmptyShouldReturnFalseIfNoMapping() {
+    public void isEmptyShouldReturnFalseIfMapping() {
         testee.addUid(messageUid1);
 
         assertThat(testee.isEmpty())
@@ -183,7 +183,7 @@ public class UidMsnMapperTest {
     }
 
     @Test
-    public void removeShouldKeepAValidMappingWhenDeletingMiddle() {
+    public void removeShouldKeepAValidMappingWhenDeletingEnd() {
         testee.addUid(messageUid1);
         testee.addUid(messageUid2);
         testee.addUid(messageUid3);
@@ -199,7 +199,7 @@ public class UidMsnMapperTest {
     }
 
     @Test
-    public void removeShouldKeepAValidMappingWhenDeletingEnd() {
+    public void removeShouldKeepAValidMappingWhenDeletingMiddle() {
         testee.addUid(messageUid1);
         testee.addUid(messageUid2);
         testee.addUid(messageUid3);
