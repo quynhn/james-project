@@ -975,7 +975,7 @@ public class MessageMapperTest<T extends MapperProvider> {
         messageMapper.delete(benwaInboxMailbox, message1);
 
         assertThat(messageMapper.getApplicableFlag(benwaInboxMailbox))
-            .isEqualTo(new Flags(Flag.DELETED));
+            .isEqualTo(ApplicableFlagBuilder.builder().build());
     }
 
     private Map<MessageUid, MessageMetaData> markThenPerformExpunge(MessageRange range) throws MailboxException {
