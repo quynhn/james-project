@@ -239,7 +239,7 @@ Then we need to build james container :
 
 The provisioned james images bases on pre-build james server which is "linagora/james-project-spring-jpa". If we need to build james container with the default initial data (initial domain: james.local and initial users: user01, user02, user03):
 
-    $ docker build -t james_run dockerfiles/run/spring/provisioned/
+    $ docker build -t james_run dockerfiles/run/guice/provisioned/
 
 To run this container :
 

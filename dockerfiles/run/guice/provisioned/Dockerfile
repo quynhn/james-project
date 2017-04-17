@@ -19,4 +19,6 @@ COPY initialdata.sh /root
 RUN chmod +x /root/startup.sh
 RUN chmod +x /root/initialdata.sh
 
+RUN ls -la /root/
+
 ENTRYPOINT ["./startup.sh"]
