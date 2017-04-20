@@ -41,7 +41,7 @@ import org.apache.james.backends.cassandra.init.QueryLoggerConfiguration;
 import org.apache.james.backends.cassandra.init.SessionWithInitializedTablesFactory;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.util.Host;
-import org.apache.james.utils.RetryExecutorUtil;
+import org.apache.james.utils.RetryExecutorBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -99,15 +100,21 @@ public class CassandraSessionModule extends AbstractModule {
         int maxRetries = configuration.getInt("cassandra.retryConnection.maxRetries", DEFAULT_CONNECTION_MAX_RETRIES);
         int minDelay = configuration.getInt("cassandra.retryConnection.minDelay", DEFAULT_CONNECTION_MIN_DELAY);
 
-        return RetryExecutorUtil.retryOnExceptions(executor, maxRetries, minDelay, NoHostAvailableException.class)
-                .getWithRetry(getClusterRetryCallable(configuration, servers, queryLoggerConfiguration))
-                .get();
+        CompletableFuture<Cluster> cluster = new RetryExecutorBuilder()
+                .executor(executor)
+                .maxRetries(maxRetries)
+                .minDelay(minDelay)
+                .clazzException(NoHostAvailableException.class)
+                .task(getClusterRetryCallable(configuration, servers, queryLoggerConfiguration))
+                .retryOnTask();
+
+        return cluster.get();
     }
 
     private RetryCallable<Cluster> getClusterRetryCallable(PropertiesConfiguration configuration, List<Host> servers, QueryLoggerConfiguration queryLoggerConfiguration) {
         LOGGER.info("Trying to connect to Cassandra service");
 
-        return ctx -> ClusterWithKeyspaceCreatedFactory
+        return context -> ClusterWithKeyspaceCreatedFactory
             .config(getCluster(servers, queryLoggerConfiguration), configuration.getString("cassandra.keyspace"))
             .replicationFactor(configuration.getInt("cassandra.replication.factor"))
             .clusterWithInitializedKeyspace();

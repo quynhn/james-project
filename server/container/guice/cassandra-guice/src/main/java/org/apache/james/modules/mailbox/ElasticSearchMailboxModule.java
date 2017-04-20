@@ -21,10 +21,12 @@ package org.apache.james.modules.mailbox;
 
 import java.io.FileNotFoundException;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import javax.inject.Singleton;
 
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.james.backends.es.ClientProviderImpl;
@@ -41,9 +43,8 @@ import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.store.search.ListeningMessageSearchIndex;
 import org.apache.james.mailbox.store.search.MessageSearchIndex;
 import org.apache.james.mailbox.tika.extractor.TikaTextExtractor;
-import org.apache.james.utils.RetryExecutorUtil;
+import org.apache.james.utils.RetryExecutorBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,9 +84,14 @@ public class ElasticSearchMailboxModule extends AbstractModule {
         int maxRetries = propertiesReader.getInt("elasticsearch.retryConnection.maxRetries", DEFAULT_CONNECTION_MAX_RETRIES);
         int minDelay = propertiesReader.getInt("elasticsearch.retryConnection.minDelay", DEFAULT_CONNECTION_MIN_DELAY);
 
-        return RetryExecutorUtil.retryOnExceptions(executor, maxRetries, minDelay, NoNodeAvailableException.class)
-            .getWithRetry(ctx -> connectToCluster(propertiesReader))
-            .get();
+        CompletableFuture<Client> client = new RetryExecutorBuilder()
+                .executor(executor)
+                .maxRetries(maxRetries)
+                .minDelay(minDelay)
+                .clazzException(NoHostAvailableException.class)
+                .task(context -> connectToCluster(propertiesReader))
+                .retryOnTask();
+        return client.get();
     }
 
     @Provides
