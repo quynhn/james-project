@@ -18,95 +18,119 @@
  ****************************************************************/
 package org.apache.james.dnsservice.library.netmatcher;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.james.dnsservice.api.mock.DNSFixture.LOCALHOST_IP_V4_ADDRESSES_DUPLICATE;
+import static org.apache.james.dnsservice.api.mock.DNSFixture.LOCALHOST_IP_V6_ADDRESSES_DUPLICATE;
+import static org.apache.james.dnsservice.api.mock.DNSFixture.LOCALHOST_IP_V4_ADDRESSES;
+import static org.apache.james.dnsservice.api.mock.DNSFixture.LOCALHOST_IP_V6_ADDRESSES;
+import static org.apache.james.dnsservice.api.mock.DNSFixture.DNS_SERVER_IPV4_MOCK;
+import static org.apache.james.dnsservice.api.mock.DNSFixture.DNS_SERVER_IPV6_MOCK;
+import static org.apache.james.dnsservice.api.mock.DNSFixture.HOST_CANNOT_LOOKUP_BY_NAME;
+
+import org.apache.james.dnsservice.library.inetnetwork.InetNetworkBuilder;
+
 import java.net.UnknownHostException;
-import org.apache.james.dnsservice.api.mock.DNSFixture;
-import static org.junit.Assert.assertEquals;
+
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
-/**
- * Test the NetMatcher class with various IPv4 and IPv6 parameters.
- * 
- */
 public class NetMatcherTest {
 
-    private static NetMatcher netMatcher;
+    private static final String IP_V4_1 = "172.16.0.0/255.255.0.0";
+    private static final String IP_V4_2 = "192.168.1.0/255.255.255.0";
+    private static final String IP_V6_1 = "0:0:0:0:0:0:0:1/32768";
+    private static final String IP_V6_2 = "2781:db8:1234:0:0:0:0:0/48";
+    private static final String IP_V4_IPs = IP_V4_1 + ", " + IP_V4_2;
+    private static final InetNetworkBuilder inetNetworkV4Builder = new InetNetworkBuilder(DNS_SERVER_IPV4_MOCK);
+    private static final InetNetworkBuilder inetNetworkV6Builder = new InetNetworkBuilder(DNS_SERVER_IPV6_MOCK);
 
-    /**
-     * Test for IPV4 uniqueness.
-     */
+    private NetMatcher netMatcher;
+
     @Test
-    public void testIpV4NetworksUniqueness() {
-        netMatcher = new NetMatcher(DNSFixture.LOCALHOST_IP_V4_ADDRESSES_DUPLICATE, DNSFixture.DNS_SERVER_IPV4_MOCK);
-        assertEquals("[172.16.0.0/255.255.0.0, 192.168.1.0/255.255.255.0]", netMatcher.toString());
+    public void matchInetNetworkShouldNotMatchWhenUnknownHostException() throws Exception {
+        netMatcher = new NetMatcher(LOCALHOST_IP_V4_ADDRESSES, DNS_SERVER_IPV4_MOCK);
+
+        assertThat(netMatcher.matchInetNetwork(HOST_CANNOT_LOOKUP_BY_NAME)).isFalse();
     }
 
-    /**
-     * Test for IPV6 uniqueness.
-     */
     @Test
-    public void testIpV6NetworksUniqueness() {
-        netMatcher = new NetMatcher(DNSFixture.LOCALHOST_IP_V6_ADDRESSES_DUPLICATE, DNSFixture.DNS_SERVER_IPV6_MOCK);
-        assertEquals("[0:0:0:0:0:0:0:1/32768, 2781:db8:1234:0:0:0:0:0/48]", netMatcher.toString());
+    public void matchInetNetworkShouldMatchWhenIpV4() throws UnknownHostException {
+        netMatcher = new NetMatcher(LOCALHOST_IP_V4_ADDRESSES, DNS_SERVER_IPV4_MOCK);
+
+        assertThat(netMatcher.matchInetNetwork("127.0.0.1")).isTrue();
+        assertThat(netMatcher.matchInetNetwork("localhost")).isTrue();
+        assertThat(netMatcher.matchInetNetwork("172.16.15.254")).isTrue();
+        assertThat(netMatcher.matchInetNetwork("192.168.1.254")).isTrue();
     }
 
-    /**
-     * Test for IPV4 matcher.
-     * @throws UnknownHostException
-     */
     @Test
-    public void testIpV4Matcher() throws UnknownHostException {
+    public void matchInetNetworkShouldNotMatchWhenIpV4OutOfTheRange() throws UnknownHostException {
+        netMatcher = new NetMatcher(LOCALHOST_IP_V4_ADDRESSES, DNS_SERVER_IPV4_MOCK);
 
-        netMatcher = new NetMatcher(DNSFixture.LOCALHOST_IP_V4_ADDRESSES, DNSFixture.DNS_SERVER_IPV4_MOCK);
-
-        assertEquals(true, netMatcher.matchInetNetwork("127.0.0.1"));
-        assertEquals(true, netMatcher.matchInetNetwork("localhost"));
-        assertEquals(true, netMatcher.matchInetNetwork("172.16.15.254"));
-        assertEquals(true, netMatcher.matchInetNetwork("192.168.1.254"));
-        assertEquals(false, netMatcher.matchInetNetwork("192.169.1.254"));
+        assertThat(netMatcher.matchInetNetwork("192.169.1.254")).isFalse();
     }
 
-    /**
-     * @throws UnknownHostException
-     */
     @Test
-    public void testIpV4MatcherWithIpV6() throws UnknownHostException {
+    public void matchInetNetworkShouldNotMatchIpV6WhenIpV4() throws UnknownHostException {
+        netMatcher = new NetMatcher(LOCALHOST_IP_V4_ADDRESSES, DNS_SERVER_IPV4_MOCK);
 
-        netMatcher = new NetMatcher(DNSFixture.LOCALHOST_IP_V4_ADDRESSES, DNSFixture.DNS_SERVER_IPV4_MOCK);
-
-        assertEquals(false, netMatcher.matchInetNetwork("0:0:0:0:0:0:0:1%0"));
-        assertEquals(false, netMatcher.matchInetNetwork("00:00:00:00:00:00:00:1"));
-        assertEquals(false, netMatcher.matchInetNetwork("00:00:00:00:00:00:00:2"));
-        assertEquals(false, netMatcher.matchInetNetwork("2781:0db8:1234:8612:45ee:ffff:fffe:0001"));
-        assertEquals(false, netMatcher.matchInetNetwork("2781:0db8:1235:8612:45ee:ffff:fffe:0001"));
+        assertThat(netMatcher.matchInetNetwork("0:0:0:0:0:0:0:1%0")).isFalse();
     }
 
-    /**
-     * @throws UnknownHostException
-     */
     @Test
-    public void testIpV6Matcher() throws UnknownHostException {
+    public void matchInetNetworkShouldMatchWhenIpV6() throws UnknownHostException {
+        netMatcher = new NetMatcher(LOCALHOST_IP_V6_ADDRESSES, DNS_SERVER_IPV6_MOCK);
 
-        netMatcher = new NetMatcher(DNSFixture.LOCALHOST_IP_V6_ADDRESSES, DNSFixture.DNS_SERVER_IPV6_MOCK);
-
-        assertEquals(true, netMatcher.matchInetNetwork("0:0:0:0:0:0:0:1%0"));
-        assertEquals(true, netMatcher.matchInetNetwork("00:00:00:00:00:00:00:1"));
-        assertEquals(false, netMatcher.matchInetNetwork("00:00:00:00:00:00:00:2"));
-        assertEquals(true, netMatcher.matchInetNetwork("2781:0db8:1234:8612:45ee:ffff:fffe:0001"));
-        assertEquals(false, netMatcher.matchInetNetwork("2781:0db8:1235:8612:45ee:ffff:fffe:0001"));
+        assertThat(netMatcher.matchInetNetwork("0:0:0:0:0:0:0:1%0")).isTrue();
+        assertThat(netMatcher.matchInetNetwork("00:00:00:00:00:00:00:1")).isTrue();
+        assertThat(netMatcher.matchInetNetwork("2781:0db8:1234:8612:45ee:ffff:fffe:0001")).isTrue();
     }
 
-    /**
-     * @throws UnknownHostException
-     */
     @Test
-    public void testIpV6MatcherWithIpV4() throws UnknownHostException {
+    public void matchInetNetworkShouldNotMatchWhenIpV6OutOfTheRange() throws UnknownHostException {
+        netMatcher = new NetMatcher(LOCALHOST_IP_V6_ADDRESSES, DNS_SERVER_IPV6_MOCK);
 
-        netMatcher = new NetMatcher(DNSFixture.LOCALHOST_IP_V6_ADDRESSES, DNSFixture.DNS_SERVER_IPV6_MOCK);
+        assertThat(netMatcher.matchInetNetwork("00:00:00:00:00:00:00:2")).isFalse();
+        assertThat(netMatcher.matchInetNetwork("2781:0db8:1235:8612:45ee:ffff:fffe:0001")).isFalse();
+    }
 
-        assertEquals(false, netMatcher.matchInetNetwork("127.0.0.1"));
-        assertEquals(false, netMatcher.matchInetNetwork("localhost"));
-        assertEquals(false, netMatcher.matchInetNetwork("172.16.15.254"));
-        assertEquals(false, netMatcher.matchInetNetwork("192.168.1.254"));
-        assertEquals(false, netMatcher.matchInetNetwork("192.169.1.254"));
+    @Test
+    public void matchInetNetworkShouldNotMatchIpV4WhenIpV6() throws UnknownHostException {
+        netMatcher = new NetMatcher(LOCALHOST_IP_V6_ADDRESSES, DNS_SERVER_IPV6_MOCK);
+
+        assertThat(netMatcher.matchInetNetwork("172.16.15.254")).isFalse();
+    }
+
+    @Test
+    public void getNetworksShouldNotContainInetNetworkWhenUnknownHostException() {
+        netMatcher = new NetMatcher(ImmutableList.<String>of(HOST_CANNOT_LOOKUP_BY_NAME), DNS_SERVER_IPV6_MOCK);
+
+        assertThat(netMatcher.getNetworks()).isEmpty();
+    }
+    @Test
+    public void getNetworksShouldInitByString() throws Exception {
+        netMatcher = new NetMatcher(IP_V4_IPs, DNS_SERVER_IPV4_MOCK);
+
+        assertThat(netMatcher.getNetworks())
+                .hasSize(2)
+                .containsSequence(inetNetworkV4Builder.getFromString(IP_V4_1), inetNetworkV4Builder.getFromString(IP_V4_2));
+    }
+
+    @Test
+    public void getNetworksShouldRemoveDuplicateWhenIp4() throws Exception {
+        netMatcher = new NetMatcher(LOCALHOST_IP_V4_ADDRESSES_DUPLICATE, DNS_SERVER_IPV4_MOCK);
+
+        assertThat(netMatcher.getNetworks())
+                .hasSize(2)
+                .containsSequence(inetNetworkV4Builder.getFromString(IP_V4_1), inetNetworkV4Builder.getFromString(IP_V4_2));
+    }
+
+    @Test
+    public void getNetworksShouldRemoveDuplicateWhenIp6() throws Exception {
+        netMatcher = new NetMatcher(LOCALHOST_IP_V6_ADDRESSES_DUPLICATE, DNS_SERVER_IPV6_MOCK);
+
+        assertThat(netMatcher.getNetworks())
+                .hasSize(2)
+                .containsSequence(inetNetworkV6Builder.getFromString(IP_V6_1), inetNetworkV6Builder.getFromString(IP_V6_2));
     }
 }
