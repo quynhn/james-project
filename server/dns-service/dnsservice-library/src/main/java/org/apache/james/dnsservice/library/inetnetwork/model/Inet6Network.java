@@ -18,7 +18,7 @@
  ****************************************************************/
 package org.apache.james.dnsservice.library.inetnetwork.model;
 
-import org.apache.james.dnsservice.library.inetnetwork.InetNetworkBuilder;
+import org.apache.james.dnsservice.library.inetnetwork.InetNetworkUtil;
 
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -51,7 +51,7 @@ public class Inet6Network implements InetNetwork {
 
     @Override
     public boolean contains(InetAddress ip) {
-        if (!InetNetworkBuilder.isV6(ip.getHostAddress())) {
+        if (!InetNetworkUtil.isV6(ip.getHostAddress())) {
             return false;
         }
         try {

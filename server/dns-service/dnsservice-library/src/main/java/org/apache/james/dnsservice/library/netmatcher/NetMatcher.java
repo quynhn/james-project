@@ -19,7 +19,7 @@
 package org.apache.james.dnsservice.library.netmatcher;
 
 import org.apache.james.dnsservice.api.DNSService;
-import org.apache.james.dnsservice.library.inetnetwork.InetNetworkBuilder;
+import org.apache.james.dnsservice.library.inetnetwork.InetNetworkUtil;
 import org.apache.james.dnsservice.library.inetnetwork.model.InetNetwork;
 
 import java.net.InetAddress;
@@ -60,13 +60,13 @@ public class NetMatcher {
 
     private final DNSService dnsServer;
     private final SortedSet<InetNetwork> networks;
-    private final InetNetworkBuilder inetNetwork;
+    private final InetNetworkUtil inetNetwork;
     private final Collection<String> nets;
 
     public NetMatcher(Collection<String> nets, DNSService dnsServer) {
         this.nets = nets;
         this.dnsServer = dnsServer;
-        this.inetNetwork = new InetNetworkBuilder(this.dnsServer);
+        this.inetNetwork = new InetNetworkUtil(this.dnsServer);
         this.networks = initInetNetworks();
     }
 

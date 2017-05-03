@@ -27,7 +27,7 @@ import static org.apache.james.dnsservice.api.mock.DNSFixture.DNS_SERVER_IPV4_MO
 import static org.apache.james.dnsservice.api.mock.DNSFixture.DNS_SERVER_IPV6_MOCK;
 import static org.apache.james.dnsservice.api.mock.DNSFixture.HOST_CANNOT_LOOKUP_BY_NAME;
 
-import org.apache.james.dnsservice.library.inetnetwork.InetNetworkBuilder;
+import org.apache.james.dnsservice.library.inetnetwork.InetNetworkUtil;
 
 import java.net.UnknownHostException;
 
@@ -41,8 +41,8 @@ public class NetMatcherTest {
     private static final String IP_V6_1 = "0:0:0:0:0:0:0:1/32768";
     private static final String IP_V6_2 = "2781:db8:1234:0:0:0:0:0/48";
     private static final String IP_V4_IPs = IP_V4_1 + ", " + IP_V4_2;
-    private static final InetNetworkBuilder inetNetworkV4Builder = new InetNetworkBuilder(DNS_SERVER_IPV4_MOCK);
-    private static final InetNetworkBuilder inetNetworkV6Builder = new InetNetworkBuilder(DNS_SERVER_IPV6_MOCK);
+    private static final InetNetworkUtil inetNetworkV4Builder = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+    private static final InetNetworkUtil inetNetworkV6Builder = new InetNetworkUtil(DNS_SERVER_IPV6_MOCK);
 
     private NetMatcher netMatcher;
 
