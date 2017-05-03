@@ -24,22 +24,13 @@ import org.apache.james.dnsservice.library.inetnetwork.model.InetNetwork;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-/**
- * Test the InetNetworkBuilder.
- */
 public class InetNetworkBuilderTest {
 
     private InetNetworkBuilder inetNetworkBuilder;
     private InetNetwork inetNetwork;
 
-    /**
-     * Verify that InetNetworkBuild return correctly initialized Inet4Network.
-     * 
-     * @throws UnknownHostException
-     */
     @Test
     public void testInetNetworkBuilderDnsV4() throws UnknownHostException {
-
         inetNetworkBuilder = new InetNetworkBuilder(DNSFixture.DNS_SERVER_IPV4_MOCK);
 
         inetNetwork = inetNetworkBuilder.getFromString(DNSFixture.LOCALHOST_IP_V4_ADDRESS_0);
@@ -50,14 +41,8 @@ public class InetNetworkBuilderTest {
 
     }
 
-    /**
-     * Verify that InetNetworkBuild return correctly initialized Inet6Network.
-     * 
-     * @throws UnknownHostException
-     */
     @Test
     public void testInetNetworkBuilderDnsV6() throws UnknownHostException {
-
         inetNetworkBuilder = new InetNetworkBuilder(DNSFixture.DNS_SERVER_IPV6_MOCK);
 
         inetNetwork = inetNetworkBuilder.getFromString(DNSFixture.LOCALHOST_IP_V6_ADDRESS_0);

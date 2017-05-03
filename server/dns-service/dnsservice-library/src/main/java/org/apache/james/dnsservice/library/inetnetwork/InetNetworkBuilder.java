@@ -72,55 +72,20 @@ import org.apache.james.dnsservice.library.inetnetwork.model.InetNetwork;
  */
 public class InetNetworkBuilder {
 
-    /**
-     * The DNS Server used to create InetAddress for hostnames and IP adresses.
-     */
     private final DNSService dnsService;
 
-    /**
-     * Constructs a InetNetwork.
-     * 
-     * @param dnsServer
-     *            the DNSService to use
-     */
     public InetNetworkBuilder(DNSService dnsServer) {
         this.dnsService = dnsServer;
     }
 
-    /**
-     * Creates a InetNetwork for the given String. Depending on the provided
-     * pattern and the platform configuration (IPv4 and/or IPv6), the returned
-     * type will be Inet4Network or Inet6Network.
-     * 
-     * @param netspec
-     *            the String which is will converted to InetNetwork
-     * @return network the InetNetwork
-     * @throws java.net.UnknownHostException
-     */
     public InetNetwork getFromString(String netspec) throws UnknownHostException {
         return isV6(netspec) ? getV6FromString(netspec) : getV4FromString(netspec);
     }
 
-    /**
-     * Returns true if the string parameters is a IPv6 pattern. Currently, only
-     * tests for presence of ':'.
-     * 
-     * @param netspec
-     * @return boolean
-     *              <code>true</code> if is a IPv6 pattern else <code>false</code>
-     */
     public static boolean isV6(String netspec) {
         return netspec.contains(":");
     }
 
-    /**
-     * Get a Inet4Network for the given String.
-     * 
-     * @param netspec
-     *            the String which is will converted to InetNetwork
-     * @return network the InetNetwork
-     * @throws java.net.UnknownHostException
-     */
     private InetNetwork getV4FromString(String netspec) throws UnknownHostException {
 
         if (netspec.endsWith("*")) {
@@ -137,14 +102,6 @@ public class InetNetworkBuilder {
         return new Inet4Network(dnsService.getByName(netspec.substring(0, netspec.indexOf('/'))), dnsService.getByName(netspec.substring(netspec.indexOf('/') + 1)));
     }
 
-    /**
-     * Get a Inet6Network for the given String.
-     * 
-     * @param netspec
-     *            the String which is will converted to InetNetwork
-     * @return network the InetNetwork
-     * @throws java.net.UnknownHostException
-     */
     private InetNetwork getV6FromString(String netspec) throws UnknownHostException {
 
         if (netspec.endsWith("*")) {
@@ -164,11 +121,11 @@ public class InetNetworkBuilder {
     /**
      * This converts from an uncommon "wildcard" CIDR format to "address + mask"
      * format:
-     * 
+     *
      * <pre>
-     * * => 000.000.000.0/000.000.000.0 
+     * * => 000.000.000.0/000.000.000.0
      * xxx.* => xxx.000.000.0/255.000.000.0
-     * xxx.xxx.* => xxx.xxx.000.0/255.255.000.0 
+     * xxx.xxx.* => xxx.xxx.000.0/255.255.000.0
      * xxx.xxx.xxx.* => xxx.xxx.xxx.0/255.255.255.0
      * </pre>
      * 
@@ -176,7 +133,6 @@ public class InetNetworkBuilder {
      * @return addrMask the address/mask of the given argument
      */
     private static String normalizeV4FromAsterisk(String netspec) {
-
         String[] masks = { "0.0.0.0/0.0.0.0", "0.0.0/255.0.0.0", "0.0/255.255.0.0", "0/255.255.255.0" };
 
         char[] srcb = netspec.toCharArray();
