@@ -18,12 +18,19 @@
  ****************************************************************/
 package org.apache.james.dnsservice.library.inetnetwork;
 
-import java.net.UnknownHostException;
-
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.library.inetnetwork.model.Inet4Network;
 import org.apache.james.dnsservice.library.inetnetwork.model.Inet6Network;
 import org.apache.james.dnsservice.library.inetnetwork.model.InetNetwork;
+import org.apache.commons.lang.StringUtils;
+
+import java.net.UnknownHostException;
+import java.util.List;
+
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 
 /**
  * <p>
@@ -71,6 +78,16 @@ import org.apache.james.dnsservice.library.inetnetwork.model.InetNetwork;
  * </p>
  */
 public class InetNetworkUtil {
+    private static final String WILDCARD = "*";
+    private static final String IP_V4_SIGNATURE = ".";
+    private static final String IP_V6_SIGNATURE = ":";
+    private static final String IP_AND_NETMARK_SEPARATOR = "/";
+    private static final String IP_AND_NETMARK_SEPARATOR_ANOTHER_ON_V6 = "%";
+    private static final List<String> FULL_RANGE_IP4 = ImmutableList.of("0.0.0.0/0.0.0.0", "0.0.0/255.0.0.0", "0.0/255.255.0.0", "0/255.255.255.0");
+    private static final String MAX_NET_MASK_V4 = "/255.255.255.255";
+    private static final String MAX_NET_MASK_V6 = "/32768";
+    private static final List<Integer> MAST_PARTS = ImmutableList.of(24, 16, 8, 1);
+    private static final int DECIMAL_RADIX = 10;
 
     private final DNSService dnsService;
 
@@ -79,102 +96,106 @@ public class InetNetworkUtil {
     }
 
     public InetNetwork getFromString(String netspec) throws UnknownHostException {
-        return isV6(netspec) ? getV6FromString(netspec) : getV4FromString(netspec);
+        if (isV6(netspec)) {
+           return getV6FromString(netspec);
+        }
+
+        return getV4FromString(netspec);
     }
 
     public static boolean isV6(String netspec) {
-        return netspec.contains(":");
+        return netspec.contains(IP_V6_SIGNATURE);
     }
 
     private InetNetwork getV4FromString(String netspec) throws UnknownHostException {
-
-        if (netspec.endsWith("*")) {
+        if (StringUtils.endsWith(netspec, WILDCARD)) {
             netspec = normalizeV4FromAsterisk(netspec);
         } else {
-            int iSlash = netspec.indexOf('/');
-            if (iSlash == -1) {
-                netspec += "/255.255.255.255";
-            } else if (netspec.indexOf('.', iSlash) == -1) {
-                netspec = normalizeV4FromCIDR(netspec);
+            netspec = standardIpWithNetmarkSeparator(netspec, MAX_NET_MASK_V4);
+            String host = StringUtils.substringBefore(netspec, IP_AND_NETMARK_SEPARATOR);
+            String mask = StringUtils.substringAfter(netspec, IP_AND_NETMARK_SEPARATOR);
+            if (StringUtils.containsNone(mask, IP_V4_SIGNATURE)) {
+                netspec = normalizeV4FromCIDR(host, mask);
             }
         }
 
-        return new Inet4Network(dnsService.getByName(netspec.substring(0, netspec.indexOf('/'))), dnsService.getByName(netspec.substring(netspec.indexOf('/') + 1)));
+        return getInetNetwork(netspec, false);
     }
 
     private InetNetwork getV6FromString(String netspec) throws UnknownHostException {
-
-        if (netspec.endsWith("*")) {
+        if (StringUtils.endsWith(netspec, WILDCARD)) {
             throw new UnsupportedOperationException("Wildcard for IPv6 not supported");
         }
 
-        // Netmask can be separated with %
-        netspec = netspec.replaceAll("%", "/");
+        netspec = StringUtils.replace(netspec, IP_AND_NETMARK_SEPARATOR_ANOTHER_ON_V6, IP_AND_NETMARK_SEPARATOR);
 
-        if (netspec.indexOf('/') == -1) {
-            netspec += "/32768";
+        return getInetNetwork(standardIpWithNetmarkSeparator(netspec, MAX_NET_MASK_V6), true);
+    }
+
+    private InetNetwork getInetNetwork(String netspec, boolean isV6) throws UnknownHostException {
+        String[] hostAndMask = StringUtils.split(netspec, IP_AND_NETMARK_SEPARATOR);
+        if (isV6) {
+            return new Inet6Network(dnsService.getByName(hostAndMask[0]), Integer.parseInt(hostAndMask[1]));
+        }
+        return new Inet4Network(dnsService.getByName(hostAndMask[0]), dnsService.getByName(hostAndMask[1]));
+    }
+
+    private String standardIpWithNetmarkSeparator(String netspec, String maxNetMask) {
+        if (StringUtils.containsNone(netspec, IP_AND_NETMARK_SEPARATOR)) {
+            return netspec + maxNetMask;
+        }
+        return netspec;
+    }
+
+    private String normalizeV4FromAsterisk(String netspec) throws UnknownHostException {
+        netspec = standardIpWhenWildcard(netspec);
+
+        int octets = StringUtils.countMatches(netspec, IP_V4_SIGNATURE);
+
+        if (octets >= FULL_RANGE_IP4.size()) {
+            throw new UnknownHostException();
+        }
+        return netspec + FULL_RANGE_IP4.get(octets);
+    }
+
+    private String standardIpWhenWildcard(String netspec) {
+        netspec = StringUtils.substringBefore(netspec, WILDCARD);
+        if (!StringUtils.endsWith(netspec, IP_V4_SIGNATURE)) {
+            netspec += IP_V4_SIGNATURE;
+        }
+        return netspec;
+    }
+
+    private String normalizeV4FromCIDR(String host, String markLength) throws UnknownHostException {
+        return host + IP_AND_NETMARK_SEPARATOR + getNetMask(getMask(markLength));
+    }
+
+    private static int getMask(String markLength) throws UnknownHostException {
+        int bits = 0;
+        try {
+            bits = 32 - Integer.parseInt(markLength);
+        } catch (NumberFormatException e) {
+            throw new UnknownHostException(markLength);
+        }
+        if (bits == 32) {
+            return 0;
         }
 
-        return new Inet6Network(dnsService.getByName(netspec.substring(0, netspec.indexOf('/'))), new Integer(netspec.substring(netspec.indexOf('/') + 1)));
+        return 0xFFFFFFFF - ((1 << bits) - 1);
     }
 
-    /**
-     * This converts from an uncommon "wildcard" CIDR format to "address + mask"
-     * format:
-     *
-     * <pre>
-     * * => 000.000.000.0/000.000.000.0
-     * xxx.* => xxx.000.000.0/255.000.000.0
-     * xxx.xxx.* => xxx.xxx.000.0/255.255.000.0
-     * xxx.xxx.xxx.* => xxx.xxx.xxx.0/255.255.255.0
-     * </pre>
-     * 
-     * @param netspec
-     * @return addrMask the address/mask of the given argument
-     */
-    private static String normalizeV4FromAsterisk(String netspec) {
-        String[] masks = { "0.0.0.0/0.0.0.0", "0.0.0/255.0.0.0", "0.0/255.255.0.0", "0/255.255.255.0" };
-
-        char[] srcb = netspec.toCharArray();
-
-        int octets = 0;
-
-        for (int i = 1; i < netspec.length(); i++) {
-            if (srcb[i] == '.')
-                octets++;
-        }
-
-        return (octets == 0) ? masks[0] : netspec.substring(0, netspec.length() - 1).concat(masks[octets]);
-
+    private String getNetMask(int mask) {
+        return FluentIterable.from(MAST_PARTS)
+                .transform(getNetMarkPart(mask))
+                .join(Joiner.on(IP_V4_SIGNATURE));
     }
 
-    /**
-     * RFC 1518, 1519 - Classless Inter-Domain Routing (CIDR) This converts from
-     * "prefix + prefix-length" format to "address + mask" format, e.g. from
-     * 
-     * <pre>
-     * xxx.xxx.xxx.xxx / yy
-     * </pre>
-     * 
-     * to
-     * 
-     * <pre>
-     * xxx.xxx.xxx.xxx / yyy.yyy.yyy.yyy
-     * </pre>
-     * 
-     * .
-     * 
-     * @param netspec
-     *            the xxx.xxx.xxx.xxx/yyy format
-     * @return addrMask the xxx.xxx.xxx.xxx/yyy.yyy.yyy.yyy format
-     */
-    private static String normalizeV4FromCIDR(String netspec) {
-
-        final int bits = 32 - Integer.parseInt(netspec.substring(netspec.indexOf('/') + 1));
-
-        final int mask = (bits == 32) ? 0 : 0xFFFFFFFF - ((1 << bits) - 1);
-
-        return netspec.substring(0, netspec.indexOf('/') + 1) + Integer.toString(mask >> 24 & 0xFF, 10) + "." + Integer.toString(mask >> 16 & 0xFF, 10) + "." + Integer.toString(mask >> 8 & 0xFF, 10) + "." + Integer.toString(mask & 0xFF, 10);
+    private Function<Integer, String> getNetMarkPart(final int mask) {
+        return new Function<Integer, String>() {
+            @Override
+            public String apply(Integer part) {
+                return Integer.toString(mask >> part & 0xFF, DECIMAL_RADIX);
+            }
+        };
     }
-
 }
