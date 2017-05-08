@@ -228,6 +228,11 @@ public class GetMessagesMethodStepdefs {
         appendMessage(messageName, "eml/windows1252charset.eml");
     }
 
+    @Given("^the user has a message \"([^\"]*)\" in \"([^\"]*)\" mailbox with special case$")
+    public void appendMessageWithSpecialCase(String messageName, String mailbox) throws Throwable {
+        appendMessage(messageName, "eml/special.eml");
+    }
+
     private void appendMessage(String messageName, String emlFileName) throws Exception {
         ZonedDateTime dateTime = ZonedDateTime.parse("2014-10-30T14:12:00Z");
         MessageId id = mainStepdefs.jmapServer.getProbe(MailboxProbeImpl.class).appendMessage(userStepdefs.lastConnectedUser,
