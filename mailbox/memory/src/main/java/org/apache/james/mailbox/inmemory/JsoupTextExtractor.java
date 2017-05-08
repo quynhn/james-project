@@ -27,11 +27,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.james.mailbox.extractor.ParsedContent;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import com.google.common.collect.Maps;
 
 
 public class JsoupTextExtractor implements TextExtractor {
+    private static final String TITLE_HTML_TAG = "title";
 
     @Override
     public ParsedContent extractContent(InputStream inputStream, String contentType, String fileName) throws Exception {
@@ -41,8 +43,9 @@ public class JsoupTextExtractor implements TextExtractor {
             return new ParsedContent(IOUtils.toString(inputStream), emptyMetadata);
            }
            if (contentType.equals("text/html")) {
-               String text = Jsoup.parse(IOUtils.toString(inputStream)).text();
-               return new ParsedContent(text, emptyMetadata);
+               Document doc = Jsoup.parse(IOUtils.toString(inputStream));
+               doc.select(TITLE_HTML_TAG).remove();
+               return new ParsedContent(doc.text(), emptyMetadata);
            }
         }
         return new ParsedContent(null, emptyMetadata);
