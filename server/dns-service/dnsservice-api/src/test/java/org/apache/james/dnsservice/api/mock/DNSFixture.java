@@ -52,7 +52,7 @@ public class DNSFixture {
     /**
      * A Mock DNS Server that handles IPv4-only InetAddress.
      */
-    public static final DNSService DNS_SERVER_IPV4_MOCK = new MockDNSService() {
+    public static final DNSService DNS_SERVER_MOCK = new MockDNSService() {
 
         @Override
         public String getHostName(InetAddress inet) {
@@ -74,31 +74,6 @@ public class DNSFixture {
             if (HOST_CANNOT_LOOKUP_BY_NAME.equals(host)) {
                 throw new UnknownHostException();
             }
-            return InetAddress.getByName(host);
-        }
-    };
-    /**
-     * A Mock DNS Server that handles IPv6-only InetAddress.
-     */
-    public static final DNSService DNS_SERVER_IPV6_MOCK = new MockDNSService() {
-
-        @Override
-        public String getHostName(InetAddress inet) {
-            return "localhost";
-        }
-
-        @Override
-        public InetAddress[] getAllByName(String name) throws UnknownHostException {
-            return new InetAddress[]{InetAddress.getByName("::1")};
-        }
-
-        @Override
-        public InetAddress getLocalHost() throws UnknownHostException {
-            return InetAddress.getLocalHost();
-        }
-
-        @Override
-        public InetAddress getByName(String host) throws UnknownHostException {
             return InetAddress.getByName(host);
         }
     };

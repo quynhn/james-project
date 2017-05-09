@@ -18,8 +18,7 @@
  ****************************************************************/
 package org.apache.james.dnsservice.library.inetnetwork;
 
-import static org.apache.james.dnsservice.api.mock.DNSFixture.DNS_SERVER_IPV4_MOCK;
-import static org.apache.james.dnsservice.api.mock.DNSFixture.DNS_SERVER_IPV6_MOCK;
+import static org.apache.james.dnsservice.api.mock.DNSFixture.DNS_SERVER_MOCK;
 import static org.apache.james.dnsservice.api.mock.DNSFixture.HOST_IP_V4;
 import static org.apache.james.dnsservice.api.mock.DNSFixture.HOST_IP_V6;
 import static org.apache.james.dnsservice.api.mock.DNSFixture.LOCALHOST_IP_V4_ADDRESS_0;
@@ -48,17 +47,17 @@ public class InetNetworkUtilTest {
 
     @Test
     public void getFromStringShouldCalculateMarkAndReturnIpV4() throws UnknownHostException {
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
 
         inetNetwork = inetNetworkUtil.getFromString(LOCALHOST_IP_V4_ADDRESS_0);
-        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_IPV4_MOCK.getByName(IP_V4), DNS_SERVER_IPV4_MOCK.getByName("255.255.0.0")));
+        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_MOCK.getByName(IP_V4), DNS_SERVER_MOCK.getByName("255.255.0.0")));
     }
 
     @Test
     public void getFromStringShouldThrownWhenMarkLengthIsNotNumber() throws UnknownHostException {
         expectedException.expect(UnknownHostException.class);
 
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
         inetNetwork = inetNetworkUtil.getFromString(IP_V4 + "/invalid");
     }
 
@@ -66,50 +65,50 @@ public class InetNetworkUtilTest {
     public void getFromStringShouldThrownWhenMarkLengthIsEmpty() throws UnknownHostException {
         expectedException.expect(UnknownHostException.class);
 
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
         inetNetwork = inetNetworkUtil.getFromString(IP_V4 + "/");
 
-        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_IPV4_MOCK.getByName(IP_V4), DNS_SERVER_IPV4_MOCK.getByName("255.255.0.0")));
+        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_MOCK.getByName(IP_V4), DNS_SERVER_MOCK.getByName("255.255.0.0")));
     }
 
     @Test
     public void getFromStringShouldReturnRootIpV4WhenZeroMarkLength() throws UnknownHostException {
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
         inetNetwork = inetNetworkUtil.getFromString(IP_V4 + "/0");
 
-        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_IPV4_MOCK.getByName("0.0.0.0"), DNS_SERVER_IPV4_MOCK.getByName("0.0.0.0")));
+        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_MOCK.getByName("0.0.0.0"), DNS_SERVER_MOCK.getByName("0.0.0.0")));
     }
 
     @Test
     public void getFromStringShouldGetMaxMarkWhenNoMark() throws UnknownHostException {
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
 
         inetNetwork = inetNetworkUtil.getFromString(IP_V4);
-        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_IPV4_MOCK.getByName(IP_V4), DNS_SERVER_IPV4_MOCK.getByName("255.255.255.255")));
+        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_MOCK.getByName(IP_V4), DNS_SERVER_MOCK.getByName("255.255.255.255")));
     }
 
     @Test
     public void getFromStringShouldReturnIpV4() throws UnknownHostException {
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
 
         inetNetwork = inetNetworkUtil.getFromString(LOCALHOST_IP_V4_ADDRESS_2);
-        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_IPV4_MOCK.getByName(HOST_IP_V4), DNS_SERVER_IPV4_MOCK.getByName(MASK_IP_V4)));
+        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_MOCK.getByName(HOST_IP_V4), DNS_SERVER_MOCK.getByName(MASK_IP_V4)));
     }
 
     @Test
     public void getFromStringShouldReturnIpV6() throws UnknownHostException {
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV6_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
 
         inetNetwork = inetNetworkUtil.getFromString(LOCALHOST_IP_V6_ADDRESS_0);
-        assertThat(inetNetwork).isEqualTo(new Inet6Network(DNS_SERVER_IPV6_MOCK.getByName(LOCALHOST_IP_V6_ADDRESS_0), 32768));
+        assertThat(inetNetwork).isEqualTo(new Inet6Network(DNS_SERVER_MOCK.getByName(LOCALHOST_IP_V6_ADDRESS_0), 32768));
     }
 
     @Test
     public void getFromStringShouldReturnIpV6WhenPercentageCharacterComparator() throws UnknownHostException {
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV6_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
 
         inetNetwork = inetNetworkUtil.getFromString(LOCALHOST_IP_V6_ADDRESS_2);
-        assertThat(inetNetwork).isEqualTo(new Inet6Network(DNS_SERVER_IPV6_MOCK.getByName(HOST_IP_V6), 48));
+        assertThat(inetNetwork).isEqualTo(new Inet6Network(DNS_SERVER_MOCK.getByName(HOST_IP_V6), 48));
     }
 
     @Test
@@ -126,7 +125,7 @@ public class InetNetworkUtilTest {
     public void getFromStringShouldThrowWhenWrongIPV6() throws Exception {
         expectedException.expect(UnknownHostException.class);
 
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV6_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
         inetNetworkUtil.getFromString("00:00:00:00:00:00:00:00:1");
     }
 
@@ -134,7 +133,7 @@ public class InetNetworkUtilTest {
     public void getFromStringShouldThrowWhenIpV4WithWildcardAndTooMuchSignatureString() throws Exception {
         expectedException.expect(UnknownHostException.class);
 
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
         inetNetwork = inetNetworkUtil.getFromString("0.0.0.0.0.0/16*");
     }
 
@@ -142,31 +141,31 @@ public class InetNetworkUtilTest {
     public void getFromStringShouldThrowWhenInvalidIpV4WithWildcard() throws Exception {
         expectedException.expect(UnknownHostException.class);
 
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
         inetNetwork = inetNetworkUtil.getFromString("0.0.0.0/16*");
     }
 
     @Test
     public void getFromStringShouldReturnWhenIpV4WithWildcard() throws Exception {
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
         inetNetwork = inetNetworkUtil.getFromString("182.168.*");
 
-        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_IPV4_MOCK.getByName("182.168.0.0"), DNS_SERVER_IPV4_MOCK.getByName("255.255.0.0")));
+        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_MOCK.getByName("182.168.0.0"), DNS_SERVER_MOCK.getByName("255.255.0.0")));
     }
 
     @Test
-    public void getFromStringShouldStandardHostIpAndReturnWhenIpV4WithWildcard1() throws Exception {
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+    public void getFromStringShouldStandardHostIpAndReturnWhenIpV4WithWildcard() throws Exception {
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
         inetNetwork = inetNetworkUtil.getFromString("182.168*");
 
-        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_IPV4_MOCK.getByName("182.168.0.0"), DNS_SERVER_IPV4_MOCK.getByName("255.255.0.0")));
+        assertThat(inetNetwork).isEqualTo(new Inet4Network(DNS_SERVER_MOCK.getByName("182.168.0.0"), DNS_SERVER_MOCK.getByName("255.255.0.0")));
     }
 
     @Test
     public void getFromStringShouldThrowWhenWrongIPV4() throws Exception {
         expectedException.expect(UnknownHostException.class);
 
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV4_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
         inetNetworkUtil.getFromString("0.0.0.0.0");
     }
 
@@ -175,7 +174,7 @@ public class InetNetworkUtilTest {
     public void getFromStringShouldThrowWhenIpV6WithWildcard() throws Exception {
         expectedException.expect(UnsupportedOperationException.class);
 
-        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_IPV6_MOCK);
+        inetNetworkUtil = new InetNetworkUtil(DNS_SERVER_MOCK);
         inetNetwork = inetNetworkUtil.getFromString("0:0:0:0:0:0/16*");
     }
 }
