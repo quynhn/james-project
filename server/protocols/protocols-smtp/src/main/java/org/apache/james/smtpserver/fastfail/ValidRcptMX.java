@@ -30,6 +30,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.api.TemporaryResolutionException;
 import org.apache.james.dnsservice.library.netmatcher.NetMatcher;
+import org.apache.james.dnsservice.library.netmatcher.NetMatcherFactory;
 import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.smtp.MailAddress;
 import org.apache.james.protocols.smtp.SMTPRetCode;
@@ -101,11 +102,7 @@ public class ValidRcptMX implements RcptHook, ProtocolHandler {
      * @param dnsServer The DNSServer
      */
     public void setBannedNetworks(Collection<String> networks, DNSService dnsServer) {
-        bNetwork = new NetMatcher(networks, dnsServer) {
-            protected void log(String s) {
-                serviceLog.debug(s);
-            }
-        };
+        bNetwork = NetMatcherFactory.getNetMatcher(networks, dnsServer);
     }
 
     public HookResult doRcpt(SMTPSession session, MailAddress sender, MailAddress rcpt) {

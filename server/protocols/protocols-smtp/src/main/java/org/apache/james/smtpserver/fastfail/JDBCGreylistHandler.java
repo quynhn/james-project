@@ -39,6 +39,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.library.netmatcher.NetMatcher;
+import org.apache.james.dnsservice.library.netmatcher.NetMatcherFactory;
 import org.apache.james.filesystem.api.FileSystem;
 import org.apache.james.protocols.api.handler.ProtocolHandler;
 import org.apache.james.protocols.smtp.MailAddress;
@@ -424,7 +425,7 @@ public class JDBCGreylistHandler extends AbstractGreylistHandler implements Prot
             for (String aWhitelistArray : whitelistArray) {
                 wList.add(aWhitelistArray.trim());
             }
-            wNetworks = new NetMatcher(wList, dnsService);
+            wNetworks = NetMatcherFactory.getNetMatcher(wList, dnsService);
             serviceLog.info("Whitelisted addresses: " + getWhiteListedNetworks().toString());
         }
 

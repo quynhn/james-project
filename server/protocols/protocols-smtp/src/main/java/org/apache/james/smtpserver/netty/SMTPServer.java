@@ -26,6 +26,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.library.netmatcher.NetMatcher;
+import org.apache.james.dnsservice.library.netmatcher.NetMatcherFactory;
 import org.apache.james.protocols.api.ProtocolSession;
 import org.apache.james.protocols.api.ProtocolTransport;
 import org.apache.james.protocols.api.logger.ProtocolLoggerAdapter;
@@ -110,7 +111,7 @@ public class SMTPServer extends AbstractProtocolAsyncServer implements SMTPServe
                 String addr = st.nextToken();
                 networks.add(addr);
             }
-            authorizedNetworks = new NetMatcher(networks, dns);
+            authorizedNetworks = NetMatcherFactory.getNetMatcher(networks, dns);
         }
         SMTPProtocol transport = new SMTPProtocol(getProtocolHandlerChain(), theConfigData, new ProtocolLoggerAdapter(getLogger())) {
 

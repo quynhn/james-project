@@ -31,6 +31,7 @@ import javax.mail.MessagingException;
 
 import org.apache.james.dnsservice.api.DNSService;
 import org.apache.james.dnsservice.library.netmatcher.NetMatcher;
+import org.apache.james.dnsservice.library.netmatcher.NetMatcherFactory;
 import org.apache.mailet.Experimental;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
@@ -108,7 +109,7 @@ public class NetworkIsInWhitelist extends AbstractSQLWhitelistMatcher {
                 jdbcUtil.closeJDBCResultSet(selectRS);
                 jdbcUtil.closeJDBCStatement(selectStmt);
             }
-            NetMatcher matcher = new NetMatcher(nets, dns);
+            NetMatcher matcher = NetMatcherFactory.getNetMatcher(nets, dns);
             boolean matched = matcher.matchInetNetwork(mail.getRemoteAddr());
 
             if (!matched) {
@@ -125,7 +126,7 @@ public class NetworkIsInWhitelist extends AbstractSQLWhitelistMatcher {
                     jdbcUtil.closeJDBCResultSet(selectRS);
                     jdbcUtil.closeJDBCStatement(selectStmt);
                 }
-                matcher = new NetMatcher(nets, dns);
+                matcher = NetMatcherFactory.getNetMatcher(nets, dns);
                 matched = matcher.matchInetNetwork(mail.getRemoteAddr());
             }
             return matched;
