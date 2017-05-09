@@ -37,11 +37,11 @@ import com.google.common.collect.ImmutableList;
  * Builds a InetNetwork (Inet4Network or Inet6Network) in function on the
  * provided string pattern that represents a subnet.
  * </p>
- * 
+ *
  * <p>
  * Inet4Network is constructed based on the IPv4 subnet expressed in one of
  * several formats:
- * 
+ *
  * <pre>
  *     IPv4 Format                     Example
  *     Explicit address                127.0.0.1
@@ -52,14 +52,14 @@ import com.google.common.collect.ImmutableList;
  *     IP address + prefix-length      127.0.0.0/8
  *     IP + mask                       127.0.0.0/255.0.0.0
  * </pre>
- * 
+ *
  * For more information on IP V4, see RFC 1518 and RFC 1519.
  * </p>
- * 
+ *
  * <p>
  * Inet6Network is constructed based on the IPv4 subnet expressed in one of
  * several formats:
- * 
+ *
  * <pre>
  *     IPv6 Format                     Example
  *     Explicit address                0000:0000:0000:0000:0000:0000:0000:0001
@@ -71,7 +71,7 @@ import com.google.common.collect.ImmutableList;
  *     Domain name + mask (%)          myHost.com%48
  *     Explicit shorted address        ::1
  * </pre>
- * 
+ *
  * For more information on IP V6, see RFC 2460. (See also <a
  * href="http://en.wikipedia.org/wiki/IPv6_address"
  * >http://en.wikipedia.org/wiki/IPv6_address</a>)
@@ -84,10 +84,20 @@ public class InetNetworkUtil {
     private static final String IP_AND_NETMARK_SEPARATOR = "/";
     private static final String IP_AND_NETMARK_SEPARATOR_ANOTHER_ON_V6 = "%";
     private static final List<String> FULL_RANGE_IP4 = ImmutableList.of("0.0.0.0/0.0.0.0", "0.0.0/255.0.0.0", "0.0/255.255.0.0", "0/255.255.255.0");
-    private static final String MAX_NET_MASK_V4 = "/255.255.255.255";
     private static final String MAX_NET_MASK_V6 = "/32768";
     private static final List<Integer> MAST_PARTS = ImmutableList.of(24, 16, 8, 1);
     private static final int DECIMAL_RADIX = 10;
+    private static final int MAX_BITS_NUMBER = 32;
+    private static final int FULL_BIT_SET_OF_NET_MARK = 0xFFFFFFFF;
+
+    private static final Function<Integer, String> getNetMarkPart(final int mask) {
+        return new Function<Integer, String>() {
+            @Override
+            public String apply(Integer part) {
+                return Integer.toString(calculateAPartOfNetMark(part, mask), DECIMAL_RADIX);
+            }
+        };
+    }
 
     private final DNSService dnsService;
 
@@ -97,7 +107,7 @@ public class InetNetworkUtil {
 
     public InetNetwork getFromString(String netspec) throws UnknownHostException {
         if (isV6(netspec)) {
-           return getV6FromString(netspec);
+            return getV6FromString(netspec);
         }
 
         return getV4FromString(netspec);
@@ -111,7 +121,7 @@ public class InetNetworkUtil {
         if (StringUtils.endsWith(netspec, WILDCARD)) {
             netspec = normalizeV4FromAsterisk(netspec);
         } else {
-            netspec = standardIpWithNetmarkSeparator(netspec, MAX_NET_MASK_V4);
+            netspec = standardIpWithNetmarkSeparator(netspec, intToIP(FULL_BIT_SET_OF_NET_MARK));
             String host = StringUtils.substringBefore(netspec, IP_AND_NETMARK_SEPARATOR);
             String mask = StringUtils.substringAfter(netspec, IP_AND_NETMARK_SEPARATOR);
             if (StringUtils.containsNone(mask, IP_V4_SIGNATURE)) {
@@ -142,7 +152,7 @@ public class InetNetworkUtil {
 
     private String standardIpWithNetmarkSeparator(String netspec, String maxNetMask) {
         if (StringUtils.containsNone(netspec, IP_AND_NETMARK_SEPARATOR)) {
-            return netspec + maxNetMask;
+            return netspec + IP_AND_NETMARK_SEPARATOR + maxNetMask;
         }
         return netspec;
     }
@@ -167,35 +177,34 @@ public class InetNetworkUtil {
     }
 
     private String normalizeV4FromCIDR(String host, String markLength) throws UnknownHostException {
-        return host + IP_AND_NETMARK_SEPARATOR + getNetMask(getMask(markLength));
+        return host + IP_AND_NETMARK_SEPARATOR + intToIP(maskWithMaxLengthToInt(markLength));
     }
 
-    private static int getMask(String markLength) throws UnknownHostException {
-        int bits = 0;
-        try {
-            bits = 32 - Integer.parseInt(markLength);
-        } catch (NumberFormatException e) {
-            throw new UnknownHostException(markLength);
-        }
-        if (bits == 32) {
-            return 0;
-        }
-
-        return 0xFFFFFFFF - ((1 << bits) - 1);
-    }
-
-    private String getNetMask(int mask) {
+    private String intToIP(int mask) {
         return FluentIterable.from(MAST_PARTS)
                 .transform(getNetMarkPart(mask))
                 .join(Joiner.on(IP_V4_SIGNATURE));
     }
 
-    private Function<Integer, String> getNetMarkPart(final int mask) {
-        return new Function<Integer, String>() {
-            @Override
-            public String apply(Integer part) {
-                return Integer.toString(mask >> part & 0xFF, DECIMAL_RADIX);
-            }
-        };
+    private int maskWithMaxLengthToInt(String markLength) throws UnknownHostException {
+        int bitsOfMark = 0;
+        try {
+            bitsOfMark = MAX_BITS_NUMBER - Integer.parseInt(markLength);
+        } catch (NumberFormatException e) {
+            throw new UnknownHostException(markLength);
+        }
+        if (bitsOfMark == MAX_BITS_NUMBER) {
+            return 0;
+        }
+
+        return FULL_BIT_SET_OF_NET_MARK - calculateMaxLengthBitSetOfNetmark(bitsOfMark);
+    }
+
+    private int calculateMaxLengthBitSetOfNetmark(int bitsOfMark) {
+        return (1 << bitsOfMark) - 1;
+    }
+
+    private static int calculateAPartOfNetMark(Integer part, int mask) {
+        return mask >> part & 0xFF;
     }
 }
