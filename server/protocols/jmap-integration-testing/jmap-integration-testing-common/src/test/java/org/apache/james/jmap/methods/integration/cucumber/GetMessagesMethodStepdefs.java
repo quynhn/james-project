@@ -37,10 +37,12 @@ import javax.inject.Inject;
 import javax.mail.Flags;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 import org.apache.james.jmap.DefaultMailboxes;
 import org.apache.james.jmap.methods.integration.cucumber.util.TableRow;
+import org.apache.james.jmap.model.MessagePreviewGenerator;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
@@ -228,9 +230,9 @@ public class GetMessagesMethodStepdefs {
         appendMessage(messageName, "eml/windows1252charset.eml");
     }
 
-    @Given("^the user has a message \"([^\"]*)\" in \"([^\"]*)\" mailbox with special case$")
+    @Given("^the user has a message \"([^\"]*)\" in \"([^\"]*)\" mailbox with long and complicated HTML content$")
     public void appendMessageWithSpecialCase(String messageName, String mailbox) throws Throwable {
-        appendMessage(messageName, "eml/special.eml");
+        appendMessage(messageName, "eml/htmlWithLongAndComplicatedContent.eml");
     }
 
     private void appendMessage(String messageName, String emlFileName) throws Exception {
@@ -428,6 +430,15 @@ public class GetMessagesMethodStepdefs {
     public void assertPreviewOfTheFirstMessageIsNotEmpty() throws Throwable {
         String actual = jsonPath.<String>read(FIRST_MESSAGE + ".preview").replace("\n", " ").trim();
         assertThat(actual).isNotEmpty();
+    }
+
+    @Then("^the preview of the message is present and normalized$")
+    public void assertPreviewShouldBeNormalized() throws Throwable {
+        String actual = jsonPath.<String>read(FIRST_MESSAGE + ".preview");
+        assertThat(actual).hasSize(MessagePreviewGenerator.MAX_PREVIEW_LENGTH)
+                .doesNotMatch("  ")
+                .doesNotContain(StringUtils.CR)
+                .doesNotContain(StringUtils.LF);
     }
 
     @Then("^the headers of the message contains:$")

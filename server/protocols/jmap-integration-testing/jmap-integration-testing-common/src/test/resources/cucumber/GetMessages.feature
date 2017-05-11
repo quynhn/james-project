@@ -286,9 +286,9 @@ Feature: GetMessages method
     And the textBody of the message is "àààà\r\n\r\néééé\r\n\r\nèèèè\r\n"
     And the htmlBody of the message is "<html>\r\n  <p>àààà</p>\r\n  <p>éééé</p>\r\n  <p>èèèè</p>\r\n</html>\r\n"
 
-  Scenario: Preview should respect in special cases
-    Given the user has a message "m1" in "INBOX" mailbox with special case
+  Scenario: Preview should be normalized in case of long and complicated HTML content
+    Given the user has a message "m1" in "INBOX" mailbox with long and complicated HTML content
     When the user ask for messages "m1"
     Then no error is returned
     And the list should contain 1 message
-    And the preview of the message is "Afficher l'email dans le navigateur. Hackathon sur les technologies Open Source avec Passerelles Numériques à Danang LINAGORA est fière d'être partenaire de Passerelles Numériques pour animer un Hackathon avec des jeunes étudiants dynamiques et prometteurs"
+    And the preview of the message is present and normalized
