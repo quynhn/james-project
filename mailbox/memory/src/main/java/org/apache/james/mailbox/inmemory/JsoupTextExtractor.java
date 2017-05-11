@@ -26,6 +26,8 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.apache.james.mailbox.extractor.ParsedContent;
 import org.apache.james.mailbox.extractor.TextExtractor;
+
+import com.google.common.base.Charsets;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -34,17 +36,16 @@ import com.google.common.collect.Maps;
 
 public class JsoupTextExtractor implements TextExtractor {
     private static final String TITLE_HTML_TAG = "title";
-    private static final String UTF8_ENCODING = "UTF-8";
 
     @Override
     public ParsedContent extractContent(InputStream inputStream, String contentType, String fileName) throws Exception {
         Map<String, List<String>> emptyMetadata = Maps.newHashMap();
         if (contentType != null) {
            if (contentType.equals("text/plain")) {
-            return new ParsedContent(IOUtils.toString(inputStream, UTF8_ENCODING), emptyMetadata);
+            return new ParsedContent(IOUtils.toString(inputStream, Charsets.UTF_8), emptyMetadata);
            }
            if (contentType.equals("text/html")) {
-               Document doc = Jsoup.parse(IOUtils.toString(inputStream, UTF8_ENCODING));
+               Document doc = Jsoup.parse(IOUtils.toString(inputStream, Charsets.UTF_8));
                doc.select(TITLE_HTML_TAG).remove();
                return new ParsedContent(doc.text(), emptyMetadata);
            }
