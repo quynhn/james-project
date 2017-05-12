@@ -291,4 +291,5 @@ Feature: GetMessages method
     When the user ask for messages "m1"
     Then no error is returned
     And the list should contain 1 message
-    And the preview of the message is present and normalized
+    And the preview of the message is not empty
+    And the preview should not contain consecutive spaces or blank characters

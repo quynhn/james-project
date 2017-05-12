@@ -428,11 +428,11 @@ public class GetMessagesMethodStepdefs {
 
     @Then("^the preview of the message is not empty$")
     public void assertPreviewOfTheFirstMessageIsNotEmpty() throws Throwable {
-        String actual = jsonPath.<String>read(FIRST_MESSAGE + ".preview").replace("\n", " ").trim();
+        String actual = jsonPath.<String>read(FIRST_MESSAGE + ".preview");
         assertThat(actual).isNotEmpty();
     }
 
-    @Then("^the preview of the message is present and normalized$")
+    @Then("^the preview should not contain consecutive spaces or blank characters$")
     public void assertPreviewShouldBeNormalized() throws Throwable {
         String actual = jsonPath.<String>read(FIRST_MESSAGE + ".preview");
         assertThat(actual).hasSize(MessagePreviewGenerator.MAX_PREVIEW_LENGTH)
