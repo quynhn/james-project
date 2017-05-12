@@ -67,7 +67,7 @@ public class MessagePreviewGeneratorTest {
 
     @Test
     public void computeShouldReturnNormalizeSpaceString() throws Exception {
-        String body = "    this      is      the           preview         content         ";
+        String body = "    this      is\n      the\r           preview\t         content\n\n         ";
 
         assertThat(testee.compute(Optional.of(body)))
                 .isEqualTo("this is the preview content");
