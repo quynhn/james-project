@@ -43,7 +43,25 @@ public class CidTest {
         expectedException.expect(IllegalArgumentException.class);
         Cid.from("");
     }
-    
+
+    @Test
+    public void fromShouldThrowWhenBlank() {
+        expectedException.expect(IllegalArgumentException.class);
+        Cid.from("    ");
+    }
+
+    @Test
+    public void fromShouldThrowWhenEmptyAfterRemoveTags() {
+        expectedException.expect(IllegalArgumentException.class);
+        Cid.from("<>");
+    }
+
+    @Test
+    public void fromShouldThrowWhenBlankAfterRemoveTags() {
+        expectedException.expect(IllegalArgumentException.class);
+        Cid.from("<   >");
+    }
+
     @Test
     public void fromShouldRemoveTagsWhenExists() {
         Cid cid = Cid.from("<123>");
@@ -67,7 +85,7 @@ public class CidTest {
         Cid cid = Cid.from("123>");
         assertThat(cid.getValue()).isEqualTo("123>");
     }
-    
+
     @Test
     public void shouldRespectJavaBeanContract() {
         EqualsVerifier.forClass(Cid.class).verify();

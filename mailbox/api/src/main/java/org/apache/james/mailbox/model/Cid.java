@@ -20,6 +20,8 @@
 package org.apache.james.mailbox.model;
 
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
@@ -27,8 +29,12 @@ public class Cid {
 
     public static Cid from(String cidAsString) {
         Preconditions.checkNotNull(cidAsString);
-        Preconditions.checkArgument(!cidAsString.isEmpty(), "'cidAsString' is mandatory");
-        return new Cid(normalizedCid(cidAsString));
+        Preconditions.checkArgument(!StringUtils.isBlank(cidAsString), "'cidAsString' is mandatory");
+        String normalizedCid = normalizedCid(cidAsString);
+        if (StringUtils.isBlank(normalizedCid)) {
+            throw new IllegalArgumentException("'cidAsString' is mandatory");
+        }
+        return new Cid(normalizedCid);
     }
 
     private static String normalizedCid(String input) {
