@@ -79,6 +79,7 @@ public class MessageParser {
             }
         }
     };
+
     private static final Function<ContentIdField, Optional<Cid>> CONTENT_ID_FIELD_TO_OPTIONAL_CID_FUNCTION = new Function<ContentIdField, Optional<Cid>>() {
         @Override
         public Optional<Cid> apply(ContentIdField field) {
@@ -197,7 +198,7 @@ public class MessageParser {
 
     private Optional<Cid> cid(Optional<ContentIdField> contentIdField) {
         return contentIdField.transform(CONTENT_ID_FIELD_TO_OPTIONAL_CID_FUNCTION)
-                .or(Optional.<Cid> absent());
+                .or(Optional.<Cid>absent());
     }
 
     private boolean isMultipart(Entity entity) {
