@@ -28,13 +28,8 @@ import com.google.common.base.Preconditions;
 public class Cid {
 
     public static Cid from(String cidAsString) {
-        Preconditions.checkNotNull(cidAsString);
         Preconditions.checkArgument(!StringUtils.isBlank(cidAsString), "'cidAsString' is mandatory");
-        String normalizedCid = normalizedCid(cidAsString);
-        if (StringUtils.isBlank(normalizedCid)) {
-            throw new IllegalArgumentException("'cidAsString' is mandatory");
-        }
-        return new Cid(normalizedCid);
+        return new Cid(normalizedCid(cidAsString));
     }
 
     private static String normalizedCid(String input) {
@@ -45,7 +40,11 @@ public class Cid {
     }
     
     private static String unwrap(String cidAsString) {
-        return cidAsString.substring(1, cidAsString.length() - 1);
+        String unwrapCid = cidAsString.substring(1, cidAsString.length() - 1);
+        if (StringUtils.isBlank(unwrapCid)) {
+            throw new IllegalArgumentException("'cidAsString' is mandatory");
+        }
+        return unwrapCid;
     }
 
     private static boolean isWrappedWithAngleBrackets(String cidAsString) {

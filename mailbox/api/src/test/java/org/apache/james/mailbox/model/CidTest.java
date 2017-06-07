@@ -34,7 +34,7 @@ public class CidTest {
     
     @Test
     public void fromShouldThrowWhenNull() {
-        expectedException.expect(NullPointerException.class);
+        expectedException.expect(IllegalArgumentException.class);
         Cid.from(null);
     }
     
