@@ -21,9 +21,9 @@ package org.apache.james.mailbox.cassandra.table;
 
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageIds.MESSAGE_ID;
 
-public interface CassandraMessageTable {
+public interface CassandraMessageV1Table {
 
-    String TABLE_NAME = "message";
+    String TABLE_NAME = "messageV1";
     String INTERNAL_DATE = "internalDate";
     String BODY_START_OCTET = "bodyStartOctet";
     String FULL_CONTENT_OCTETS = "fullContentOctets";
