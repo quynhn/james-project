@@ -38,6 +38,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
+import org.apache.james.mailbox.cassandra.Limit;
 import org.apache.james.mailbox.cassandra.mail.migration.V1ToV2Migration;
 import org.apache.james.mailbox.cassandra.mail.utils.FlagsUpdateStageResult;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -175,7 +176,7 @@ public class CassandraMessageMapper implements MessageMapper {
     @Override
     public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange messageRange, FetchType ftype, int max) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
-        return retrieveMessages(retrieveMessageIds(mailboxId, messageRange), ftype, Optional.of(max))
+        return retrieveMessages(retrieveMessageIds(mailboxId, messageRange), ftype, Limit.from(max))
                 .join()
                 .map(SimpleMailboxMessage -> (MailboxMessage) SimpleMailboxMessage)
                 .sorted(Comparator.comparing(MailboxMessage::getUid))
@@ -188,7 +189,7 @@ public class CassandraMessageMapper implements MessageMapper {
                 .collect(Guavate.toImmutableList());
     }
 
-    private CompletableFuture<Stream<SimpleMailboxMessage>> retrieveMessages(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Optional<Integer> limit) {
+    private CompletableFuture<Stream<SimpleMailboxMessage>> retrieveMessages(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Limit limit) {
         CompletableFuture<Stream<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>>
             messageRepresentations = retrieveMessagesAndDoMigrationIfNeeded(messageIds, fetchType, limit);
 
@@ -239,14 +240,14 @@ public class CassandraMessageMapper implements MessageMapper {
             .map(uid -> messageIdDAO.retrieve(mailboxId, uid)))
             .flatMap(OptionalConverter::toStream)
             .performOnAll(this::deleteUsingMailboxId)
-            .thenComposeOnAll(idWithMetadata -> retrieveMessagesAndDoMigrationIfNeeded(ImmutableList.of(idWithMetadata), FetchType.Metadata, UNLIMITED))
+            .thenComposeOnAll(idWithMetadata -> retrieveMessagesAndDoMigrationIfNeeded(ImmutableList.of(idWithMetadata), FetchType.Metadata, Limit.unlimited()))
             .flatMap(s -> s)
             .map(pair -> pair.getKey().toMailboxMessage(ImmutableList.of()))
             .completableFuture();
     }
 
     private CompletableFuture<Stream<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>> retrieveMessagesAndDoMigrationIfNeeded(
-            List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Optional<Integer> limit) {
+            List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Limit limit) {
         return messageDAOV2.retrieveMessages(messageIds, fetchType, limit)
                 .thenCompose(messageResults -> FluentFutureStream.of(messageResults
                         .map(v1ToV2Migration::handleVersioning))

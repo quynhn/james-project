@@ -33,6 +33,7 @@ import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
+import org.apache.james.mailbox.cassandra.Limit;
 import org.apache.james.mailbox.cassandra.mail.CassandraAttachmentMapper;
 import org.apache.james.mailbox.cassandra.mail.CassandraBlobsDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraMessageDAO;
@@ -134,7 +135,7 @@ public class V1ToV2MigrationTest {
 
         testee.handleVersioning(CassandraMessageDAOV2.notFound(metaData)).join();
 
-        CassandraMessageDAOV2.MessageResult messageResult = messageDAOV2.retrieveMessages(metaDataList, MessageMapper.FetchType.Full, Optional.empty())
+        CassandraMessageDAOV2.MessageResult messageResult = messageDAOV2.retrieveMessages(metaDataList, MessageMapper.FetchType.Full, Limit.unlimited())
             .join()
             .findAny()
             .orElseThrow(() -> new IllegalStateException("Expecting one message"));
@@ -156,7 +157,7 @@ public class V1ToV2MigrationTest {
 
         testee.handleVersioning(CassandraMessageDAOV2.notFound(metaData)).join();
 
-        CassandraMessageDAOV2.MessageResult messageResult = messageDAOV2.retrieveMessages(metaDataList, MessageMapper.FetchType.Full, Optional.empty())
+        CassandraMessageDAOV2.MessageResult messageResult = messageDAOV2.retrieveMessages(metaDataList, MessageMapper.FetchType.Full, Limit.unlimited())
             .join()
             .findAny()
             .orElseThrow(() -> new IllegalStateException("Expecting one message"));

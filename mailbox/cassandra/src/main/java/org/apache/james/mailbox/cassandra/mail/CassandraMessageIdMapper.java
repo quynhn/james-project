@@ -33,6 +33,7 @@ import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageManager;
 import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
+import org.apache.james.mailbox.cassandra.Limit;
 import org.apache.james.mailbox.cassandra.mail.migration.V1ToV2Migration;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.ComposedMessageId;
@@ -121,7 +122,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
 
     private CompletableFuture<Stream<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>>
             retrieveMessages(FetchType fetchType, ImmutableList<ComposedMessageIdWithMetaData> composedMessageIds) {
-        return messageDAOV2.retrieveMessages(composedMessageIds, fetchType, UNLIMITED)
+        return messageDAOV2.retrieveMessages(composedMessageIds, fetchType, Limit.unlimited())
                 .thenCompose(messageResults -> FluentFutureStream.of(messageResults
                         .map(v1ToV2Migration::handleVersioning))
                         .completableFuture());

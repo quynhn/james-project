@@ -20,9 +20,9 @@
 package org.apache.james.mailbox.cassandra.mail;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -36,6 +36,7 @@ import org.apache.james.backends.cassandra.init.CassandraModuleComposite;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.cassandra.CassandraId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
+import org.apache.james.mailbox.cassandra.Limit;
 import org.apache.james.mailbox.cassandra.modules.CassandraBlobModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMessageModule;
 import org.apache.james.mailbox.model.ComposedMessageId;
@@ -44,22 +45,18 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
-
-import com.github.steveash.guavate.Guavate;
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 
 public class CassandraMessageDAOV2Test {
     private static final int BODY_START = 16;
     private static final CassandraId MAILBOX_ID = CassandraId.timeBased();
     private static final String CONTENT = "Subject: Test7 \n\nBody7\n.\n";
     private static final MessageUid messageUid = MessageUid.of(1);
-    public static final Optional<Integer> UNLIMITED = Optional.empty();
 
     private CassandraCluster cassandra;
 
@@ -104,7 +101,7 @@ public class CassandraMessageDAOV2Test {
         testee.save(message).join();
 
         MessageWithoutAttachment attachmentRepresentation =
-            toMessage(testee.retrieveMessages(messageIds, MessageMapper.FetchType.Metadata, UNLIMITED));
+            toMessage(testee.retrieveMessages(messageIds, MessageMapper.FetchType.Metadata, Limit.unlimited()));
 
         assertThat(attachmentRepresentation.getPropertyBuilder().getTextualLineCount())
             .isEqualTo(0L);
@@ -120,7 +117,7 @@ public class CassandraMessageDAOV2Test {
         testee.save(message).join();
 
         MessageWithoutAttachment attachmentRepresentation =
-            toMessage(testee.retrieveMessages(messageIds, MessageMapper.FetchType.Metadata, UNLIMITED));
+            toMessage(testee.retrieveMessages(messageIds, MessageMapper.FetchType.Metadata, Limit.unlimited()));
 
         assertThat(attachmentRepresentation.getPropertyBuilder().getTextualLineCount()).isEqualTo(textualLineCount);
     }
@@ -132,7 +129,7 @@ public class CassandraMessageDAOV2Test {
         testee.save(message).join();
 
         MessageWithoutAttachment attachmentRepresentation =
-            toMessage(testee.retrieveMessages(messageIds, MessageMapper.FetchType.Full, UNLIMITED));
+            toMessage(testee.retrieveMessages(messageIds, MessageMapper.FetchType.Full, Limit.unlimited()));
 
         assertThat(IOUtils.toString(attachmentRepresentation.getContent(), Charsets.UTF_8))
             .isEqualTo(CONTENT);
@@ -145,7 +142,7 @@ public class CassandraMessageDAOV2Test {
         testee.save(message).join();
 
         MessageWithoutAttachment attachmentRepresentation =
-            toMessage(testee.retrieveMessages(messageIds, MessageMapper.FetchType.Body, UNLIMITED));
+            toMessage(testee.retrieveMessages(messageIds, MessageMapper.FetchType.Body, Limit.unlimited()));
 
         assertThat(IOUtils.toString(attachmentRepresentation.getContent(), Charsets.UTF_8))
             .isEqualTo(CONTENT.substring(BODY_START));
@@ -158,7 +155,7 @@ public class CassandraMessageDAOV2Test {
         testee.save(message).join();
 
         MessageWithoutAttachment attachmentRepresentation =
-            toMessage(testee.retrieveMessages(messageIds, MessageMapper.FetchType.Headers, UNLIMITED));
+            toMessage(testee.retrieveMessages(messageIds, MessageMapper.FetchType.Headers, Limit.unlimited()));
 
         assertThat(IOUtils.toString(attachmentRepresentation.getContent(), Charsets.UTF_8))
             .isEqualTo(CONTENT.substring(0, BODY_START));

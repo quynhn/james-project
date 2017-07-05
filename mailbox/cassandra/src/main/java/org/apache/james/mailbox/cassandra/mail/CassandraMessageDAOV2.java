@@ -52,6 +52,7 @@ import javax.mail.util.SharedByteArrayInputStream;
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
+import org.apache.james.mailbox.cassandra.Limit;
 import org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.Attachments;
 import org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.Properties;
 import org.apache.james.mailbox.exception.MailboxException;
@@ -195,9 +196,9 @@ public class CassandraMessageDAOV2 {
             .setBool(Attachments.IS_INLINE, messageAttachment.isInline());
     }
 
-    public CompletableFuture<Stream<MessageResult>> retrieveMessages(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Optional<Integer> limit) {
+    public CompletableFuture<Stream<MessageResult>> retrieveMessages(List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Limit limit) {
         return CompletableFutureUtil.chainAll(
-            getLimitedIdStream(messageIds.stream().distinct(), limit)
+            limit.applyOnStream(messageIds.stream().distinct())
                 .collect(JamesCollectors.chunker(CHUNK_SIZE_ON_READ)),
             ids -> FluentFutureStream.of(
                 ids.stream()
@@ -205,13 +206,6 @@ public class CassandraMessageDAOV2 {
                         .thenCompose((ResultSet resultSet) -> message(resultSet, id, fetchType))))
                 .completableFuture())
             .thenApply(stream -> stream.flatMap(Function.identity()));
-    }
-
-    private Stream<ComposedMessageIdWithMetaData> getLimitedIdStream(Stream<ComposedMessageIdWithMetaData> messageIds, Optional<Integer> limit) {
-        return limit
-            .filter(value -> value > 0)
-            .map(messageIds::limit)
-            .orElse(messageIds);
     }
 
     private CompletableFuture<ResultSet> retrieveRow(ComposedMessageIdWithMetaData messageId, FetchType fetchType) {
