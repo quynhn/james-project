@@ -338,11 +338,11 @@ public class CassandraMessageDAOV2 {
         return blobsDAO.read(row.getUUID(field));
     }
 
-    private static MessageResult notFound(ComposedMessageIdWithMetaData id) {
+    public static MessageResult notFound(ComposedMessageIdWithMetaData id) {
         return new MessageResult(id, Optional.empty());
     }
 
-    private static MessageResult found(Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> message) {
+    public static MessageResult found(Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> message) {
         return new MessageResult(message.getLeft().getMetadata(), Optional.of(message));
     }
 
