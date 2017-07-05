@@ -32,6 +32,7 @@ import org.apache.james.mailbox.cassandra.modules.CassandraAclModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraAnnotationModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraApplicableFlagsModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraAttachmentModule;
+import org.apache.james.mailbox.cassandra.modules.CassandraBlobModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraDeletedMessageModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraFirstUnseenModule;
 import org.apache.james.mailbox.cassandra.modules.CassandraMailboxCounterModule;
@@ -79,7 +80,8 @@ public class CassandraMapperProvider implements MapperProvider {
                     new CassandraAnnotationModule(),
                     new CassandraFirstUnseenModule(),
                     new CassandraApplicableFlagsModule(),
-                    new CassandraDeletedMessageModule()));
+                    new CassandraDeletedMessageModule(),
+                    new CassandraBlobModule()));
         messageUidProvider = new MessageUidProvider();
         cassandraModSeqProvider = new CassandraModSeqProvider(this.cassandra.getConf());
     }

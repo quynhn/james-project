@@ -25,6 +25,8 @@ import javax.mail.Flags;
 import javax.mail.util.SharedByteArrayInputStream;
 
 import org.apache.james.mailbox.MessageUid;
+import org.apache.james.mailbox.model.ComposedMessageId;
+import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
@@ -71,6 +73,10 @@ public class MessageWithoutAttachment {
 
     public MessageId getMessageId() {
         return messageId;
+    }
+
+    public ComposedMessageIdWithMetaData getMetadata() {
+        return new ComposedMessageIdWithMetaData(new ComposedMessageId(mailboxId, messageId, messageUid), flags, modSeq);
     }
 
     public SharedByteArrayInputStream getContent() {

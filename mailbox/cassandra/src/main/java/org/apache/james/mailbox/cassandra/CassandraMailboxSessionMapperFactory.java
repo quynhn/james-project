@@ -152,7 +152,7 @@ public class CassandraMailboxSessionMapperFactory extends MailboxSessionMapperFa
     public MessageIdMapper createMessageIdMapper(MailboxSession mailboxSession) throws MailboxException {
         return new CassandraMessageIdMapper(getMailboxMapper(mailboxSession), mailboxDAO,
                 (CassandraAttachmentMapper) getAttachmentMapper(mailboxSession),
-                imapUidDAO, messageIdDAO, messageDAO, indexTableHandler, modSeqProvider, mailboxSession);
+                imapUidDAO, messageIdDAO, messageDAO, messageDAOV2, indexTableHandler, modSeqProvider, mailboxSession);
     }
 
     @Override
