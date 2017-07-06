@@ -27,11 +27,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
-
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.mailbox.ApplicableFlagBuilder;
 import org.apache.james.mailbox.FlagsBuilder;
 import org.apache.james.mailbox.MailboxSession;
@@ -57,12 +55,14 @@ import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.OptionalConverter;
 import org.apache.james.util.streams.JamesCollectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.collect.ImmutableList;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CassandraMessageMapper implements MessageMapper {
     public static final MailboxCounters INITIAL_COUNTERS =  MailboxCounters.builder()
@@ -204,8 +204,6 @@ public class CassandraMessageMapper implements MessageMapper {
                 .completableFuture();
         }
     }
-
-
 
     @Override
     public List<MessageUid> findRecentMessageUidsInMailbox(Mailbox mailbox) throws MailboxException {

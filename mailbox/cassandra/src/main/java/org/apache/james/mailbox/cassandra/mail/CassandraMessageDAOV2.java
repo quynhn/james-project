@@ -38,7 +38,6 @@ import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.M
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.PROPERTIES;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.TABLE_NAME;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.TEXTUAL_LINE_COUNT;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -46,12 +45,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.inject.Inject;
 import javax.mail.util.SharedByteArrayInputStream;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
 import org.apache.james.mailbox.cassandra.BlobId;
@@ -72,6 +68,8 @@ import org.apache.james.mailbox.store.mail.model.impl.SimpleProperty;
 import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.streams.JamesCollectors;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -302,7 +300,8 @@ public class CassandraMessageDAOV2 {
             case Headers:
                 return this::getHeaderContent;
             case Body:
-                return this::getBodyContent;
+                return row -> getBodyContent(row)
+                        .thenApply(data -> Bytes.concat(new byte[row.getInt(BODY_START_OCTET)], data));
             case Metadata:
                 return row -> CompletableFuture.completedFuture(new byte[]{});
             default:
