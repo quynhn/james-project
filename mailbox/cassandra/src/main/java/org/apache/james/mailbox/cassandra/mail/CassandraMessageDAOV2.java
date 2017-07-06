@@ -38,19 +38,23 @@ import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.M
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.PROPERTIES;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.TABLE_NAME;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.TEXTUAL_LINE_COUNT;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.inject.Inject;
 import javax.mail.util.SharedByteArrayInputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
+import org.apache.james.mailbox.cassandra.BlobId;
 import org.apache.james.mailbox.cassandra.CassandraMessageId;
 import org.apache.james.mailbox.cassandra.Limit;
 import org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.Attachments;
@@ -61,7 +65,6 @@ import org.apache.james.mailbox.model.Cid;
 import org.apache.james.mailbox.model.ComposedMessageId;
 import org.apache.james.mailbox.model.ComposedMessageIdWithMetaData;
 import org.apache.james.mailbox.model.MessageAttachment;
-import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
@@ -69,8 +72,6 @@ import org.apache.james.mailbox.store.mail.model.impl.SimpleProperty;
 import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.streams.JamesCollectors;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -82,15 +83,10 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.primitives.Bytes;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class CassandraMessageDAOV2 {
-    private static final Logger LOG = LoggerFactory.getLogger(CassandraMessageDAOV2.class);
-
     public static final int CHUNK_SIZE_ON_READ = 100;
     public static final long DEFAULT_LONG_VALUE = 0L;
-    public static final UUID DEFAULT_OBJECT_VALUE = null;
+    public static final String DEFAULT_OBJECT_VALUE = null;
     private final CassandraAsyncExecutor cassandraAsyncExecutor;
     private final CassandraTypesProvider typesProvider;
     private final CassandraBlobsDAO blobsDAO;
@@ -145,13 +141,13 @@ public class CassandraMessageDAOV2 {
             cassandraAsyncExecutor.executeVoid(boundWriteStatement(message, pair)));
     }
 
-    private CompletableFuture<Pair<Optional<UUID>, Optional<UUID>>> saveContent(MailboxMessage message) throws MailboxException {
+    private CompletableFuture<Pair<Optional<BlobId>, Optional<BlobId>>> saveContent(MailboxMessage message) throws MailboxException {
         try {
-            CompletableFuture<Optional<UUID>> bodyContent = blobsDAO.save(
+            CompletableFuture<Optional<BlobId>> bodyContent = blobsDAO.save(
                 IOUtils.toByteArray(
                     message.getBodyContent(),
                     message.getBodyOctets()));
-            CompletableFuture<Optional<UUID>> headerContent = blobsDAO.save(
+            CompletableFuture<Optional<BlobId>> headerContent = blobsDAO.save(
                 IOUtils.toByteArray(
                     message.getHeaderContent(),
                     message.getFullContentOctets() - message.getBodyOctets()));
@@ -164,7 +160,7 @@ public class CassandraMessageDAOV2 {
         }
     }
 
-    private BoundStatement boundWriteStatement(MailboxMessage message, Pair<Optional<UUID>, Optional<UUID>> pair) {
+    private BoundStatement boundWriteStatement(MailboxMessage message, Pair<Optional<BlobId>, Optional<BlobId>> pair) {
         CassandraMessageId messageId = (CassandraMessageId) message.getMessageId();
         return insert.bind()
                 .setUUID(MESSAGE_ID, messageId.get())
@@ -172,8 +168,8 @@ public class CassandraMessageDAOV2 {
                 .setInt(BODY_START_OCTET, (int) (message.getFullContentOctets() - message.getBodyOctets()))
                 .setLong(FULL_CONTENT_OCTETS, message.getFullContentOctets())
                 .setLong(BODY_OCTECTS, message.getBodyOctets())
-                .setUUID(BODY_CONTENT, pair.getLeft().orElse(DEFAULT_OBJECT_VALUE))
-                .setUUID(HEADER_CONTENT, pair.getRight().orElse(DEFAULT_OBJECT_VALUE))
+                .setString(BODY_CONTENT, pair.getLeft().map(BlobId::getId).orElse(DEFAULT_OBJECT_VALUE))
+                .setString(HEADER_CONTENT, pair.getRight().map(BlobId::getId).orElse(DEFAULT_OBJECT_VALUE))
                 .setLong(TEXTUAL_LINE_COUNT, Optional.ofNullable(message.getTextualLineCount()).orElse(DEFAULT_LONG_VALUE))
                 .setList(PROPERTIES, message.getProperties().stream()
                         .map(x -> typesProvider.getDefinedUserType(PROPERTIES)
@@ -329,7 +325,7 @@ public class CassandraMessageDAOV2 {
     }
 
     private CompletableFuture<byte[]> getFieldContent(String field, Row row) {
-        return blobsDAO.read(row.getUUID(field));
+        return blobsDAO.read(BlobId.from(row.getString(field)));
     }
 
     public static MessageResult notFound(ComposedMessageIdWithMetaData id) {

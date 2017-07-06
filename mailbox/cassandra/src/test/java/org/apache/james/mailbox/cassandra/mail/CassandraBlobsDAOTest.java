@@ -20,21 +20,19 @@
 package org.apache.james.mailbox.cassandra.mail;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.util.Optional;
-import java.util.UUID;
 
-import org.apache.james.backends.cassandra.CassandraCluster;
-import org.apache.james.mailbox.cassandra.modules.CassandraBlobModule;
 import org.apache.commons.io.Charsets;
-import org.apache.commons.io.IOUtils;
-
-import com.datastax.driver.core.utils.UUIDs;
-import com.google.common.base.Strings;
-
+import org.apache.james.backends.cassandra.CassandraCluster;
+import org.apache.james.mailbox.cassandra.BlobId;
+import org.apache.james.mailbox.cassandra.modules.CassandraBlobModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.base.Strings;
 
 public class CassandraBlobsDAOTest {
     private static final int MULTIPLE_CHUNK_SIZE = 3 * CassandraBlobsDAO.CHUNK_SIZE;
@@ -57,50 +55,50 @@ public class CassandraBlobsDAOTest {
 
     @Test
     public void saveShouldReturnEmptyWhenNullData() throws Exception {
-        Optional<UUID> uuid = testee.save(null).join();
+        Optional<BlobId> blobId = testee.save(null).join();
 
-        assertThat(uuid.isPresent()).isFalse();
+        assertThat(blobId.isPresent()).isFalse();
     }
 
     @Test
     public void saveShouldSaveEmptyData() throws Exception {
-        Optional<UUID> uuid = testee.save(new byte[]{}).join();
+        Optional<BlobId> blobId = testee.save(new byte[]{}).join();
 
-        byte[] bytes = testee.read(uuid.get()).join();
+        byte[] bytes = testee.read(blobId.get()).join();
 
-        assertThat(uuid.isPresent()).isTrue();
+        assertThat(blobId.isPresent()).isTrue();
         assertThat(new String(bytes, Charsets.UTF_8)).isEmpty();
     }
 
     @Test
     public void saveShouldSaveBlankData() throws Exception {
-        Optional<UUID> uuid = testee.save("".getBytes(Charsets.UTF_8)).join();
+        Optional<BlobId> blobId = testee.save("".getBytes(Charsets.UTF_8)).join();
 
-        byte[] bytes = testee.read(uuid.get()).join();
+        byte[] bytes = testee.read(blobId.get()).join();
 
-        assertThat(uuid.isPresent()).isTrue();
+        assertThat(blobId.isPresent()).isTrue();
         assertThat(new String(bytes, Charsets.UTF_8)).isEmpty();
     }
 
     @Test
     public void saveShouldReturnBlobId() throws Exception {
-        Optional<UUID> uuid = testee.save("toto".getBytes(Charsets.UTF_8)).join();
+        Optional<BlobId> blobId = testee.save("toto".getBytes(Charsets.UTF_8)).join();
 
-        assertThat(uuid.isPresent()).isTrue();
+        assertThat(blobId.isPresent()).isTrue();
     }
 
     @Test
     public void readShouldBeEmptyWhenNoExisting() throws IOException {
-        byte[] bytes = testee.read(UUIDs.timeBased()).join();
+        byte[] bytes = testee.read(BlobId.from("unknown")).join();
 
         assertThat(bytes).isEmpty();
     }
 
     @Test
     public void readShouldReturnSavedData() throws IOException {
-        Optional<UUID> uuid = testee.save("toto".getBytes(Charsets.UTF_8)).join();
+        Optional<BlobId> blobId = testee.save("toto".getBytes(Charsets.UTF_8)).join();
 
-        byte[] bytes = testee.read(uuid.get()).join();
+        byte[] bytes = testee.read(blobId.get()).join();
 
         assertThat(new String(bytes, Charsets.UTF_8)).isEqualTo("toto");
     }
@@ -108,9 +106,9 @@ public class CassandraBlobsDAOTest {
     @Test
     public void readShouldReturnLongSavedData() throws IOException {
         String longString = Strings.repeat("0123456789\n", 1000);
-        Optional<UUID> uuid = testee.save(longString.getBytes(Charsets.UTF_8)).join();
+        Optional<BlobId> blobId = testee.save(longString.getBytes(Charsets.UTF_8)).join();
 
-        byte[] bytes = testee.read(uuid.get()).join();
+        byte[] bytes = testee.read(blobId.get()).join();
 
         assertThat(new String(bytes, Charsets.UTF_8)).isEqualTo(longString);
     }
@@ -118,9 +116,9 @@ public class CassandraBlobsDAOTest {
     @Test
     public void readShouldReturnSplitSavedDataByChunk() throws IOException {
         String longString = Strings.repeat("0123456789\n", MULTIPLE_CHUNK_SIZE);
-        Optional<UUID> uuid = testee.save(longString.getBytes(Charsets.UTF_8)).join();
+        Optional<BlobId> blobId = testee.save(longString.getBytes(Charsets.UTF_8)).join();
 
-        byte[] bytes = testee.read(uuid.get()).join();
+        byte[] bytes = testee.read(blobId.get()).join();
 
         assertThat(new String(bytes, Charsets.UTF_8)).isEqualTo(longString);
     }
