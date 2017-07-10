@@ -57,7 +57,8 @@ public class V1ToV2Migration {
 
     @Inject
     public V1ToV2Migration(CassandraMessageDAO messageDAOV1, CassandraMessageDAOV2 messageDAOV2,
-                           CassandraAttachmentMapper attachmentMapper, CassandraConfiguration cassandraConfiguration) {
+                           CassandraAttachmentMapper attachmentMapper, CassandraConfiguration cassandraConfiguration,
+                           MigrationTracking migrationTracking) {
         this.messageDAOV1 = messageDAOV1;
         this.attachmentLoader = new AttachmentLoader(attachmentMapper);
         this.cassandraConfiguration = cassandraConfiguration;
@@ -65,7 +66,8 @@ public class V1ToV2Migration {
         boolean ensureFifoOrder = false;
         this.messagesToBeMigrated = new ArrayBlockingQueue<>(cassandraConfiguration.getV1ToV2QueueLength(), ensureFifoOrder);
         IntStream.range(0, cassandraConfiguration.getV1ToV2ThreadCount())
-            .mapToObj(i -> new V1ToV2MigrationThread(messagesToBeMigrated, messageDAOV1, messageDAOV2, attachmentLoader))
+            .mapToObj(i -> new V1ToV2MigrationThread( messagesToBeMigrated, messageDAOV1, messageDAOV2, attachmentLoader,
+                migrationTracking))
             .forEach(migrationExecutor::execute);
     }
 
@@ -88,7 +90,9 @@ public class V1ToV2Migration {
             .thenApply(this::submitMigration);
     }
 
-    private Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> submitMigration(Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> messageV1) {
+    private Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> submitMigration(
+        Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> messageV1
+    ) {
         if (cassandraConfiguration.isOnTheFlyV1ToV2Migration()) {
             synchronized (messagesToBeMigrated) {
                 if (!messagesToBeMigrated.offer(messageV1)) {
@@ -96,6 +100,7 @@ public class V1ToV2Migration {
                 }
             }
         }
+
         return messageV1;
     }
 }
