@@ -37,6 +37,7 @@ import org.apache.james.mailbox.cassandra.mail.CassandraMessageDAO;
 import org.apache.james.mailbox.cassandra.mail.CassandraMessageDAOV2;
 import org.apache.james.mailbox.cassandra.mail.MessageAttachmentRepresentation;
 import org.apache.james.mailbox.cassandra.mail.MessageWithoutAttachment;
+import org.apache.james.mailbox.cassandra.mail.RawMessageWithoutAttachment;
 import org.apache.james.mailbox.cassandra.mail.utils.Limit;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 
@@ -53,7 +54,7 @@ public class V1ToV2Migration {
     private final AttachmentLoader attachmentLoader;
     private final CassandraConfiguration cassandraConfiguration;
     private final ExecutorService migrationExecutor;
-    private final ArrayBlockingQueue<Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> messagesToBeMigrated;
+    private final ArrayBlockingQueue<Pair<RawMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> messagesToBeMigrated;
 
     @Inject
     public V1ToV2Migration(CassandraMessageDAO messageDAOV1, CassandraMessageDAOV2 messageDAOV2,
@@ -66,7 +67,7 @@ public class V1ToV2Migration {
         boolean ensureFifoOrder = false;
         this.messagesToBeMigrated = new ArrayBlockingQueue<>(cassandraConfiguration.getV1ToV2QueueLength(), ensureFifoOrder);
         IntStream.range(0, cassandraConfiguration.getV1ToV2ThreadCount())
-            .mapToObj(i -> new V1ToV2MigrationThread( messagesToBeMigrated, messageDAOV1, messageDAOV2, attachmentLoader,
+            .mapToObj(i -> new V1ToV2MigrationThread(messagesToBeMigrated, messageDAOV1, messageDAOV2, attachmentLoader,
                 migrationTracking))
             .forEach(migrationExecutor::execute);
     }
@@ -87,11 +88,15 @@ public class V1ToV2Migration {
             .thenApply(
                 Throwing.function(results -> results.findAny()
                     .orElseThrow(() -> new IllegalArgumentException("Message not found in DAO V1" + result.getMetadata()))))
-            .thenApply(this::submitMigration);
+            .thenApply(message -> {
+                this.submitMigration(Pair.of(message.getLeft().toRawMessageWithoutAttachment(), message.getRight()));
+
+                return message;
+            });
     }
 
-    private Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> submitMigration(
-        Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> messageV1
+    private void submitMigration(
+        Pair<RawMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> messageV1
     ) {
         if (cassandraConfiguration.isOnTheFlyV1ToV2Migration()) {
             synchronized (messagesToBeMigrated) {
@@ -100,7 +105,9 @@ public class V1ToV2Migration {
                 }
             }
         }
+    }
 
-        return messageV1;
+    public void runFullMigration() {
+        messageDAOV1.scanAllMessage().thenAccept(pairStream -> pairStream.forEach(this::submitMigration));
     }
 }
