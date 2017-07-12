@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 
 public class V1ToV2Migration {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(V1ToV2MigrationThread.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(V1ToV2Migration.class);
 
     private final CassandraMessageDAO messageDAOV1;
     private final AttachmentLoader attachmentLoader;
