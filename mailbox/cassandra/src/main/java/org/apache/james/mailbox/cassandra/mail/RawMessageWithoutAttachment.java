@@ -80,13 +80,8 @@ public class RawMessageWithoutAttachment {
         ComposedMessageId composedMessageId = composedMessageIdWithMetaData.getComposedMessageId();
 
         return new MessageWithoutAttachment(
-            composedMessageId.getMessageId(),
-            internalDate,
-            size,
-            bodySize,
-            content,
+            this,
             composedMessageIdWithMetaData.getFlags(),
-            propertyBuilder,
             composedMessageId.getMailboxId(),
             composedMessageId.getUid(),
             composedMessageIdWithMetaData.getModSeq()
@@ -103,6 +98,18 @@ public class RawMessageWithoutAttachment {
 
     public PropertyBuilder getPropertyBuilder() {
         return propertyBuilder;
+    }
+
+    public Date getInternalDate() {
+        return internalDate;
+    }
+
+    public Integer getBodySize() {
+        return bodySize;
+    }
+
+    public Long getSize() {
+        return size;
     }
 
     public SimpleMessage toMessage(List<MessageAttachment> attachments) {

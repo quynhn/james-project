@@ -34,47 +34,37 @@ import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleMailboxMessage;
 
 public class MessageWithoutAttachment {
-    private final MessageId messageId;
-    private final Date internalDate;
-    private final Long size;
-    private final Integer bodySize;
-    private final SharedByteArrayInputStream content;
+    private final RawMessageWithoutAttachment message;
     private final Flags flags;
-    private final PropertyBuilder propertyBuilder;
     private final MailboxId mailboxId;
     private final MessageUid messageUid;
     private final long modSeq;
 
-    public MessageWithoutAttachment(MessageId messageId, Date internalDate, Long size, Integer bodySize, SharedByteArrayInputStream content,
-                                    Flags flags, PropertyBuilder propertyBuilder, MailboxId mailboxId, MessageUid messageUid, long modSeq) {
-        this.messageId = messageId;
-        this.internalDate = internalDate;
-        this.size = size;
-        this.bodySize = bodySize;
-        this.content = content;
+    public MessageWithoutAttachment(RawMessageWithoutAttachment message, Flags flags,
+                                    MailboxId mailboxId, MessageUid messageUid, long modSeq) {
+        this.message = message;
         this.flags = flags;
-        this.propertyBuilder = propertyBuilder;
         this.mailboxId = mailboxId;
         this.messageUid = messageUid;
         this.modSeq = modSeq;
     }
 
     public RawMessageWithoutAttachment toRawMessageWithoutAttachment() {
-        return new RawMessageWithoutAttachment(messageId, internalDate, size, bodySize, content, propertyBuilder);
+        return message;
     }
 
     public SimpleMailboxMessage toMailboxMessage(List<MessageAttachment> attachments) {
         return SimpleMailboxMessage.builder()
-            .messageId(messageId)
+            .messageId(message.getMessageId())
             .mailboxId(mailboxId)
             .uid(messageUid)
             .modseq(modSeq)
-            .internalDate(internalDate)
-            .bodyStartOctet(bodySize)
-            .size(size)
-            .content(content)
+            .internalDate(message.getInternalDate())
+            .bodyStartOctet(message.getBodySize())
+            .size(message.getSize())
+            .content(message.getContent())
             .flags(flags)
-            .propertyBuilder(propertyBuilder)
+            .propertyBuilder(message.getPropertyBuilder())
             .addAttachments(attachments)
             .build();
     }
@@ -84,18 +74,18 @@ public class MessageWithoutAttachment {
     }
 
     public MessageId getMessageId() {
-        return messageId;
+        return message.getMessageId();
     }
 
     public ComposedMessageIdWithMetaData getMetadata() {
-        return new ComposedMessageIdWithMetaData(new ComposedMessageId(mailboxId, messageId, messageUid), flags, modSeq);
+        return new ComposedMessageIdWithMetaData(new ComposedMessageId(mailboxId, message.getMessageId(), messageUid), flags, modSeq);
     }
 
     public SharedByteArrayInputStream getContent() {
-        return content;
+        return message.getContent();
     }
 
     public PropertyBuilder getPropertyBuilder() {
-        return propertyBuilder;
+        return message.getPropertyBuilder();
     }
 }

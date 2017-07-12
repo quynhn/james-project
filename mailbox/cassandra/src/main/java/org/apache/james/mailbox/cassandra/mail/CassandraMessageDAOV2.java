@@ -247,13 +247,14 @@ public class CassandraMessageDAOV2 {
         return contentFuture.thenApply(content -> {
             MessageWithoutAttachment messageWithoutAttachment =
                 new MessageWithoutAttachment(
-                    messageId.getMessageId(),
-                    row.getTimestamp(INTERNAL_DATE),
-                    row.getLong(FULL_CONTENT_OCTETS),
-                    row.getInt(BODY_START_OCTET),
-                    new SharedByteArrayInputStream(content),
+                    new RawMessageWithoutAttachment(
+                        messageId.getMessageId(),
+                        row.getTimestamp(INTERNAL_DATE),
+                        row.getLong(FULL_CONTENT_OCTETS),
+                        row.getInt(BODY_START_OCTET),
+                        new SharedByteArrayInputStream(content),
+                        getPropertyBuilder(row)),
                     messageIdWithMetaData.getFlags(),
-                    getPropertyBuilder(row),
                     messageId.getMailboxId(),
                     messageId.getUid(),
                     messageIdWithMetaData.getModSeq());
