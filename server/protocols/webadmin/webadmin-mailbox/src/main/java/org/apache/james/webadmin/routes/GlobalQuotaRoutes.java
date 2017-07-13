@@ -27,14 +27,22 @@ import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
 import org.apache.james.webadmin.dto.QuotaDTO;
 import org.apache.james.webadmin.dto.QuotaRequest;
+import org.apache.james.webadmin.swagger.model.ApiError;
 import org.apache.james.webadmin.utils.JsonExtractException;
 import org.apache.james.webadmin.utils.JsonExtractor;
 import org.apache.james.webadmin.utils.JsonTransformer;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import spark.Service;
 
+@Api
 public class GlobalQuotaRoutes implements Routes {
 
     public static final String QUOTA_ENDPOINT = "/quota";
@@ -53,6 +61,16 @@ public class GlobalQuotaRoutes implements Routes {
         this.jsonExtractor = new JsonExtractor<>(QuotaDTO.class);
     }
 
+    @ApiOperation(value = "Global API", nickname="CRUDQuota")
+    @ApiImplicitParams({ //
+            @ApiImplicitParam(required = true, dataType="int", name="size", paramType = "path")
+    }) //
+    @ApiResponses(value = { //
+            @ApiResponse(code = 200, message = "Success", response=String.class), //
+            @ApiResponse(code = 400, message = "Invalid input data", response=ApiError.class), //
+            @ApiResponse(code = 401, message = "Unauthorized", response=ApiError.class), //
+            @ApiResponse(code = 404, message = "User not found", response=ApiError.class) //
+    })
     @Override
     public void define(Service service) {
         service.get(COUNT_ENDPOINT, (request, response) -> {
