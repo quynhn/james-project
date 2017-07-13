@@ -53,6 +53,10 @@ public class WebAdminServerIntegrationTest {
     public static final String SPECIFIC_USER = UserRoutes.USERS + SEPARATOR + USERNAME;
     public static final String MAILBOX = "mailbox";
     public static final String SPECIFIC_MAILBOX = SPECIFIC_USER + SEPARATOR + UserMailboxesRoutes.MAILBOXES + SEPARATOR + MAILBOX;
+    public static final String VERSION = "version";
+    public static final String VERSION_LATEST = VERSION + "/latest";
+    public static final String UPGRADE_VERSION = VERSION + "/upgrade";
+    public static final String UPGRADE_TO_LATEST_VERSION = UPGRADE_VERSION + "/latest";
 
     @Rule
     public CassandraJmapTestRule cassandraJmapTestRule = CassandraJmapTestRule.defaultTestRule();
@@ -183,4 +187,62 @@ public class WebAdminServerIntegrationTest {
         assertThat(guiceJamesServer.getProbe(MailboxProbeImpl.class).listUserMailboxes(USERNAME)).isEmpty();
     }
 
+    @Test
+    public void getCurrentVersionShouldReturnNullForCurrentVersionAsBeginning() throws Exception {
+        given()
+            .port(webAdminGuiceProbe.getWebAdminPort())
+        .when()
+            .get(VERSION)
+        .then()
+            .statusCode(200)
+            .body(is("{\"version\":null}"));
+    }
+
+    @Test
+    public void getLatestVersionShouldReturnTheConfiguredLatestVersion() throws Exception {
+        given()
+            .port(webAdminGuiceProbe.getWebAdminPort())
+        .when()
+            .get(VERSION_LATEST)
+        .then()
+            .statusCode(200)
+            .body(is("{\"version\":3}"));
+    }
+
+    @Test
+    public void postShouldDoMigrationAndUpdateCurrentVersion() throws Exception {
+        given()
+            .port(webAdminGuiceProbe.getWebAdminPort())
+            .body("2")
+        .when()
+            .post(UPGRADE_VERSION)
+        .then()
+            .statusCode(204);
+
+        given()
+            .port(webAdminGuiceProbe.getWebAdminPort())
+        .when()
+            .get(VERSION)
+        .then()
+            .statusCode(200)
+            .body(is("{\"version\":2}"));
+    }
+
+    @Test
+    public void postShouldDoMigrationAndUpdateToTheLatestVersion() throws Exception {
+        given()
+            .port(webAdminGuiceProbe.getWebAdminPort())
+        .when()
+            .post(UPGRADE_TO_LATEST_VERSION)
+        .then()
+            .statusCode(200);
+
+        given()
+            .port(webAdminGuiceProbe.getWebAdminPort())
+        .when()
+            .get(VERSION)
+        .then()
+            .statusCode(200)
+            .body(is("{\"version\":3}"));
+    }
 }
