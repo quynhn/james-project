@@ -40,6 +40,8 @@ import org.apache.james.mailbox.cassandra.mail.utils.Limit;
 import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.model.MailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.MessageWithoutAttachment;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessageWithoutAttachment;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +86,7 @@ public class V1ToV2Migration {
         migrationExecutor.shutdownNow();
     }
 
-    public CompletableFuture<Pair<MailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>
+    public CompletableFuture<Pair<MutableMailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>
             getFromV2orElseFromV1AfterMigration(CassandraMessageDAOV2.MessageResult result) {
 
         if (result.isFound()) {

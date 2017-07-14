@@ -21,7 +21,6 @@ package org.apache.james.mailbox.store.mail;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.mail.Flags;
 
 import org.apache.james.mailbox.MessageUid;
@@ -82,7 +81,7 @@ public interface MessageMapper extends Mapper {
      * 
      * @param mailbox
      * @return unseenCount
-     * @throws StorageException
+     * @throws MailboxException
      */
     long countUnseenMessagesInMailbox(Mailbox mailbox)
             throws MailboxException;
@@ -94,9 +93,9 @@ public interface MessageMapper extends Mapper {
      * 
      * @param mailbox
      * @param message
-     * @throws StorageException
+     * @throws MailboxException
      */
-    void delete(Mailbox mailbox, MailboxMessage message) throws MailboxException;
+    void delete(Mailbox mailbox, MutableMailboxMessage message) throws MailboxException;
 
     /**
      * Return the uid of the first unseen message. If non can be found null will get returned
@@ -104,7 +103,7 @@ public interface MessageMapper extends Mapper {
      * 
      * @param mailbox
      * @return uid or null
-     * @throws StorageException
+     * @throws MailboxException
      */
     MessageUid findFirstUnseenMessageUid(Mailbox mailbox) throws MailboxException;
 
@@ -123,7 +122,7 @@ public interface MessageMapper extends Mapper {
      * @param mailbox
      * @param message
      * @return uid
-     * @throws StorageException
+     * @throws MailboxException
      */
     MessageMetaData add(Mailbox mailbox, MutableMailboxMessage message) throws MailboxException;
     
@@ -145,9 +144,9 @@ public interface MessageMapper extends Mapper {
      * 
      * @param mailbox the Mailbox to copy to
      * @param original the original to copy
-     * @throws StorageException
+     * @throws MailboxException
      */
-    MessageMetaData copy(Mailbox mailbox,MailboxMessage original) throws MailboxException;
+    MessageMetaData copy(Mailbox mailbox, MutableMailboxMessage original) throws MailboxException;
     
     /**
      * Move the given {@link MailboxMessage} to a new mailbox and return the uid of the moved. Be aware that the given uid is just a suggestion for the uid of the moved
@@ -155,9 +154,9 @@ public interface MessageMapper extends Mapper {
      * 
      * @param mailbox the Mailbox to move to
      * @param original the original to move
-     * @throws StorageException
+     * @throws MailboxException
      */
-    MessageMetaData move(Mailbox mailbox,MailboxMessage original) throws MailboxException;
+    MessageMetaData move(Mailbox mailbox, MutableMailboxMessage original) throws MailboxException;
     
     
     /**

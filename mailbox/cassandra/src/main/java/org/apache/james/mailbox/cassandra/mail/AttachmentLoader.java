@@ -34,6 +34,7 @@ import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.MailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.Message;
 import org.apache.james.mailbox.store.mail.model.MessageWithoutAttachment;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.impl.MessageUtil;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.OptionalConverter;
@@ -51,18 +52,18 @@ public class AttachmentLoader {
         this.attachmentMapper = attachmentMapper;
     }
 
-    public CompletableFuture<Stream<MailboxMessage>> addAttachmentToMailboxMessages(Stream<Pair<MailboxMessageWithoutAttachment,
+    public CompletableFuture<Stream<MailboxMessage>> addAttachmentToMailboxMessages(Stream<Pair<MutableMailboxMessageWithoutAttachment,
             Stream<MessageAttachmentRepresentation>>> messageRepresentations, MessageMapper.FetchType fetchType) {
 
         if (fetchType == MessageMapper.FetchType.Body || fetchType == MessageMapper.FetchType.Full) {
             return FluentFutureStream.<MailboxMessage> of(
                 messageRepresentations
                     .map(pair -> getAttachments(pair.getRight().collect(Guavate.toImmutableList()))
-                        .thenApply(attachments -> MessageUtil.addAttachmentToMailboxMessage(pair.getLeft(), attachments))))
+                        .thenApply(attachments -> MessageUtil.addAttachmentToMutableMailboxMessage(pair.getLeft(), attachments))))
                 .completableFuture();
         } else {
             return CompletableFuture.completedFuture(messageRepresentations
-                .map(pair -> MessageUtil.addAttachmentToMailboxMessage(pair.getLeft(), ImmutableList.of())));
+                .map(pair -> MessageUtil.addAttachmentToMutableMailboxMessage(pair.getLeft(), ImmutableList.of())));
         }
     }
 

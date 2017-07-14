@@ -21,7 +21,6 @@ package org.apache.james.mailbox.store.mail;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.mail.Flags;
 
 import org.apache.james.mailbox.MailboxSession;
@@ -136,7 +135,7 @@ public abstract class AbstractMessageMapper extends TransactionalMapper implemen
 
     
     @Override
-    public MessageMetaData copy(Mailbox mailbox, MailboxMessage original) throws MailboxException {
+    public MessageMetaData copy(Mailbox mailbox, MutableMailboxMessage original) throws MailboxException {
         MessageUid uid = uidProvider.nextUid(mailboxSession, mailbox);
         long modSeq = -1;
         if (modSeqProvider != null) {
@@ -150,7 +149,7 @@ public abstract class AbstractMessageMapper extends TransactionalMapper implemen
     /**
      * Save the {@link MailboxMessage} for the given {@link Mailbox} and return the {@link MessageMetaData}
      */
-    protected abstract MessageMetaData save(Mailbox mailbox, MailboxMessage message) throws MailboxException;
+    protected abstract MessageMetaData save(Mailbox mailbox, MutableMailboxMessage message) throws MailboxException;
 
     
     /**

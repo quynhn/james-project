@@ -155,7 +155,7 @@ public class StoreMailboxMessageResultIteratorTest {
         }
 
         @Override
-        public void delete(Mailbox mailbox, MailboxMessage message) throws MailboxException {
+        public void delete(Mailbox mailbox, MutableMailboxMessage message) throws MailboxException {
             throw new UnsupportedOperationException();
         }
 
@@ -181,7 +181,7 @@ public class StoreMailboxMessageResultIteratorTest {
         }
 
         @Override
-        public MessageMetaData copy(Mailbox mailbox, MailboxMessage original) throws MailboxException {
+        public MessageMetaData copy(Mailbox mailbox, MutableMailboxMessage original) throws MailboxException {
             throw new UnsupportedOperationException();
 
         }
@@ -197,7 +197,7 @@ public class StoreMailboxMessageResultIteratorTest {
         }
 
         @Override
-        public MessageMetaData move(Mailbox mailbox, MailboxMessage original) throws MailboxException {
+        public MessageMetaData move(Mailbox mailbox, MutableMailboxMessage original) throws MailboxException {
             throw new UnsupportedOperationException();
 
         }

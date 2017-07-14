@@ -45,9 +45,9 @@ public class HBaseMessageManager extends StoreMessageManager {
     public HBaseMessageManager(MailboxSessionMapperFactory mapperFactory, MessageSearchIndex index,
             MailboxEventDispatcher dispatcher, MailboxPathLocker locker, Mailbox mailbox, MailboxACLResolver aclResolver,
             GroupMembershipResolver groupMembershipResolver, QuotaManager quotaManager, 
-            QuotaRootResolver quotaRootResolver, MessageParser messageParser, MessageId.Factory messageIdFactory, BatchSizes batchSizes, ImmutableMailboxMessage.Factory immutableMailboxMessageFactory) throws MailboxException {
+            QuotaRootResolver quotaRootResolver, MessageParser messageParser, MessageId.Factory messageIdFactory, BatchSizes batchSizes) throws MailboxException {
         super(mapperFactory, index, dispatcher, locker, mailbox, aclResolver, groupMembershipResolver, quotaManager, 
-                quotaRootResolver, messageParser, messageIdFactory, batchSizes, immutableMailboxMessageFactory);
+                quotaRootResolver, messageParser, messageIdFactory, batchSizes);
 
     }
 

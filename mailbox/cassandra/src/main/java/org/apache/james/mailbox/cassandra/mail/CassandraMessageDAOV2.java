@@ -38,7 +38,6 @@ import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.M
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.PROPERTIES;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.TABLE_NAME;
 import static org.apache.james.mailbox.cassandra.table.CassandraMessageV2Table.TEXTUAL_LINE_COUNT;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -47,12 +46,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.inject.Inject;
 import javax.mail.util.SharedByteArrayInputStream;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.cassandra.CassandraConfiguration;
 import org.apache.james.backends.cassandra.init.CassandraTypesProvider;
 import org.apache.james.backends.cassandra.utils.CassandraAsyncExecutor;
@@ -69,12 +65,15 @@ import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.MailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.Message;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.impl.MessageUtil;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleProperty;
 import org.apache.james.util.CompletableFutureUtil;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.streams.JamesCollectors;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -247,7 +246,7 @@ public class CassandraMessageDAOV2 {
         CompletableFuture<byte[]> contentFuture = buildContentRetriever(fetchType).apply(row);
 
         return contentFuture.thenApply(content -> {
-            MailboxMessageWithoutAttachment messageWithoutAttachment = MessageUtil.buildMutableMailboxMessageWithoutAttachment()
+            MutableMailboxMessageWithoutAttachment messageWithoutAttachment = MessageUtil.buildMutableMailboxMessageWithoutAttachment()
                 .internalDate(row.getTimestamp(INTERNAL_DATE))
                 .size(row.getLong(FULL_CONTENT_OCTETS))
                 .bodyStartOctet(row.getInt(BODY_START_OCTET))
@@ -355,17 +354,17 @@ public class CassandraMessageDAOV2 {
         return new MessageResult(id, Optional.empty());
     }
 
-    public static MessageResult found(Pair<MailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> message) {
+    public static MessageResult found(Pair<MutableMailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> message) {
         return new MessageResult(MessageUtil.getOnlyMetaData(message.getLeft()), Optional.of(message));
     }
 
     public static class MessageResult {
         private final ComposedMessageIdWithMetaData metaData;
-        private final Optional<Pair<MailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> message;
+        private final Optional<Pair<MutableMailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> message;
 
         public MessageResult(
             ComposedMessageIdWithMetaData metaData,
-            Optional<Pair<MailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> message
+            Optional<Pair<MutableMailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>> message
         ) {
             this.metaData = metaData;
             this.message = message;
@@ -379,7 +378,7 @@ public class CassandraMessageDAOV2 {
             return message.isPresent();
         }
 
-        public Pair<MailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> message() {
+        public Pair<MutableMailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> message() {
             return message.get();
         }
     }

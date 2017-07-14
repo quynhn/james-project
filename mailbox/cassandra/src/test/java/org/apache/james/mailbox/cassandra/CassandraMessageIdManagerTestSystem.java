@@ -39,6 +39,7 @@ import org.apache.james.mailbox.store.MessageIdManagerTestSystem;
 import org.apache.james.mailbox.store.event.MailboxEventDispatcher;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.MessageUtil;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 
@@ -105,7 +106,7 @@ public class CassandraMessageIdManagerTestSystem extends MessageIdManagerTestSys
         CassandraTestSystemFixture.clean();
     }
 
-    private static MailboxMessage createMessage(MailboxId mailboxId, Flags flags, MessageId messageId, MessageUid uid) {
+    private static MutableMailboxMessage createMessage(MailboxId mailboxId, Flags flags, MessageId messageId, MessageUid uid) {
         return MessageUtil.buildMutableMailboxMessage()
             .messageId(messageId)
             .internalDate(new Date())

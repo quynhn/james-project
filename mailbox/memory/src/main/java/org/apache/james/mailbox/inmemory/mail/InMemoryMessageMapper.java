@@ -86,12 +86,12 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    public void delete(Mailbox mailbox, MailboxMessage message) throws MailboxException {
+    public void delete(Mailbox mailbox, MutableMailboxMessage message) throws MailboxException {
         getMembershipByUidForMailbox(mailbox).remove(message.getUid());
     }
 
     @Override
-    public MessageMetaData move(Mailbox mailbox, MailboxMessage original) throws MailboxException {
+    public MessageMetaData move(Mailbox mailbox, MutableMailboxMessage original) throws MailboxException {
         InMemoryId originalMailboxId = (InMemoryId) original.getMailboxId();
         MessageUid uid = original.getUid();
         MessageMetaData messageMetaData = copy(mailbox, original);
@@ -149,7 +149,7 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
 
         Iterator<MutableMailboxMessage> it = findInMailbox(mailbox, set, FetchType.Metadata, -1);
         while (it.hasNext()) {
-            MailboxMessage member = it.next();
+            MutableMailboxMessage member = it.next();
             if (member.isDeleted()) {
                 filteredResult.put(member.getUid(), new SimpleMessageMetaData(member));
 
@@ -189,7 +189,7 @@ public class InMemoryMessageMapper extends AbstractMessageMapper {
     }
 
     @Override
-    protected MessageMetaData save(Mailbox mailbox, MailboxMessage message) throws MailboxException {
+    protected MessageMetaData save(Mailbox mailbox, MutableMailboxMessage message) throws MailboxException {
         MutableMailboxMessage copy = MessageUtil.copyToMutable(message, mailbox.getMailboxId());
         copy.setUid(message.getUid());
         copy.setModSeq(message.getModSeq());

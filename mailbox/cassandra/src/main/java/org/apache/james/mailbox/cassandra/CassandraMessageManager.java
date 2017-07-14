@@ -46,9 +46,9 @@ public class CassandraMessageManager extends StoreMessageManager {
     public CassandraMessageManager(MailboxSessionMapperFactory mapperFactory, MessageSearchIndex index, 
             MailboxEventDispatcher dispatcher, MailboxPathLocker locker, Mailbox mailbox, QuotaManager quotaManager, 
             QuotaRootResolver quotaRootResolver, MessageParser messageParser, MessageId.Factory messageIdFactory,
-            BatchSizes batchSizes, ImmutableMailboxMessage.Factory immutableMailboxMessageFactory) throws MailboxException {
+            BatchSizes batchSizes) throws MailboxException {
         super(mapperFactory, index, dispatcher, locker, mailbox, new UnionMailboxACLResolver(), 
-                new SimpleGroupMembershipResolver(), quotaManager, quotaRootResolver, messageParser, messageIdFactory, batchSizes, immutableMailboxMessageFactory);
+                new SimpleGroupMembershipResolver(), quotaManager, quotaRootResolver, messageParser, messageIdFactory, batchSizes);
 
     }
 

@@ -55,6 +55,8 @@ import org.apache.james.mailbox.store.mail.MessageMapper;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.MailboxMessageWithoutAttachment;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessage;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.impl.MessageUtil;
 import org.apache.james.util.FluentFutureStream;
 import org.apache.james.util.streams.JamesCollectors;
@@ -144,7 +146,7 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     @Override
-    public void delete(Mailbox mailbox, MailboxMessage message) {
+    public void delete(Mailbox mailbox, MutableMailboxMessage message) {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
 
         deleteAsFuture(message, mailboxId)
@@ -174,11 +176,12 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     @Override
-    public Iterator<MailboxMessage> findInMailbox(Mailbox mailbox, MessageRange messageRange, FetchType ftype, int max) throws MailboxException {
+    public Iterator<MutableMailboxMessage> findInMailbox(Mailbox mailbox, MessageRange messageRange, FetchType ftype, int max) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
         return retrieveMessages(retrieveMessageIds(mailboxId, messageRange), ftype, Limit.from(max))
             .join()
-            .map(SimpleMailboxMessage -> (MailboxMessage) SimpleMailboxMessage)
+            .peek(abc -> System.out.println("NONGGGGGGGG: " + abc.getClass()))
+            .map(mutableMailboxMessage -> (MutableMailboxMessage) mutableMailboxMessage)
             .sorted(Comparator.comparing(MailboxMessage::getUid))
             .iterator();
     }
@@ -194,7 +197,7 @@ public class CassandraMessageMapper implements MessageMapper {
         FetchType fetchType,
         Limit limit
     ) {
-        CompletableFuture<Stream<Pair<MailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>>
+        CompletableFuture<Stream<Pair<MutableMailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>>
             messageRepresentations = retrieveMessagesAndDoMigrationIfNeeded(messageIds, fetchType, limit);
 
         return messageRepresentations
@@ -231,16 +234,16 @@ public class CassandraMessageMapper implements MessageMapper {
             .collect(Guavate.toImmutableMap(MailboxMessage::getUid, SimpleMessageMetaData::new));
     }
 
-    private CompletableFuture<Stream<MailboxMessage>> expungeUidChunk(CassandraId mailboxId, Collection<MessageUid> uidChunk) {
+    private CompletableFuture<Stream<MutableMailboxMessage>> expungeUidChunk(CassandraId mailboxId, Collection<MessageUid> uidChunk) {
         return FluentFutureStream.ofOptionals(
                 uidChunk.stream().map(uid -> messageIdDAO.retrieve(mailboxId, uid)))
             .performOnAll(this::deleteUsingMailboxId)
             .thenFlatCompose(idWithMetadata -> retrieveMessagesAndDoMigrationIfNeeded(ImmutableList.of(idWithMetadata), FetchType.Metadata, Limit.unlimited()))
-            .map(pair -> MessageUtil.addAttachmentToMailboxMessage(pair.getKey(), ImmutableList.of()))
+            .map(pair -> MessageUtil.addAttachmentToMutableMailboxMessage(pair.getKey(), ImmutableList.of()))
             .completableFuture();
     }
 
-    private CompletableFuture<Stream<Pair<MailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>> retrieveMessagesAndDoMigrationIfNeeded(
+    private CompletableFuture<Stream<Pair<MutableMailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>> retrieveMessagesAndDoMigrationIfNeeded(
         List<ComposedMessageIdWithMetaData> messageIds, FetchType fetchType, Limit limit) {
 
         return FluentFutureStream.of(messageDAOV2.retrieveMessages(messageIds, fetchType, limit))
@@ -249,7 +252,7 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     @Override
-    public MessageMetaData move(Mailbox destinationMailbox, MailboxMessage original) throws MailboxException {
+    public MessageMetaData move(Mailbox destinationMailbox, MutableMailboxMessage original) throws MailboxException {
         CassandraId originalMailboxId = (CassandraId) original.getMailboxId();
         MessageMetaData messageMetaData = copy(destinationMailbox, original);
         retrieveMessageId(originalMailboxId, original)
@@ -269,7 +272,7 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     @Override
-    public MessageMetaData add(Mailbox mailbox, MailboxMessage message) throws MailboxException {
+    public MessageMetaData add(Mailbox mailbox, MutableMailboxMessage message) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
 
         save(mailbox, addUidAndModseq(message, mailboxId))
@@ -361,7 +364,7 @@ public class CassandraMessageMapper implements MessageMapper {
     }
 
     @Override
-    public MessageMetaData copy(Mailbox mailbox, MailboxMessage original) throws MailboxException {
+    public MessageMetaData copy(Mailbox mailbox, MutableMailboxMessage original) throws MailboxException {
         original.setFlags(new FlagsBuilder().add(original.createFlags()).add(Flag.RECENT).build());
         return setInMailbox(mailbox, original);
     }

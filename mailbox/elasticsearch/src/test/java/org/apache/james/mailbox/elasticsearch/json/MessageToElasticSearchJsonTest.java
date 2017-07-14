@@ -45,6 +45,7 @@ import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.TestMessageId;
 import org.apache.james.mailbox.store.extractor.DefaultTextExtractor;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessage;
 import org.apache.james.mailbox.store.mail.model.impl.MessageUtil;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.tika.TikaConfiguration;
@@ -136,7 +137,7 @@ public class MessageToElasticSearchJsonTest {
         MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
-        MailboxMessage htmlMail = createMockMessage("eml/htmlMail.eml");
+        MutableMailboxMessage htmlMail = createMockMessage("eml/htmlMail.eml");
         htmlMail.setFlags(new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.SEEN).add("social", "pocket-money").build());
 
         assertThatJson(messageToElasticSearchJson.convertToJson(htmlMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
@@ -149,7 +150,7 @@ public class MessageToElasticSearchJsonTest {
         MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
-        MailboxMessage pgpSignedMail = createMockMessage("eml/pgpSignedMail.eml");
+        MutableMailboxMessage pgpSignedMail = createMockMessage("eml/pgpSignedMail.eml");
         pgpSignedMail.setFlags(new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.SEEN).add("debian", "security").build());
         assertThatJson(messageToElasticSearchJson.convertToJson(pgpSignedMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
             .when(IGNORING_ARRAY_ORDER)
@@ -161,7 +162,7 @@ public class MessageToElasticSearchJsonTest {
         MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
-        MailboxMessage mail = createMockMessage("eml/mail.eml");
+        MutableMailboxMessage mail = createMockMessage("eml/mail.eml");
         mail.setFlags(new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.SEEN).add("debian", "security").build());
         assertThatJson(messageToElasticSearchJson.convertToJson(mail,
                 ImmutableList.of(new MockMailboxSession("user1").getUser(), new MockMailboxSession("user2").getUser())))
@@ -174,7 +175,7 @@ public class MessageToElasticSearchJsonTest {
         MessageToElasticSearchJson messageToElasticSearchJson = new MessageToElasticSearchJson(
             new DefaultTextExtractor(),
             ZoneId.of("Europe/Paris"), IndexAttachments.YES);
-        MailboxMessage recursiveMail = createMockMessage("eml/recursiveMail.eml");
+        MutableMailboxMessage recursiveMail = createMockMessage("eml/recursiveMail.eml");
         recursiveMail.setFlags(new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.SEEN).add("debian", "security").build());
         assertThatJson(messageToElasticSearchJson.convertToJson(recursiveMail, ImmutableList.of(new MockMailboxSession("username").getUser())))
             .when(IGNORING_ARRAY_ORDER).when(IGNORING_VALUES)
@@ -184,7 +185,7 @@ public class MessageToElasticSearchJsonTest {
     @Test
     public void emailWithAttachmentsShouldConvertAttachmentsWhenIndexAttachmentsIsTrue() throws IOException {
         // Given
-        MailboxMessage mail = createMockMessage("eml/recursiveMail.eml");
+        MutableMailboxMessage mail = createMockMessage("eml/recursiveMail.eml");
         mail.setFlags(new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.SEEN).add("debian", "security").build());
 
         // When
@@ -203,7 +204,7 @@ public class MessageToElasticSearchJsonTest {
 
     @Test
     public void emailWithAttachmentsShouldNotConvertAttachmentsWhenIndexAttachmentsIsFalse() throws IOException {
-        MailboxMessage mail = createMockMessage("eml/recursiveMail.eml");
+        MutableMailboxMessage mail = createMockMessage("eml/recursiveMail.eml");
         mail.setFlags(new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.SEEN).add("debian", "security").build());
 
         // When
@@ -265,7 +266,7 @@ public class MessageToElasticSearchJsonTest {
     @Test
     public void convertToJsonWithoutAttachmentShouldConvertEmailBoby() throws IOException {
         // Given
-        MailboxMessage message = createMockMessage("eml/emailWithNonIndexableAttachment.eml");
+        MutableMailboxMessage message = createMockMessage("eml/emailWithNonIndexableAttachment.eml");
         message.setFlags(new FlagsBuilder().add(Flags.Flag.DELETED, Flags.Flag.SEEN).add("debian", "security").build());
 
         // When

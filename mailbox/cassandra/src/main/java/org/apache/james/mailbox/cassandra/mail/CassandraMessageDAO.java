@@ -69,6 +69,7 @@ import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 import org.apache.james.mailbox.store.mail.model.MailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.MessageWithoutAttachment;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.impl.MessageUtil;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.mail.model.impl.SimpleProperty;
@@ -197,7 +198,7 @@ public class CassandraMessageDAO {
         return ByteBuffer.wrap(ByteStreams.toByteArray(stream));
     }
 
-    public CompletableFuture<Stream<Pair<MailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>> retrieveMessages(
+    public CompletableFuture<Stream<Pair<MutableMailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>> retrieveMessages(
         List<ComposedMessageIdWithMetaData> messageIds,
         FetchType fetchType,
         Limit limit
@@ -236,7 +237,7 @@ public class CassandraMessageDAO {
             .setUUID(MESSAGE_ID, cassandraMessageId.get()));
     }
 
-    private Pair<MailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> message(
+    private Pair<MutableMailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> message(
         Row row,
         FetchType fetchType,
         ComposedMessageIdWithMetaData composedMessageIdWithMetaData
@@ -244,7 +245,7 @@ public class CassandraMessageDAO {
         Pair<MessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> rawPair = rawMessage(row, fetchType);
 
         return Pair.of(
-            MessageUtil.addMailboxContext(rawPair.getLeft(), composedMessageIdWithMetaData),
+            MessageUtil.addMutableMailboxContext(rawPair.getLeft(), composedMessageIdWithMetaData),
             rawPair.getRight()
         );
     }

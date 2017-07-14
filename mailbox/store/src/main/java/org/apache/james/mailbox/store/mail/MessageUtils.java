@@ -75,7 +75,7 @@ public class MessageUtils {
     public MessageChangedFlags updateFlags(Mailbox mailbox, FlagsUpdateCalculator flagsUpdateCalculator, 
             Iterator<MutableMailboxMessage> messages) throws MailboxException {
         ImmutableList.Builder<UpdatedFlags> updatedFlags = ImmutableList.builder();
-        ImmutableList.Builder<MailboxMessage> changedFlags = ImmutableList.builder();
+        ImmutableList.Builder<MutableMailboxMessage> changedFlags = ImmutableList.builder();
 
         long modSeq = nextModSeq(mailbox);
 
@@ -103,9 +103,9 @@ public class MessageUtils {
     
     public class MessageChangedFlags {
         private final Iterator<UpdatedFlags> updatedFlags;
-        private final List<MailboxMessage> changedFlags;
+        private final List<MutableMailboxMessage> changedFlags;
 
-        public MessageChangedFlags(Iterator<UpdatedFlags> updatedFlags, List<MailboxMessage> changedFlags) {
+        public MessageChangedFlags(Iterator<UpdatedFlags> updatedFlags, List<MutableMailboxMessage> changedFlags) {
             this.updatedFlags = updatedFlags;
             this.changedFlags = changedFlags;
         }
@@ -114,7 +114,7 @@ public class MessageUtils {
             return updatedFlags;
         }
 
-        public List<MailboxMessage> getChangedFlags() {
+        public List<MutableMailboxMessage> getChangedFlags() {
             return changedFlags;
         }
     }

@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.mail.Flags;
-import javax.mail.internet.SharedInputStream;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.james.mailbox.MessageUid;
@@ -34,9 +33,6 @@ import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.model.HasMailboxContext;
-import org.apache.james.mailbox.store.mail.model.MailboxMessage;
-import org.apache.james.mailbox.store.mail.model.MailboxMessageWithoutAttachment;
-import org.apache.james.mailbox.store.mail.model.MutableMailboxContext;
 import org.apache.james.mailbox.store.mail.model.MutableMailboxMessage;
 import org.apache.james.mailbox.store.mail.model.MutableMailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.Property;

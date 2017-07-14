@@ -34,6 +34,7 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.model.HasMailboxContext;
 import org.apache.james.mailbox.store.mail.model.ImmutableMailboxMessage;
 import org.apache.james.mailbox.store.mail.model.ImmutableMailboxMessageWithoutAttachment;
+import org.apache.james.mailbox.store.mail.model.MailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.MutableMailboxMessage;
 import org.apache.james.mailbox.store.mail.model.MutableMailboxMessageWithoutAttachment;
 import org.apache.james.mailbox.store.mail.model.Property;
@@ -42,10 +43,10 @@ import com.google.common.collect.ImmutableList;
 
 class ImmutableMailboxMessageImpl implements ImmutableMailboxMessage {
 
-    private final ImmutableMailboxMessageWithoutAttachment message;
+    private final MailboxMessageWithoutAttachment message;
     private final ImmutableList<MessageAttachment> attachments;
 
-    public ImmutableMailboxMessageImpl(ImmutableMailboxMessageWithoutAttachment message, Collection<MessageAttachment> attachments) {
+    public ImmutableMailboxMessageImpl(MailboxMessageWithoutAttachment message, Collection<MessageAttachment> attachments) {
         this.message = message;
         this.attachments = ImmutableList.copyOf(attachments);
     }

@@ -45,6 +45,7 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.model.FlagsBuilder;
 import org.apache.james.mailbox.store.mail.model.HasMailboxContext;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessage;
 import org.apache.james.mailbox.store.mail.model.Property;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
 import org.apache.james.mailbox.store.search.comparator.UidComparator;
@@ -56,7 +57,7 @@ import com.google.common.base.Objects;
  * message content. The message content is retrieved using a ChunkedInputStream
  * directly from HBase.
  */
-public class HBaseMailboxMessage implements MailboxMessage {
+public class HBaseMailboxMessage implements MutableMailboxMessage {
 
     private static final Comparator<HasMailboxContext> MESSAGE_UID_COMPARATOR = UidComparator.UID;
     private static final String TOSTRING_SEPARATOR = " ";

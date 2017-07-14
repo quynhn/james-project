@@ -45,6 +45,8 @@ import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.mail.MessageMapperFactory;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessage;
+
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -129,7 +131,7 @@ public class ElasticSearchListeningMessageSearchIndexTest {
     }
 
     private MutableMailboxMessage mockedMessage(MessageUid messageId) throws IOException {
-        MailboxMessage message = mock(MailboxMessage.class);
+        MutableMailboxMessage message = mock(MutableMailboxMessage.class);
         when(message.getUid())
             .thenReturn(messageId);
         return message;

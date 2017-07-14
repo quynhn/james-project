@@ -768,7 +768,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         QuotaChecker quotaChecker = new QuotaChecker(quotaManager, quotaRootResolver, mailbox);
 
         while (originalRows.hasNext()) {
-            final MailboxMessage originalMessage = originalRows.next();
+            final MutableMailboxMessage originalMessage = originalRows.next();
             quotaChecker.tryAddition(1, originalMessage.getFullContentOctets());
             MessageMetaData data = messageMapper.execute(new Mapper.Transaction<MessageMetaData>() {
                 public MessageMetaData run() throws MailboxException {
@@ -788,7 +788,7 @@ public class StoreMessageManager implements org.apache.james.mailbox.MessageMana
         final MessageMapper messageMapper = mapperFactory.getMessageMapper(session);
 
         while (originalRows.hasNext()) {
-            final MailboxMessage originalMessage = originalRows.next();
+            final MutableMailboxMessage originalMessage = originalRows.next();
             originalRowsCopy.add(new SimpleMessageMetaData(originalMessage));
             MessageMetaData data = messageMapper.execute(new Mapper.Transaction<MessageMetaData>() {
                 public MessageMetaData run() throws MailboxException {

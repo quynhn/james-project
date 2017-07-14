@@ -62,6 +62,7 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessage;
 import org.apache.james.mailbox.store.mail.model.Property;
 import org.apache.james.mailbox.store.mail.model.impl.MessageUtil;
 import org.apache.james.mailbox.store.mail.model.impl.PropertyBuilder;
@@ -155,7 +156,7 @@ public class HBaseUtilsTest {
         HBaseId uuid = HBaseId.of(UUID.randomUUID());
         DefaultMessageId messageId = new DefaultMessageId();
 
-        final MailboxMessage message = MessageUtil.buildMutableMailboxMessage()
+        final MutableMailboxMessage message = MessageUtil.buildMutableMailboxMessage()
             .messageId(messageId)
             .internalDate(new Date())
             .size(100)

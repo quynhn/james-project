@@ -37,7 +37,7 @@ public class MessageUtil {
     }
 
     public static ImmutableMailboxMessage addAttachmentToImmutableMailboxMessage(
-        ImmutableMailboxMessageWithoutAttachment message,
+        MailboxMessageWithoutAttachment message,
         Collection<MessageAttachment> attachments
     ) {
         return new ImmutableMailboxMessageImpl(message, attachments);

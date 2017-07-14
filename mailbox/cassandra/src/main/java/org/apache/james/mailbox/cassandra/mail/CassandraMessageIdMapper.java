@@ -49,7 +49,8 @@ import org.apache.james.mailbox.store.mail.MessageIdMapper;
 import org.apache.james.mailbox.store.mail.MessageMapper.FetchType;
 import org.apache.james.mailbox.store.mail.ModSeqProvider;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
-import org.apache.james.mailbox.store.mail.model.MailboxMessageWithoutAttachment;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessage;
+import org.apache.james.mailbox.store.mail.model.MutableMailboxMessageWithoutAttachment;
 import org.apache.james.util.FluentFutureStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +112,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
             .sorted(Comparator.comparing(MailboxMessage::getUid));
     }
 
-    private CompletableFuture<Stream<Pair<MailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>>
+    private CompletableFuture<Stream<Pair<MutableMailboxMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>>>>
             retrieveMessagesAndDoMigrationIfNeeded(FetchType fetchType, ImmutableList<ComposedMessageIdWithMetaData> composedMessageIds) {
 
         return FluentFutureStream.of(messageDAOV2.retrieveMessages(composedMessageIds, fetchType, Limit.unlimited()))
@@ -148,7 +149,7 @@ public class CassandraMessageIdMapper implements MessageIdMapper {
     }
 
     @Override
-    public void save(MailboxMessage mailboxMessage) throws MailboxException {
+    public void save(MutableMailboxMessage mailboxMessage) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailboxMessage.getMailboxId();
         mailboxMapper.findMailboxById(mailboxId);
         CassandraMessageId messageId = (CassandraMessageId) mailboxMessage.getMessageId();
