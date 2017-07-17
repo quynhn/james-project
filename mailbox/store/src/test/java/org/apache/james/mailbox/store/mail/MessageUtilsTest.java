@@ -34,6 +34,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.mock.MockMailboxSession;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageAttachment;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.store.mail.model.DefaultMessageId;
@@ -58,6 +59,7 @@ public class MessageUtilsTest {
     @Mock private ModSeqProvider modSeqProvider;
     @Mock private UidProvider uidProvider;
     @Mock private Mailbox mailbox;
+    @Mock private MailboxId mailboxId;
     private MailboxSession mailboxSession;
 
     @Rule
@@ -69,6 +71,7 @@ public class MessageUtilsTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(mailbox.getMailboxId()).thenReturn(mailboxId);
         mailboxSession = new MockMailboxSession("user");
         messageUtils = new MessageUtils(mailboxSession, uidProvider, modSeqProvider);
         message = MessageUtil.buildMutableMailboxMessage()

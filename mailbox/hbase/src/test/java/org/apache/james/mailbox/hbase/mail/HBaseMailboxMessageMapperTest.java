@@ -104,12 +104,9 @@ public class HBaseMailboxMessageMapperTest {
         uidProvider = new HBaseUidProvider(conf);
         modSeqProvider = new HBaseModSeqProvider(conf);
         messageIdFactory = new DefaultMessageId.Factory();
-        generateTestData();
         final MailboxSession session = new MockMailboxSession("ieugen");
         messageMapper = new HBaseMessageMapper(session, uidProvider, modSeqProvider, messageIdFactory, conf);
-        for (MutableMailboxMessage message : MESSAGE_NO) {
-            messageMapper.add(MBOXES.get(1), message);
-        }
+        generateTestData();
     }
 
     private void ensureTables() throws IOException {
@@ -125,7 +122,7 @@ public class HBaseMailboxMessageMapperTest {
         CLUSTER.clearTable(SUBSCRIPTIONS);
     }
 
-    public void generateTestData() {
+    public void generateTestData() throws Exception {
         final Random random = new Random();
         MailboxPath mboxPath;
         final PropertyBuilder propBuilder = new PropertyBuilder();
@@ -145,28 +142,28 @@ public class HBaseMailboxMessageMapperTest {
         propBuilder.setTextualLineCount(2L);
 
         MutableMailboxMessage myMsg;
-        final Flags flags = new Flags(Flags.Flag.RECENT);
+        Flags flags = new Flags(Flags.Flag.RECENT);
         final Date today = new Date();
 
         for (int i = 0; i < COUNT * 2; i++) {
-            myMsg = MessageUtil.buildMutableMailboxMessage()
-                .messageId(messageIdFactory.generate())
-                .internalDate(today)
-                .size(messageTemplate.length)
-                .bodyStartOctet(messageTemplate.length - 20)
-                .content(content)
-                .flags(flags)
-                .propertyBuilder(propBuilder)
-                .mailboxId(MBOXES.get(1).getMailboxId())
-                .attachments(ImmutableList.<MessageAttachment>of())
-                .build();
-
             if (i == COUNT * 2 - 1) {
                 flags.add(Flags.Flag.SEEN);
                 flags.remove(Flags.Flag.RECENT);
-                myMsg.setFlags(flags);
             }
+            myMsg = MessageUtil.buildMutableMailboxMessage()
+                    .messageId(messageIdFactory.generate())
+                    .internalDate(today)
+                    .size(messageTemplate.length)
+                    .bodyStartOctet(messageTemplate.length - 20)
+                    .content(content)
+                    .flags(flags)
+                    .propertyBuilder(propBuilder)
+                    .mailboxId(MBOXES.get(1).getMailboxId())
+                    .attachments(ImmutableList.<MessageAttachment>of())
+                    .build();
             MESSAGE_NO.add(myMsg);
+
+            messageMapper.add(MBOXES.get(1), myMsg);
         }
     }
 
@@ -178,8 +175,8 @@ public class HBaseMailboxMessageMapperTest {
     @Test
     public void testMessageMapperScenario() throws Exception {
         testCountMessagesInMailbox();
-  //      testCountUnseenMessagesInMailbox();
-//        testFindFirstUnseenMessageUid();
+        testCountUnseenMessagesInMailbox();
+        testFindFirstUnseenMessageUid();
         testFindRecentMessageUidsInMailbox();
         testAdd();
         testGetLastUid();
