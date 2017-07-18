@@ -281,7 +281,7 @@ public class CassandraMessageMapper implements MessageMapper {
         return new SimpleMessageMetaData(message);
     }
 
-    private MailboxMessage addUidAndModseq(MailboxMessage message, CassandraId mailboxId) throws MailboxException {
+    private MailboxMessage addUidAndModseq(MutableMailboxMessage message, CassandraId mailboxId) throws MailboxException {
         CompletableFuture<Optional<MessageUid>> uidFuture = uidProvider.nextUid(mailboxId);
         CompletableFuture<Optional<Long>> modseqFuture = modSeqProvider.nextModSeq(mailboxId);
         CompletableFuture.allOf(uidFuture, modseqFuture).join();
@@ -383,7 +383,7 @@ public class CassandraMessageMapper implements MessageMapper {
             .build();
     }
 
-    private MessageMetaData setInMailbox(Mailbox mailbox, MailboxMessage message) throws MailboxException {
+    private MessageMetaData setInMailbox(Mailbox mailbox, MutableMailboxMessage message) throws MailboxException {
         CassandraId mailboxId = (CassandraId) mailbox.getMailboxId();
 
         insertIds(addUidAndModseq(message, mailboxId), mailboxId)
