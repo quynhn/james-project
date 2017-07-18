@@ -72,11 +72,9 @@ public class V1ToV2Migration {
     }
 
     private void executeMigrationThread(CassandraMessageDAO messageDAOV1, CassandraMessageDAOV2 messageDAOV2, CassandraConfiguration cassandraConfiguration) {
-        if (cassandraConfiguration.isOnTheFlyV1ToV2Migration()) {
-            IntStream.range(0, cassandraConfiguration.getV1ToV2ThreadCount())
-                .mapToObj(i -> new V1ToV2MigrationThread(messagesToBeMigrated, messageDAOV1, messageDAOV2, attachmentLoader, migrationTracking))
-                .forEach(migrationExecutor::execute);
-        }
+        IntStream.range(0, cassandraConfiguration.getV1ToV2ThreadCount())
+            .mapToObj(i -> new V1ToV2MigrationThread(messagesToBeMigrated, messageDAOV1, messageDAOV2, attachmentLoader, migrationTracking))
+            .forEach(migrationExecutor::execute);
     }
 
     @PreDestroy
@@ -96,7 +94,9 @@ public class V1ToV2Migration {
                 Throwing.function(results -> results.findAny()
                     .orElseThrow(() -> new IllegalArgumentException("Message not found in DAO V1" + result.getMetadata()))))
             .thenApply(message -> {
-                this.submitMigration(Pair.of(message.getLeft().toRawMessageWithoutAttachment(), message.getRight()));
+                if (cassandraConfiguration.isOnTheFlyV1ToV2Migration()) {
+                    this.submitMigration(Pair.of(message.getLeft().toRawMessageWithoutAttachment(), message.getRight()));
+                }
 
                 return message;
             });
@@ -105,16 +105,15 @@ public class V1ToV2Migration {
     private void submitMigration(
         Pair<RawMessageWithoutAttachment, Stream<MessageAttachmentRepresentation>> messageV1
     ) {
-        if (cassandraConfiguration.isOnTheFlyV1ToV2Migration()) {
-            synchronized (messagesToBeMigrated) {
-                if (!messagesToBeMigrated.offer(messageV1)) {
-                    LOGGER.info("Migration queue is full message {} is ignored", messageV1.getLeft().getMessageId());
-                }
+        synchronized (messagesToBeMigrated) {
+            if (!messagesToBeMigrated.offer(messageV1)) {
+                LOGGER.info("Migration queue is full message {} is ignored", messageV1.getLeft().getMessageId());
             }
         }
     }
 
     public void runFullMigration() {
-        messageDAOV1.scanAllMessage().thenAccept(pairStream -> pairStream.forEach(this::submitMigration));
+        messageDAOV1.scanAllMessage()
+                .thenAccept(pairStream -> pairStream.forEach(this::submitMigration));
     }
 }

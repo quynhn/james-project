@@ -110,15 +110,15 @@ public class V1ToV2MigrationTest {
         CassandraBlobsDAO blobsDAO = new CassandraBlobsDAO(cassandra.getConf());
         messageDAOV2 = new CassandraMessageDAOV2(cassandra.getConf(), cassandra.getTypesProvider(), blobsDAO);
         attachmentMapper = new CassandraAttachmentMapper(cassandra.getConf());
-        testee = new V1ToV2Migration(
-            messageDAOV1,
-            messageDAOV2,
-            attachmentMapper,
-            CassandraConfiguration.builder()
-                .onTheFlyV1ToV2Migration(true)
-                .build(),
-            new MigrationTracking());
 
+        testee = new V1ToV2Migration(
+                messageDAOV1,
+                messageDAOV2,
+                attachmentMapper,
+                CassandraConfiguration.builder()
+                        .onTheFlyV1ToV2Migration(true)
+                        .build(),
+                new MigrationTracking());
 
         messageIdFactory = new CassandraMessageId.Factory();
         messageId = messageIdFactory.generate();
@@ -202,6 +202,56 @@ public class V1ToV2MigrationTest {
     }
 
     @Test
+    public void fullMigrationShouldRemoveAllMessageFromOldDaoWhenMigrationOnFlyIsFalse() throws Exception {
+        testee = new V1ToV2Migration(
+                messageDAOV1,
+                messageDAOV2,
+                attachmentMapper,
+                CassandraConfiguration.builder()
+                        .onTheFlyV1ToV2Migration(false)
+                        .build(),
+                new MigrationTracking());
+
+        SimpleMailboxMessage originalMessage = createMessage(messageId, CONTENT, BODY_START,
+                new PropertyBuilder(), ImmutableList.of());
+
+        SimpleMailboxMessage originalMessage2 = createMessage(messageId2, CONTENT, BODY_START,
+                new PropertyBuilder(), ImmutableList.of());
+
+        SimpleMailboxMessage originalMessage3 = createMessage(messageId3, CONTENT, BODY_START,
+                new PropertyBuilder(), ImmutableList.of());
+
+        FluentFutureStream.ofFutures(
+                messageDAOV1.save(originalMessage),
+                messageDAOV1.save(originalMessage2),
+                messageDAOV1.save(originalMessage3)
+        ).join();
+
+        testee.runFullMigration();
+
+        awaitMigration();
+
+        List<ComposedMessageIdWithMetaData> ids = Stream.of(originalMessage, originalMessage2, originalMessage3)
+                .map(id -> {
+                    ComposedMessageId composedMessageId = new ComposedMessageId(MAILBOX_ID, id.getMessageId(), messageUid);
+
+                    return ComposedMessageIdWithMetaData.builder()
+                            .composedMessageId(composedMessageId)
+                            .flags(new Flags())
+                            .modSeq(1)
+                            .build();
+                }).collect(Guavate.toImmutableList());
+
+        List<CassandraMessageDAOV2.MessageResult> result = messageDAOV2.retrieveMessages(
+                ids,
+                MessageMapper.FetchType.Full,
+                Limit.unlimited()).join().collect(Guavate.toImmutableList()
+        );
+
+        assertThat(result).hasSize(3);
+    }
+
+    @Test
     public void fullMigrationShouldHaveMovedAllMessageIntoNewDao() throws Exception {
         SimpleMailboxMessage originalMessage = createMessage(messageId, CONTENT, BODY_START,
             new PropertyBuilder(), ImmutableList.of());
@@ -270,6 +320,7 @@ public class V1ToV2MigrationTest {
             .until(() -> {
                 try {
                     retrieveMessageOnV2();
+                    noMessageInV1();
                     return true;
                 } catch(AssertionError e) {
                     return false;
@@ -283,7 +334,8 @@ public class V1ToV2MigrationTest {
     }
 
     private boolean noMessageInV1() {
-        return !messageDAOV1.scanAllMessage().join().findFirst().isPresent();
+        assertThat(messageDAOV1.scanAllMessage().join().findFirst().isPresent()).isFalse();
+        return true;
     }
 
     private Optional<CassandraMessageDAOV2.MessageResult> retrieveMessageOnV2() {
