@@ -19,19 +19,21 @@
 
 package org.apache.james.webadmin.dto;
 
-import java.util.Optional;
+import com.google.common.base.Preconditions;
 
-public class VersionResponse {
-
-    private final Optional<Integer> version;
-
-    public VersionResponse(Optional<Integer> version) {
-        this.version = version;
+public class VersionRequest {
+    public static VersionRequest parse(String serialized) {
+        return new VersionRequest(Integer.valueOf(serialized));
     }
 
-    public Optional<Integer> getversion() {
-        return version;
+    private final Integer value;
+
+    public VersionRequest(Integer value) {
+        Preconditions.checkArgument(value >= 0);
+        this.value = value;
     }
 
-
+    public Integer getValue() {
+        return value;
+    }
 }

@@ -20,9 +20,12 @@
 package org.apache.james.webadmin.routes;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
+import org.apache.james.webadmin.dto.VersionRequest;
+import org.apache.james.webadmin.dto.VersionResponse;
 import org.apache.james.webadmin.service.MigrationService;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.slf4j.Logger;
@@ -38,7 +41,9 @@ public class MigrationRoutes implements Routes {
     private static final Logger LOGGER = LoggerFactory.getLogger(MigrationRoutes.class);
 
     public static final String VERSION_BASE = "/version";
+    public static final String VERSION_BASE_LATEST = VERSION_BASE + "/latest";
     public static final String VERSION_UPGRADE_BASE = VERSION_BASE + "/upgrade";
+    public static final String VERSION_UPGRADE_TO_LATEST_BASE = VERSION_BASE + "/upgrade/latest";
 
     private final MigrationService migrationService;
     private final JsonTransformer jsonTransformer;
@@ -58,15 +63,36 @@ public class MigrationRoutes implements Routes {
             return migrationService.getCurrentVersion();
         }, jsonTransformer);
 
+        service.get(VERSION_BASE_LATEST, (request, response) -> {
+            return migrationService.getLatestVersion();
+        }, jsonTransformer);
+
         service.post(VERSION_UPGRADE_BASE, (request, response) -> {
             if (isMigrationRunning) {
                 LOGGER.debug("Cassandra already running");
                 response.status(CONFLICT);
             } else {
                 LOGGER.debug("Cassandra upgrade launched");
-                migrationService.upgradeToLastVersion();
+                try {
+                    VersionRequest versionRequest = VersionRequest.parse(request.body());
+                    migrationService.upgradeToVersion(versionRequest.getValue());
+                } catch (IllegalStateException e) {
+                    LOGGER.info("System is already up to date", e);
+                    response.status(404);
+                }
                 response.status(NO_CONTENT);
             }
+            return Constants.EMPTY_BODY;
+        });
+
+        service.post(VERSION_UPGRADE_TO_LATEST_BASE, (request, response) -> {
+            try {
+                migrationService.upgradeToLastVersion();
+            } catch (IllegalStateException e) {
+                LOGGER.info("System is already up to date", e);
+                response.status(404);
+            }
+
             return Constants.EMPTY_BODY;
         });
     }

@@ -27,16 +27,19 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.james.backends.cassandra.versions.CassandraSchemaVersionDAO;
+import org.apache.james.mailbox.cassandra.mail.migration.Migration;
 import org.apache.james.metrics.logger.DefaultMetricFactory;
 import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.service.MigrationService;
 import org.apache.james.webadmin.utils.JsonTransformer;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
@@ -47,17 +50,24 @@ import org.junit.Test;
 
 public class MigrationRoutesTest {
 
-    public static final String USERNAME = "username";
-    public static final String MAILBOX_NAME = "myMailboxName";
+    private static final Integer LATEST_VERSION = 3;
+    private static final Integer CURRENT_VERSION = 2;
+    private static final Integer OLDER_VERSION = 1;
     private WebAdminServer webAdminServer;
     private CassandraSchemaVersionDAO schemaVersionDAO;
+    private Map<Integer, Migration> allMigrationClazz;
 
     private void createServer() throws Exception {
+        ImmutableMap.Builder<Integer, Migration> builder = ImmutableMap.builder();
+        allMigrationClazz = builder.put(OLDER_VERSION, mock(Migration.class))
+                .put(CURRENT_VERSION, mock(Migration.class))
+                .put(LATEST_VERSION, mock(Migration.class))
+                .build();
         schemaVersionDAO = mock(CassandraSchemaVersionDAO.class);
 
         webAdminServer = new WebAdminServer(
             new DefaultMetricFactory(),
-            new MigrationRoutes(new MigrationService(schemaVersionDAO), new JsonTransformer()));
+            new MigrationRoutes(new MigrationService(schemaVersionDAO, allMigrationClazz, LATEST_VERSION), new JsonTransformer()));
         webAdminServer.configure(NO_CONFIGURATION);
         webAdminServer.await();
 
@@ -81,15 +91,23 @@ public class MigrationRoutesTest {
     }
 
     @Test
-    public void getShouldReturnTheValueWhenOne() throws Exception {
-        Integer expectedVersion = 2;
-        when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(expectedVersion)));
+    public void getShouldReturnTheCurrentVersion() throws Exception {
+        when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(CURRENT_VERSION)));
 
         when()
             .get()
         .then()
             .statusCode(200)
             .body(is("{\"version\":2}"));
+    }
+
+    @Test
+    public void getShouldReturnTheLatestVersionWhenSetUpTheLatestVersion() throws Exception {
+        when()
+            .get("/latest")
+        .then()
+            .statusCode(200)
+            .body(is("{\"version\":" + LATEST_VERSION + "}"));
     }
 
     @Test
