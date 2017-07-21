@@ -35,18 +35,23 @@ import org.apache.james.utils.WebAdminGuiceProbe;
 import org.apache.james.webadmin.routes.DomainRoutes;
 import org.apache.james.webadmin.routes.UserMailboxesRoutes;
 import org.apache.james.webadmin.routes.UserRoutes;
+import org.apache.james.webadmin.service.MigrationService;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import com.google.common.base.Charsets;
+import com.google.inject.AbstractModule;
+import com.google.inject.name.Names;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
 
 public class WebAdminServerIntegrationTest {
 
+    private static final int LATEST_VERSION = 4;
     public static final String DOMAIN = "domain";
     public static final String USERNAME = "username@" + DOMAIN;
     public static final String SPECIFIC_DOMAIN = DomainRoutes.DOMAINS + SEPARATOR + DOMAIN;
@@ -68,7 +73,8 @@ public class WebAdminServerIntegrationTest {
     @Before
     public void setUp() throws Exception {
         guiceJamesServer = cassandraJmapTestRule.jmapServer()
-                .overrideWith(new WebAdminConfigurationModule());
+                .overrideWith(new WebAdminConfigurationModule())
+                .overrideWith(new LatestVersion());
         guiceJamesServer.start();
         dataProbe = guiceJamesServer.getProbe(DataProbeImpl.class);
         webAdminGuiceProbe = guiceJamesServer.getProbe(WebAdminGuiceProbe.class);
@@ -206,7 +212,7 @@ public class WebAdminServerIntegrationTest {
             .get(VERSION_LATEST)
         .then()
             .statusCode(200)
-            .body(is("{\"version\":3}"));
+            .body(is("{\"version\":" + LATEST_VERSION + "}"));
     }
 
     @Test
@@ -243,6 +249,13 @@ public class WebAdminServerIntegrationTest {
             .get(VERSION)
         .then()
             .statusCode(200)
-            .body(is("{\"version\":3}"));
+            .body(is("{\"version\":" + LATEST_VERSION + "}"));
+    }
+
+    private class LatestVersion extends AbstractModule {
+        @Override
+        protected void configure() {
+            bindConstant().annotatedWith(Names.named(MigrationService.LATEST_VERSION)).to(LATEST_VERSION);
+        }
     }
 }
