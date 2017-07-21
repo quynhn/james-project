@@ -106,7 +106,7 @@ public class V1ToV2Migration implements Migration {
     }
 
     @Override
-    public void runFullMigration() {
+    public void run() {
 
     }
 }

@@ -20,5 +20,5 @@
 package org.apache.james.mailbox.cassandra.mail.migration;
 
 public interface Migration {
-    void runFullMigration();
+    void run();
 }
