@@ -42,6 +42,7 @@ public class MigrationRoutes implements Routes {
     public static final String VERSION_UPGRADE_BASE = VERSION_BASE + "/upgrade";
     public static final String VERSION_UPGRADE_TO_LATEST_BASE = VERSION_UPGRADE_BASE + "/latest";
     public static final int CONTENT_UP_TO_DATE = 404;
+    public static final int INVALID_VERSION = 400;
 
     private final MigrationService migrationService;
     private final JsonTransformer jsonTransformer;
@@ -68,6 +69,12 @@ public class MigrationRoutes implements Routes {
                 VersionRequest versionRequest = VersionRequest.parse(request.body());
                 migrationService.upgradeToVersion(versionRequest.getValue());
                 response.status(NO_CONTENT);
+            } catch (NullPointerException e) {
+                LOGGER.info("Invalid request for version upgrade");
+                response.status(INVALID_VERSION);
+            } catch (IllegalArgumentException e) {
+                LOGGER.info("Invalid request for version upgrade");
+                response.status(INVALID_VERSION);
             } catch (IllegalStateException e) {
                 LOGGER.info("System is already up to date", e);
                 response.status(CONTENT_UP_TO_DATE);

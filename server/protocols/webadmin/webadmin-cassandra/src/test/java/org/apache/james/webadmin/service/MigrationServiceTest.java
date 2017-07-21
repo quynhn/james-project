@@ -40,9 +40,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 public class MigrationServiceTest {
-    private static final Integer LATEST_VERSION = 3;
-    private static final Integer CURRENT_VERSION = 2;
-    private static final Integer OLDER_VERSION = 1;
+    private static final int LATEST_VERSION = 3;
+    private static final int CURRENT_VERSION = 2;
+    private static final int OLDER_VERSION = 1;
     private MigrationService testee;
     private CassandraSchemaVersionDAO schemaVersionDAO;
     private Map<Integer, Migration> allMigrationClazz;

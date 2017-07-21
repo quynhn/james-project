@@ -125,6 +125,20 @@ public class MigrationRoutesTest {
     }
 
     @Test
+    public void postShouldReturnErrorCodeWhenInvalidVersion() throws Exception {
+        when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(OLDER_VERSION)));
+
+        given()
+            .body(String.valueOf("NonInt"))
+        .with()
+            .post("/upgrade")
+        .then()
+            .statusCode(400);
+
+        verifyNoMoreInteractions(schemaVersionDAO);
+    }
+
+    @Test
     public void postShouldDoMigrationToNewVersion() throws Exception {
         when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(OLDER_VERSION)));
 

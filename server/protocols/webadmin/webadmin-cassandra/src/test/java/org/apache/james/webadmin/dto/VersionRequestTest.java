@@ -19,22 +19,49 @@
 
 package org.apache.james.webadmin.dto;
 
-import com.google.common.base.Preconditions;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class VersionRequest {
-    public static VersionRequest parse(String version) {
-        Preconditions.checkNotNull(version, "Version is mandatory");
-        return new VersionRequest(Integer.valueOf(version));
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+public class VersionRequestTest {
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
+    @Test
+    public void parseShouldThrowWhenNullVersion() throws Exception {
+        expectedException.expect(NullPointerException.class);
+
+        VersionRequest.parse(null);
     }
 
-    private final int value;
+    @Test
+    public void parseShouldThrowWhenNonIntegerVersion() throws Exception {
+        expectedException.expect(IllegalArgumentException.class);
 
-    private VersionRequest(int value) {
-        Preconditions.checkArgument(value >= 0);
-        this.value = value;
+        VersionRequest.parse("NoInt");
     }
 
-    public int getValue() {
-        return value;
+    @Test
+    public void parseShouldThrowWhenNegativeVersion() throws Exception {
+        expectedException.expect(IllegalArgumentException.class);
+
+        VersionRequest.parse("-1");
     }
+
+    @Test
+    public void parseShouldAcceptZeroVersion() throws Exception {
+        VersionRequest versionRequest = VersionRequest.parse("0");
+
+        assertThat(versionRequest.getValue()).isEqualTo(0);
+    }
+
+    @Test
+    public void parseShouldParseTheVersionValue() throws Exception {
+        VersionRequest versionRequest = VersionRequest.parse("1");
+
+        assertThat(versionRequest.getValue()).isEqualTo(1);
+    }
+
 }
