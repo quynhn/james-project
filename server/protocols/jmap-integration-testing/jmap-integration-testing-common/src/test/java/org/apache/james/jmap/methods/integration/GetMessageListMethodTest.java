@@ -29,15 +29,12 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
-
 import javax.mail.Flags;
 
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.james.GuiceJamesServer;
 import org.apache.james.jmap.HttpJmapAuthentication;
 import org.apache.james.jmap.api.access.AccessToken;
@@ -53,16 +50,19 @@ import org.apache.james.probe.DataProbe;
 import org.apache.james.util.date.ImapDateTimeFormatter;
 import org.apache.james.utils.DataProbeImpl;
 import org.apache.james.utils.JmapGuiceProbe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.http.client.utils.URIBuilder;
 
 import com.google.common.base.Charsets;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 public abstract class GetMessageListMethodTest {
+    private final static String FORWARDED = "$Forwarded";
     private static final String NAME = "[0][0]";
     private static final String ARGUMENTS = "[0][1]";
     private static final ZoneId ZONE_ID = ZoneId.of("Europe/Paris");
@@ -1330,6 +1330,256 @@ public abstract class GetMessageListMethodTest {
             .body("[1][1].list[0].htmlBody", equalTo("Hello <b>someone</b>, and thank you for joining example.com!"))
             .body("[1][1].list[0].textBody", equalTo("Hello someone, and thank you for joining example.com!"))
         ;
+    }
+
+    @Test
+    public void getMessageListHasKeywordFilterShouldWork() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        ComposedMessageId messageFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags(Flags.Flag.FLAGGED));
+
+        await();
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"hasKeyword\":\"$Flagged\"}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", allOf(
+                containsInAnyOrder(messageFlagged.getMessageId().serialize()),
+                not(containsInAnyOrder(messageNotFlagged.getMessageId().serialize()))));
+    }
+
+    @Test
+    public void getMessageListHasKeywordFilterShouldWorkWhenUserFlag() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        Flags flags = FlagsBuilder.builder()
+            .add(Flags.Flag.FLAGGED)
+            .add(FORWARDED)
+            .build();
+
+        ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        ComposedMessageId messageFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, flags);
+
+        await();
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"operator\":\"AND\",\"conditions\":[{\"hasKeyword\":\"$Flagged\"},{\"hasKeyword\":\"$Forwarded\"}]}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", allOf(
+            containsInAnyOrder(messageFlagged.getMessageId().serialize()),
+            not(containsInAnyOrder(messageNotFlagged.getMessageId().serialize()))));
+    }
+
+    @Test
+    public void getMessageListNotKeywordFilterShouldWork() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        ComposedMessageId messageFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags(Flags.Flag.FLAGGED));
+
+        await();
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"notKeyword\":\"$Flagged\"}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", allOf(
+                containsInAnyOrder(messageNotFlagged.getMessageId().serialize()),
+                not(containsInAnyOrder(messageFlagged.getMessageId().serialize()))));
+    }
+
+    @Test
+    public void getMessageListNotKeywordFilterShouldWorkWhenUserFlag() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        Flags flags = FlagsBuilder.builder()
+            .add(Flags.Flag.FLAGGED)
+            .add(FORWARDED)
+            .build();
+
+        ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        ComposedMessageId messageFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, flags);
+
+        await();
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"operator\":\"AND\",\"conditions\":[{\"notKeyword\":\"$Flagged\"},{\"notKeyword\":\"$Forwarded\"}]}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", allOf(
+                containsInAnyOrder(messageNotFlagged.getMessageId().serialize()),
+                not(containsInAnyOrder(messageFlagged.getMessageId().serialize()))));
+    }
+
+    @Test
+    public void getMessageListNotKeywordFilterShouldWorkWhenMultipleNotKeywordAndFilterOperator() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        Flags flags = FlagsBuilder.builder()
+            .add(FORWARDED)
+            .add(Flags.Flag.DRAFT)
+            .build();
+
+        ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags(Flags.Flag.FLAGGED));
+        ComposedMessageId messageFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, flags);
+
+        await();
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"operator\":\"OR\",\"conditions\":[{\"notKeyword\":\"$Flagged\"},{\"notKeyword\":\"$Forwarded\"}]}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", allOf(
+                containsInAnyOrder(messageNotFlagged.getMessageId().serialize(), messageFlagged.getMessageId().serialize())));
+    }
+
+    @Test
+    public void getMessageListHasKeywordAndNotKeywordFilterShouldWork() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        ComposedMessageId messageFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags(Flags.Flag.FLAGGED));
+
+        await();
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"hasKeyword\":\"$Flagged\", \"notKeyword\":\"$Draft\"}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", allOf(
+                containsInAnyOrder(messageFlagged.getMessageId().serialize()),
+                not(containsInAnyOrder(messageNotFlagged.getMessageId().serialize()))));
+    }
+
+    @Test
+    public void getMessageListHasKeywordShouldIgnoreDeleted() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        ComposedMessageId messageFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags(Flags.Flag.DELETED));
+
+        await();
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"hasKeyword\":\"$Deleted\"}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", allOf(
+                containsInAnyOrder(messageFlagged.getMessageId().serialize(), messageNotFlagged.getMessageId().serialize())));
+    }
+
+    @Test
+    public void getMessageListHasKeywordShouldIgnoreRecent() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        ComposedMessageId messageFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags(Flags.Flag.RECENT));
+
+        await();
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"hasKeyword\":\"$Recent\"}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", allOf(
+                containsInAnyOrder(messageFlagged.getMessageId().serialize(), messageNotFlagged.getMessageId().serialize())));
+    }
+
+    @Test
+    public void getMessageListNotKeywordShouldIgnoreDeleted() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        ComposedMessageId messageFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags(Flags.Flag.DELETED));
+
+        await();
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"notKeyword\":\"$Deleted\"}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", allOf(
+                containsInAnyOrder(messageFlagged.getMessageId().serialize(), messageNotFlagged.getMessageId().serialize())));
+    }
+
+    @Test
+    public void getMessageListNotKeywordShouldIgnoreRecent() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
+
+        ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+        ComposedMessageId messageFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags(Flags.Flag.RECENT));
+
+        await();
+
+        given()
+            .header("Authorization", accessToken.serialize())
+            .body("[[\"getMessageList\", {\"filter\":{\"notKeyword\":\"$Recent\"}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", allOf(
+                containsInAnyOrder(messageFlagged.getMessageId().serialize(), messageNotFlagged.getMessageId().serialize())));
     }
 
     private Date convertToDate(LocalDate localDate) {
