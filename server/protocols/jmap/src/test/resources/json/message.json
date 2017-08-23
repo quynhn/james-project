@@ -4,7 +4,7 @@
     "threadId": "myThreadId",
     "mailboxIds": ["1", "2"],
     "inReplyToMessageId": "myInReplyToMessageId",
-    "isUnread": true,
+    "isUnread": false,
     "isFlagged": true,
     "isAnswered": true,
     "isDraft": true,
@@ -23,5 +23,5 @@
     "htmlBody": "<h1>myHtmlBody</h1>",
     "attachments": [ ],
     "attachedMessages": { },
-    "keywords": {"$Draft" : true, "$Flagged" : true, "$Answered" : true}
+    "keywords": {"$Draft" : true, "$Flagged" : true, "$Answered" : true, "$Seen" : true}
 }
