@@ -328,7 +328,7 @@ Feature: GetMessages method
 
     Examples:
             |flags                          |keyword                        |
-            |"$Flagged,$Answered,$Draft"    |$Answered,$Flagged,$Draft      |
+            |"$Flagged,$Answered,$Draft"    |$Flagged,$Answered,$Draft      |
 
   Scenario Outline: Retrieving message should display keywords without unsupported jmap flag
     Given the user has a message "m1" in the "inbox" mailbox with flags <flags>
@@ -339,7 +339,7 @@ Feature: GetMessages method
 
     Examples:
             |flags                                  |keyword                 |
-            |"$Flagged,$Answered,$Deleted,$Recent"  |$Answered,$Flagged      |
+            |"$Flagged,$Answered,$Deleted,$Recent"  |$Flagged,$Answered      |
 
   Scenario Outline: Retrieving message should display keywords with custom user jmap flag
     Given the user has a message "m1" in the "inbox" mailbox with flags <flags>

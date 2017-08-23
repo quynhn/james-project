@@ -589,7 +589,7 @@ public class GetMessagesMethodTest {
     }
 
     @Test
-    public void processShouldReturnKeywordsWithoutForwarededWhenForwarededUserFlagsMessages() throws MailboxException {
+    public void processShouldReturnKeywordsWithoutForwardedWhenForwardedUserFlagsMessages() throws MailboxException {
         Flags flags = FlagsBuilder.builder()
             .add(Flag.ANSWERED, Flag.DELETED)
             .add(FORWARDED)
