@@ -98,7 +98,8 @@ public class UpdateMessagePatch {
 
         private Optional<OldKeyword> getOldKeywords() {
             if (isAnswered.isPresent() || isFlagged.isPresent() || isUnread.isPresent()) {
-                return Optional.of(new OldKeyword(isUnread, isFlagged, isAnswered, Optional.empty()));
+                Optional<Boolean> isDraft = Optional.empty();
+                return Optional.of(new OldKeyword(isUnread, isFlagged, isAnswered, isDraft));
             }
             return Optional.empty();
         }
