@@ -979,7 +979,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldReturnNotFoundWhenUpdateUnknownMessage() {
+    public void setMessagesShouldReturnNotFoundWhenUpdateUnknownMessage() {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, USERNAME, "mailbox");
 
         String nonExistingMessageId = randomMessageId().serialize();
@@ -1000,7 +1000,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldReturnCreatedMessageWhenSendingMessage() {
+    public void setMessagesShouldReturnCreatedMessageWhenSendingMessage() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1051,7 +1051,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldReturnCreatedMessageWithEmptySubjectWhenSubjectIsNull() {
+    public void setMessagesShouldReturnCreatedMessageWithEmptySubjectWhenSubjectIsNull() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1085,7 +1085,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldReturnCreatedMessageWithEmptySubjectWhenSubjectIsEmpty() {
+    public void setMessagesShouldReturnCreatedMessageWithEmptySubjectWhenSubjectIsEmpty() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1119,7 +1119,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldReturnCreatedMessageWithNonASCIICharactersInSubjectWhenPresent() {
+    public void setMessagesShouldReturnCreatedMessageWithNonASCIICharactersInSubjectWhenPresent() {
         String messageCreationId = "creationId1337";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -1223,7 +1223,7 @@ public abstract class SetMessagesMethodTest {
             ;
     }
     @Test
-    public void setMessageShouldSupportArbitraryMessageId() {
+    public void setMessagesShouldSupportArbitraryMessageId() {
         String messageCreationId = "1717fcd1-603e-44a5-b2a6-1234dbcd5723";
         String fromAddress = USERNAME;
         String requestBody = "[" +
@@ -3249,7 +3249,7 @@ public abstract class SetMessagesMethodTest {
             .body(firstAttachment + ".size", equalTo((int) attachment.getSize()));
     }
     @Test
-    public void setMessageShouldVerifyHeaderOfMessageInInbox() throws Exception {
+    public void setMessagesShouldVerifyHeaderOfMessageInInbox() throws Exception {
         String toUsername = "username1@" + USERS_DOMAIN;
         String password = "password";
         dataProbe.addUser(toUsername, password);
@@ -3286,7 +3286,7 @@ public abstract class SetMessagesMethodTest {
     }
 
     @Test
-    public void setMessageShouldVerifyHeaderOfMessageInSent() throws Exception {
+    public void setMessagesShouldVerifyHeaderOfMessageInSent() throws Exception {
         String toUsername = "username1@" + USERS_DOMAIN;
         String password = "password";
         dataProbe.addUser(toUsername, password);
