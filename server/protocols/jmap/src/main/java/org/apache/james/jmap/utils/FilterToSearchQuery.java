@@ -90,7 +90,7 @@ public class FilterToSearchQuery {
 
     private Optional<Criterion> keywordQuery(String stringKeyword, boolean isSet) {
         Keyword keyword = new Keyword(stringKeyword);
-        if (keyword.isNonExposedImapKeyword()) {
+        if (keyword.isNotNonExposedImapKeyword()) {
             return Optional.of(getFlagCriterion(keyword, isSet));
         }
 
