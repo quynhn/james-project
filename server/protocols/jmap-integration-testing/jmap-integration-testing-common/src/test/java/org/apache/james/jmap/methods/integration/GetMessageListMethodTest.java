@@ -140,7 +140,7 @@ public abstract class GetMessageListMethodTest {
     }
     
     @Test
-    public void getMessageListSetFlaggedFilterShouldWork() throws Exception {
+    public void getMessageListSetFlaggedFilterShouldResultFlaggedMessages() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -164,7 +164,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListUnsetFlaggedFilterShouldWork() throws Exception {
+    public void getMessageListUnsetFlaggedFilterShouldReturnNotFlaggedMessages() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -188,7 +188,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListReadFilterShouldWork() throws Exception {
+    public void getMessageListReadFilterShouldReturnOnlyReadMessages() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotRead = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -212,7 +212,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListUnreadFilterShouldWork() throws Exception {
+    public void getMessageListUnreadFilterShouldReturnOnlyUnreadMessages() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotRead = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -236,7 +236,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListSetDraftFilterShouldWork() throws Exception {
+    public void getMessageListSetDraftFilterShouldReturnOnlyDraftMessages() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotDraft = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -260,7 +260,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListUnsetDraftFilterShouldWork() throws Exception {
+    public void getMessageListUnsetDraftFilterShouldReturnOnlyNonDraftMessages() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotDraft = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -284,7 +284,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListSetAnsweredFilterShouldWork() throws Exception {
+    public void getMessageListSetAnsweredFilterShouldReturnOnlyAnsweredMessages() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotAnswered = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -308,7 +308,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListUnsetAnsweredFilterShouldWork() throws Exception {
+    public void getMessageListUnsetAnsweredFilterShouldReturnOnlyNotAnsweredMessages() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotAnswered = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -332,7 +332,7 @@ public abstract class GetMessageListMethodTest {
     }
     
     @Test
-    public void getMessageListANDOperatorShouldWork() throws Exception {
+    public void getMessageListANDOperatorShouldReturnMessagesWhichMatchAllConditions() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotSeenNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -362,7 +362,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListOROperatorShouldWork() throws Exception {
+    public void getMessageListOROperatorShouldReturnMessagesWhichMatchOneOfAllConditions() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotSeenNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -392,7 +392,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListNOTOperatorShouldWork() throws Exception {
+    public void getMessageListNOTOperatorShouldReturnMessagesWhichNotMatchAnyCondition() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotSeenNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -422,7 +422,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListNestedOperatorsShouldWork() throws Exception {
+    public void getMessageListNestedOperatorsShouldReturnMessagesWhichMatchConditions() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotSeenNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -1333,7 +1333,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListHasKeywordFilterShouldWork() throws Exception {
+    public void getMessageListHasKeywordFilterShouldReturnMessagesWithKeywords() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -1357,7 +1357,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListHasKeywordFilterShouldWorkWhenUserFlag() throws Exception {
+    public void getMessageListHasKeywordFilterShouldReturnMessagesWithUserKeywords() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         Flags flags = FlagsBuilder.builder()
@@ -1386,7 +1386,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListNotKeywordFilterShouldWork() throws Exception {
+    public void getMessageListNotKeywordFilterShouldReturnMessagesWithoutKeywords() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
@@ -1410,7 +1410,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListNotKeywordFilterShouldWorkWhenUserFlag() throws Exception {
+    public void getMessageListNotKeywordFilterShouldReturnMessagesWithoutUserKeywords() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         Flags flags = FlagsBuilder.builder()
@@ -1439,7 +1439,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListNotKeywordFilterShouldWorkWhenMultipleNotKeywordAndFilterOperator() throws Exception {
+    public void getMessageListNotKeywordFilterShouldReturnMessagesWithoutKeywordsWhenMultipleNotKeywordAndFilterOperator() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         Flags flags = FlagsBuilder.builder()
@@ -1467,7 +1467,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void getMessageListHasKeywordAndNotKeywordFilterShouldWork() throws Exception {
+    public void getMessageListHasKeywordAndNotKeywordFilterShouldReturnMessagesWithAndWithoutKeywords() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, username, "mailbox");
 
         ComposedMessageId messageNotFlagged = mailboxProbe.appendMessage(username, new MailboxPath(MailboxConstants.USER_NAMESPACE, username, "mailbox"),
