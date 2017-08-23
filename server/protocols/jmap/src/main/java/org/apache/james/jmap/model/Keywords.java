@@ -63,12 +63,12 @@ public class Keywords {
 
         public KeywordsFactory throwOnImapNonExposedKeywords() {
             validator = Optional.of(keywords -> Preconditions.checkArgument(
-                keywords.stream().allMatch(Keyword::isNonExposedImapKeyword), "Does not allow to update 'Deleted' or 'Recent' flag"));
+                keywords.stream().allMatch(Keyword::isNotNonExposedImapKeyword), "Does not allow to update 'Deleted' or 'Recent' flag"));
             return this;
         }
 
         public KeywordsFactory filterImapNonExposedKeywords() {
-            filter = Optional.of(keyword -> keyword.isNonExposedImapKeyword());
+            filter = Optional.of(keyword -> keyword.isNotNonExposedImapKeyword());
             return this;
         }
 
@@ -91,7 +91,7 @@ public class Keywords {
         Keywords fromMap(Map<String, Boolean> mapKeywords) {
             Preconditions.checkArgument(mapKeywords.values()
                 .stream()
-                .noneMatch(keywordValue -> !keywordValue), "Keyword must be true");
+                .noneMatch(keywordValue -> keywordValue == false), "Keyword must be true");
             Set<Keyword> setKeywords = mapKeywords.keySet()
                 .stream()
                 .map(Keyword::new)
@@ -103,16 +103,16 @@ public class Keywords {
         @VisibleForTesting
         Keywords fromOldKeyword(OldKeyword oldKeyword) {
             ImmutableSet.Builder<Keyword> builder = ImmutableSet.builder();
-            if (oldKeyword.isAnswered().isPresent() && oldKeyword.isAnswered().get()) {
+            if (oldKeyword.isAnswered().orElse(false)) {
                 builder.add(Keyword.ANSWERED);
             }
-            if (oldKeyword.isDraft().isPresent() && oldKeyword.isDraft().get()) {
+            if (oldKeyword.isDraft().orElse(false)) {
                 builder.add(Keyword.DRAFT);
             }
-            if (oldKeyword.isFlagged().isPresent() && oldKeyword.isFlagged().get()) {
+            if (oldKeyword.isFlagged().orElse(false)) {
                 builder.add(Keyword.FLAGGED);
             }
-            if (oldKeyword.isUnread().isPresent() && !oldKeyword.isUnread().get()) {
+            if (oldKeyword.isUnread().isPresent() && oldKeyword.isUnread().get() == false) {
                 builder.add(Keyword.SEEN);
             }
             return fromSet(builder.build());

@@ -32,8 +32,8 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 
 public class Keyword {
-    private final static int FLAG_NAME_MIN_LENTH = 1;
-    private final static int FLAG_NAME_MAX_LENTH = 255;
+    private final static int FLAG_NAME_MIN_LENGTH = 1;
+    private final static int FLAG_NAME_MAX_LENGTH = 255;
     private final static CharMatcher FLAG_NAME_PATTERN = CharMatcher.JAVA_LETTER_OR_DIGIT.or(CharMatcher.is('$'));
 
     public final static Keyword DRAFT = new Keyword("$Draft");
@@ -70,7 +70,7 @@ public class Keyword {
         if (StringUtils.isBlank(flagName)) {
             return false;
         }
-        if (flagName.length() < FLAG_NAME_MIN_LENTH || flagName.length() > FLAG_NAME_MAX_LENTH) {
+        if (flagName.length() < FLAG_NAME_MIN_LENGTH || flagName.length() > FLAG_NAME_MAX_LENGTH) {
             return false;
         }
         if (!FLAG_NAME_PATTERN.matchesAllOf(flagName)) {
@@ -83,7 +83,7 @@ public class Keyword {
         return flagName;
     }
 
-    public boolean isNonExposedImapKeyword() {
+    public boolean isNotNonExposedImapKeyword() {
         return !NON_EXPOSED_IMAP_KEYWORDS.contains(this);
     }
 

@@ -23,8 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 import javax.mail.Flags;
 
-import org.apache.james.mailbox.FlagsBuilder;
-
 import org.apache.commons.lang3.StringUtils;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -46,106 +44,112 @@ public class KeywordTest {
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameLengthLessThenMinLength() throws Exception {
+    public void keywordShouldThrowWhenFlagNameLengthLessThanMinLength() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("");
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameLengthMoreThenMaxLength() throws Exception {
+    public void keywordShouldThrowWhenFlagNameLengthMoreThanMaxLength() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword(StringUtils.repeat("a", FLAG_NAME_MAX_LENTH + 1));
     }
 
     @Test
-    public void keywordShouldCreateNewOneWhenFlagNameLengthEqualMaxLength() throws Exception {
-        assertThat(new Keyword(StringUtils.repeat("a", FLAG_NAME_MAX_LENTH))).isNotNull();
+    public void keywordShouldCreateNewOneWhenFlagNameLengthEqualsMaxLength() throws Exception {
+        String maxLengthFlagName = StringUtils.repeat("a", FLAG_NAME_MAX_LENTH);
+        Keyword keyword = new Keyword(maxLengthFlagName);
+
+        assertThat(keyword.getFlagName()).isEqualTo(maxLengthFlagName);
     }
 
     @Test
-    public void keywordShouldCreateNewOneWhenFlagNameLengthEqualMinLength() throws Exception {
-        assertThat(new Keyword("a")).isNotNull();
+    public void keywordShouldCreateNewOneWhenFlagNameLengthEqualsMinLength() throws Exception {
+        String minLengthFlagName = "a";
+        Keyword keyword = new Keyword(minLengthFlagName);
+
+        assertThat(keyword.getFlagName()).isEqualTo(minLengthFlagName);
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameContainPercentageCharacter() throws Exception {
+    public void keywordShouldThrowWhenFlagNameContainsPercentageCharacter() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("a%");
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameContainLeftBracket() throws Exception {
+    public void keywordShouldThrowWhenFlagNameContainsLeftBracket() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("a[");
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameContainRightBracket() throws Exception {
+    public void keywordShouldThrowWhenFlagNameContainsRightBracket() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("a]");
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameContainLeftBrace() throws Exception {
+    public void keywordShouldThrowWhenFlagNameContainsLeftBrace() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("a{");
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameContainSlash() throws Exception {
+    public void keywordShouldThrowWhenFlagNameContainsSlash() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("a\\");
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameContainStar() throws Exception {
+    public void keywordShouldThrowWhenFlagNameContainsStar() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("a*");
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameContainQuote() throws Exception {
+    public void keywordShouldThrowWhenFlagNameContainsQuote() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("a\"");
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameContainOpeningParenthesis() throws Exception {
+    public void keywordShouldThrowWhenFlagNameContainsOpeningParenthesis() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("a(");
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameContainClosingParenthesis() throws Exception {
+    public void keywordShouldThrowWhenFlagNameContainsClosingParenthesis() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("a)");
     }
 
     @Test
-    public void keywordShouldThrowWhenFlagNameContainSpaceCharacter() throws Exception {
+    public void keywordShouldThrowWhenFlagNameContainsSpaceCharacter() throws Exception {
         expectedException.expect(IllegalArgumentException.class);
         new Keyword("a b");
     }
 
     @Test
-    public void isSupportedShouldReturnFalseWhenDeleted() throws Exception {
-        assertThat(Keyword.DELETED.isNonExposedImapKeyword()).isFalse();
+    public void isNotNonExposedImapKeywordShouldReturnFalseWhenDeleted() throws Exception {
+        assertThat(Keyword.DELETED.isNotNonExposedImapKeyword()).isFalse();
     }
 
     @Test
-    public void isSupportedShouldReturnFalseWhenRecent() throws Exception {
-        assertThat(Keyword.RECENT.isNonExposedImapKeyword()).isFalse();
+    public void isNotNonExposedImapKeywordShouldReturnFalseWhenRecent() throws Exception {
+        assertThat(Keyword.RECENT.isNotNonExposedImapKeyword()).isFalse();
     }
 
     @Test
-    public void isSupportedShouldReturnTrueWhenOtherSystemFlag() throws Exception {
-        assertThat(Keyword.DRAFT.isNonExposedImapKeyword()).isTrue();
+    public void isNotNonExposedImapKeywordShouldReturnTrueWhenOtherSystemFlag() throws Exception {
+        assertThat(Keyword.DRAFT.isNotNonExposedImapKeyword()).isTrue();
     }
 
     @Test
-    public void isSupportedShouldReturnTrueWhenAnyUserFlag() throws Exception {
+    public void isNotNonExposedImapKeywordShouldReturnTrueWhenAnyUserFlag() throws Exception {
         Keyword keyword = new Keyword(ANY_KEYWORD);
-        assertThat(keyword.isNonExposedImapKeyword()).isTrue();
+        assertThat(keyword.isNotNonExposedImapKeyword()).isTrue();
     }
 
     @Test
