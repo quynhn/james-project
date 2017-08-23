@@ -47,7 +47,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class MessageFactoryTest {
-    private final static String FORWARDED = "forwarded";
+    private static final String FORWARDED = "forwarded";
     private static final InMemoryId MAILBOX_ID = InMemoryId.of(18L);
     private static final Instant INTERNAL_DATE = Instant.parse("2012-02-03T14:30:42Z");
 
