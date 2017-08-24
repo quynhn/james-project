@@ -63,12 +63,12 @@ public class Keywords {
 
         public KeywordsFactory throwOnImapNonExposedKeywords() {
             validator = Optional.of(keywords -> Preconditions.checkArgument(
-                keywords.stream().allMatch(Keyword::isNotNonExposedImapKeyword), "Does not allow to update 'Deleted' or 'Recent' flag"));
+                keywords.stream().allMatch(Keyword::isExposedImapKeyword), "Does not allow to update 'Deleted' or 'Recent' flag"));
             return this;
         }
 
         public KeywordsFactory filterImapNonExposedKeywords() {
-            filter = Optional.of(keyword -> keyword.isNotNonExposedImapKeyword());
+            filter = Optional.of(keyword -> keyword.isExposedImapKeyword());
             return this;
         }
 

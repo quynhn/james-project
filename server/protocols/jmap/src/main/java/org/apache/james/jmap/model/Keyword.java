@@ -83,7 +83,7 @@ public class Keyword {
         return flagName;
     }
 
-    public boolean isNotNonExposedImapKeyword() {
+    public boolean isExposedImapKeyword() {
         return !NON_EXPOSED_IMAP_KEYWORDS.contains(this);
     }
 

@@ -133,23 +133,23 @@ public class KeywordTest {
 
     @Test
     public void isNotNonExposedImapKeywordShouldReturnFalseWhenDeleted() throws Exception {
-        assertThat(Keyword.DELETED.isNotNonExposedImapKeyword()).isFalse();
+        assertThat(Keyword.DELETED.isExposedImapKeyword()).isFalse();
     }
 
     @Test
     public void isNotNonExposedImapKeywordShouldReturnFalseWhenRecent() throws Exception {
-        assertThat(Keyword.RECENT.isNotNonExposedImapKeyword()).isFalse();
+        assertThat(Keyword.RECENT.isExposedImapKeyword()).isFalse();
     }
 
     @Test
     public void isNotNonExposedImapKeywordShouldReturnTrueWhenOtherSystemFlag() throws Exception {
-        assertThat(Keyword.DRAFT.isNotNonExposedImapKeyword()).isTrue();
+        assertThat(Keyword.DRAFT.isExposedImapKeyword()).isTrue();
     }
 
     @Test
     public void isNotNonExposedImapKeywordShouldReturnTrueWhenAnyUserFlag() throws Exception {
         Keyword keyword = new Keyword(ANY_KEYWORD);
-        assertThat(keyword.isNotNonExposedImapKeyword()).isTrue();
+        assertThat(keyword.isExposedImapKeyword()).isTrue();
     }
 
     @Test
