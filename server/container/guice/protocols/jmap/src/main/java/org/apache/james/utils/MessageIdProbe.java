@@ -31,11 +31,8 @@ import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageResult;
 
 import com.google.common.collect.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MessageIdProbe implements GuiceProbe {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MessageIdProbe.class);
     private final MailboxManager mailboxManager;
     private final MessageIdManager messageIdManager;
 
@@ -46,7 +43,7 @@ public class MessageIdProbe implements GuiceProbe {
     }
 
     public List<MessageResult> getMessages(MessageId messageId, String user) throws MailboxException {
-        MailboxSession mailboxSession = mailboxManager.createSystemSession(user, LOGGER);
+        MailboxSession mailboxSession = mailboxManager.createSystemSession(user);
 
         return messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.FULL_CONTENT, mailboxSession);
     }
