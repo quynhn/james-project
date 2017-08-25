@@ -43,10 +43,6 @@ public class MappingsImpl implements Mappings, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static<T> Predicate<T> not(Predicate<T> p) {
-        return t -> !p.test(t);
-    }
-
     public static MappingsImpl empty() {
         return builder().build();
     }
@@ -188,7 +184,7 @@ public class MappingsImpl implements Mappings, Serializable {
     public Mappings exclude(Type type) {
         Preconditions.checkNotNull(type);
         return fromMappings(mappings.stream()
-            .filter(not(hasType(type))));
+            .filter(hasType(type).negate()));
     }
  
     @Override
