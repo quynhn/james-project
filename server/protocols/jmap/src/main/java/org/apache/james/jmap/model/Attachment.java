@@ -62,6 +62,11 @@ public class Attachment {
             return this;
         }
 
+        public Builder name(Optional<String> name) {
+            this.name = name.orElse(null);
+            return this;
+        }
+
         public Builder size(long size) {
             this.size = size;
             return this;
@@ -69,6 +74,11 @@ public class Attachment {
 
         public Builder cid(String cid) {
             this.cid = cid;
+            return this;
+        }
+
+        public Builder cid(Optional<String> cid) {
+            this.cid = cid.orElse(null);
             return this;
         }
 
