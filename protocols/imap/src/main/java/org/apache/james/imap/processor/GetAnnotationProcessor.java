@@ -146,8 +146,7 @@ public class GetAnnotationProcessor extends AbstractMailboxProcessor<GetAnnotati
         ImmutableSortedSet<Integer> overLimitSizes = mailboxAnnotations.stream()
             .filter(filterOverSizedAnnotation)
             .map(MailboxAnnotation::size)
-            .sorted(Comparator.reverseOrder())
-            .collect(Guavate.toImmutableSortedSet());
+            .collect(Guavate.toImmutableSortedSet(Comparator.reverseOrder()));
 
         if (overLimitSizes.isEmpty()) {
             return Optional.empty();
