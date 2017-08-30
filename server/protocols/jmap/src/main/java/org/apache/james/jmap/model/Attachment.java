@@ -21,6 +21,8 @@ package org.apache.james.jmap.model;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.annotations.VisibleForTesting;
@@ -57,6 +59,7 @@ public class Attachment {
             return this;
         }
 
+        @JsonDeserialize
         public Builder name(String name) {
             this.name = name;
             return this;
@@ -72,6 +75,7 @@ public class Attachment {
             return this;
         }
 
+        @JsonDeserialize
         public Builder cid(String cid) {
             this.cid = cid;
             return this;
