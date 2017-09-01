@@ -36,8 +36,8 @@ import org.apache.james.modules.MailboxProbeImpl;
 import org.apache.james.probe.DataProbe;
 import org.apache.james.transport.mailets.amqp.AmqpRule;
 import org.apache.james.util.streams.SwarmGenericContainer;
-import org.apache.james.utils.IMAPMessageReader;
 import org.apache.james.utils.DataProbeImpl;
+import org.apache.james.utils.IMAPMessageReader;
 import org.apache.mailet.Mail;
 import org.apache.james.core.MailAddress;
 import org.apache.mailet.base.test.FakeMail;
@@ -445,6 +445,7 @@ public class ICSAttachmentWorkflowTest {
     private MimeMessage messageWithICSBase64Attached;
     private MimeMessage messageWithThreeICSAttached;
     private MimeMessage yahooInvitationMessage;
+    private MimeMessage calendarMessage;
 
     @Before
     public void setup() throws Exception {
@@ -490,6 +491,10 @@ public class ICSAttachmentWorkflowTest {
                             .addProperty("rawSource", MAIL_ATTRIBUTE)
                             .addProperty("destination", JSON_MAIL_ATTRIBUTE)
                             .build())
+                    .addMailet(MailetConfiguration.builder()
+                        .match("All")
+                        .clazz("org.apache.james.jmap.mailet.ICALBodyTextToAttachment")
+                        .build())
                     .addMailet(MailetConfiguration.builder()
                             .match("All")
                             .clazz("AmqpForwardAttribute")
@@ -555,6 +560,8 @@ public class ICSAttachmentWorkflowTest {
             .build();
 
         yahooInvitationMessage = MimeMessageBuilder.mimeMessageFromStream(ClassLoader.getSystemResourceAsStream("eml/yahooInvitation.eml"));
+
+        calendarMessage = MimeMessageBuilder.mimeMessageFromStream(ClassLoader.getSystemResourceAsStream("eml/calendar.eml"));
 
         messageWithThreeICSAttached = MimeMessageBuilder.mimeMessageBuilder()
             .setMultipartWithBodyParts(
@@ -821,6 +828,26 @@ public class ICSAttachmentWorkflowTest {
                 "f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962be");
 
         assertThat(amqpRule.readContent()).isEmpty();
+    }
+
+    @Test
+    public void mailShouldNotContentCalendarContentInTextBodyButAttachment() throws Exception {
+        Mail mail = FakeMail.builder()
+            .mimeMessage(calendarMessage)
+            .sender(new MailAddress(FROM))
+            .recipient(new MailAddress(RECIPIENT))
+            .build();
+
+        try (SMTPMessageSender messageSender = SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG);
+             IMAPMessageReader imapMessageReader = new IMAPMessageReader(LOCALHOST_IP, IMAP_PORT)) {
+            messageSender.sendMessage(mail);
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(messageSender::messageHasBeenSent);
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(() -> imapMessageReader.userReceivedMessage(RECIPIENT, PASSWORD));
+
+            String receivedMessage = imapMessageReader.readFirstMessageInInbox(RECIPIENT, PASSWORD);
+
+            assertThat(receivedMessage).containsSequence("Content-Type: multipart/mixed", "Content-Disposition: attachment");
+        }
     }
 
 }

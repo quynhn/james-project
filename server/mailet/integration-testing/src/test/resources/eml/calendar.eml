@@ -1,0 +1,55 @@
+Return-Path: <yprovost@linagora.com>
+MIME-Version: 1.0
+X-Classification-Guess: {"mailboxId":"ef6890c0-243a-11e7-b008-ddd22b16a7b9","mailboxName":"Linagora.Studio.DDD","confidence":94.36473846435547}
+Delivered-To: ddolcimascolo@linagora.com
+Received: from smtp.linagora.dc1 (EHLO smtp.linagora.com) ([172.16.18.53])
+          by james.openpaas.linagora.com (JAMES SMTP Server ) with ESMTP ID 1407088133
+          for <ddolcimascolo@james.linagora.com>;
+          Wed, 26 Jul 2017 08:33:46 +0000 (UTC)
+Received: from [10.11.0.85] (unknown [88.208.91.78])
+	(using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+	(No client certificate requested)
+	by smtp.linagora.com (Postfix) with ESMTPSA id 9034565A
+	for <ddolcimascolo@linagora.com>; Wed, 26 Jul 2017 10:34:02 +0200 (CEST)
+From: Yann Provost <yprovost@linagora.com>
+Message-ID: <2d0fa16c-4c37-58de-1acc-50b5f6a23a58@linagora.com>
+To: David DOLCIMASCOLO <ddolcimascolo@linagora.com>
+Date: Wed, 26 Jul 2017 10:34:02 +0200
+Subject: =?UTF-8?B?UsOpcG9uc2Ugw6AgbA==?=
+ =?UTF-8?B?4oCZaW52aXRhdGlvbiAoQWNjZXB0w6llKcKgOiBbQSBDT05GSVJNRVJd?=
+ =?UTF-8?Q?_Call_OVH?=
+Content-class: urn:content-classes:calendarmessage
+Content-type: text/calendar; method=REPLY; charset=UTF-8
+Content-transfer-encoding: 8BIT
+
+BEGIN:VCALENDAR
+PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN
+VERSION:2.0
+METHOD:REPLY
+BEGIN:VEVENT
+CREATED:20170726T081145Z
+LAST-MODIFIED:20170726T083402Z
+DTSTAMP:20170726T083402Z
+UID:f1514f44bf39311568d6407249cb76c48103fcd1fb398c3c501cb72b2d293f36e047fe
+ b2aab16e43439a608f28671ab7c10e754cbc85ddee4a07fa8cf8f4f7af05bfb502b8f69a1e
+
+SUMMARY:[A CONFIRMER] Call OVH
+PRIORITY:5
+ORGANIZER;CN=David DOLCIMASCOLO;X-OBM-ID=486:mailto:ddolcimascolo@linagora
+ .com
+ATTENDEE;CN=Yann PROVOST;PARTSTAT=ACCEPTED;CUTYPE=INDIVIDUAL;X-OBM-ID=810:
+ mailto:yprovost@linagora.com
+DTSTART:20170727T130000Z
+DURATION:PT1H
+TRANSP:OPAQUE
+SEQUENCE:2
+X-LIC-ERROR;X-LIC-ERRORTYPE=VALUE-PARSE-ERROR:No value for X property. Rem
+ oving entire property:
+CLASS:PUBLIC
+X-OBM-DOMAIN:linagora.com
+X-OBM-DOMAIN-UUID:02874f7c-d10e-102f-acda-0015176f7922
+LOCATION:01.78.14.42.61 / 1586
+X-OBM-ALERT;X-OBM-ID=486:600
+END:VEVENT
+END:VCALENDAR
+
