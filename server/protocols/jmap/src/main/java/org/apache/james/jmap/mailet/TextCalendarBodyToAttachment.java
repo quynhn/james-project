@@ -34,16 +34,15 @@ import org.apache.mailet.base.GenericMailet;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * This mailet convert Content-Type fo MimeMessage from text/calendar to mulitpart/mixed
+ * This mailet convert Content-Type of MimeMessage from text/calendar to mulitpart/mixed
  *
- * The BodyPart should be getting from content of text/calendar
- * And because it's changed content-type so "Content-transfer-encoding" could be changed also based on rfc2045#section-6.4
- * (relationship between content-type and content-transfer-encoding.
+ * The BodyPart should be retrieved from content of text/calendar with
+ * - The same content-type from original message
+ * - The same content-transfer-encoding from original message
  *
  * <br />
- * It does not takes any parameter:
+ * It does not takes any parameter
  *
- * Then all this map attribute values will be replaced by their content.
  */
 public class TextCalendarBodyToAttachment extends GenericMailet {
     private static final String TEXT_CALENDAR_TYPE = "text/calendar";
@@ -86,7 +85,6 @@ public class TextCalendarBodyToAttachment extends GenericMailet {
             multipart.addBodyPart(getMimeBodyPart(mimeMessage, mimeMessage.getRawInputStream()));
 
             mimeMessage.setContent(multipart);
-            mimeMessage.setHeader(CONTENT_TRANSFER_ENCODING_HEADER, mimeMessage.getEncoding());
             mimeMessage.saveChanges();
         } catch (MessagingException e) {
             throw new MailetException("Could not retrieve message from Mail object", e);
@@ -97,6 +95,7 @@ public class TextCalendarBodyToAttachment extends GenericMailet {
         MimeBodyPart fileBody = new MimeBodyPart(mimeContent);
         fileBody.setDisposition(Part.ATTACHMENT);
         fileBody.setHeader(CONTENT_TYPE_HEADER, mimeMessage.getContentType());
+        fileBody.setHeader(CONTENT_TRANSFER_ENCODING_HEADER, mimeMessage.getEncoding());
         return fileBody;
     }
 

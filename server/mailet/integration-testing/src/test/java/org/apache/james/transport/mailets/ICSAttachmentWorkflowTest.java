@@ -20,10 +20,9 @@
 package org.apache.james.transport.mailets;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import java.util.Collections;
-import java.util.List;
+
 import java.util.Optional;
-import javax.mail.Header;
+
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.mailbox.model.MailboxConstants;
@@ -50,7 +49,6 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
 
-import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.jayway.awaitility.Awaitility;
@@ -849,33 +847,6 @@ public class ICSAttachmentWorkflowTest {
             String receivedMessage = imapMessageReader.readFirstMessageInInbox(RECIPIENT, PASSWORD);
 
             assertThat(receivedMessage).containsSequence("Content-Type: multipart/mixed", "Content-Disposition: attachment");
-        }
-    }
-
-    @Test
-    public void mailShouldKeepAllHeadersWhenConvertingFromTextCalendarToAttachment() throws Exception {
-        List<Header> allHeaders = Collections.list(calendarMessage.getAllHeaders());
-        List<String> allStringHeaders = allHeaders.stream()
-            .map(Header::getName)
-            .collect(Guavate.toImmutableList());
-
-        Mail mail = FakeMail.builder()
-            .mimeMessage(calendarMessage)
-            .sender(new MailAddress(FROM))
-            .recipient(new MailAddress(RECIPIENT))
-            .build();
-
-        try (SMTPMessageSender messageSender = SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG);
-             IMAPMessageReader imapMessageReader = new IMAPMessageReader(LOCALHOST_IP, IMAP_PORT)) {
-            messageSender.sendMessage(mail);
-            calmlyAwait.atMost(Duration.ONE_MINUTE).until(messageSender::messageHasBeenSent);
-            calmlyAwait.atMost(Duration.ONE_MINUTE).until(() -> imapMessageReader.userReceivedMessage(RECIPIENT, PASSWORD));
-
-            String messageHeaders = imapMessageReader.readFirstMessageHeadersInInbox(RECIPIENT, PASSWORD);
-
-            for (String header : allStringHeaders) {
-                assertThat(messageHeaders).contains(header);
-            }
         }
     }
 }
