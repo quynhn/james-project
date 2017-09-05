@@ -19,14 +19,13 @@
 
 package org.apache.james.jmap.mailet;
 
-import java.io.IOException;
+import java.io.InputStream;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.mail.util.SharedByteArrayInputStream;
 
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailetException;
@@ -34,12 +33,26 @@ import org.apache.mailet.base.GenericMailet;
 
 import com.google.common.annotations.VisibleForTesting;
 
-public class ICALBodyTextToAttachment extends GenericMailet {
-    private static final String TEXT_MIME_TYPE = "text/calendar";
+/**
+ * This mailet convert Content-Type fo MimeMessage from text/calendar to mulitpart/mixed
+ *
+ * The BodyPart should be getting from content of text/calendar
+ * And because it's changed content-type so "Content-transfer-encoding" could be changed also based on rfc2045#section-6.4
+ * (relationship between content-type and content-transfer-encoding.
+ *
+ * <br />
+ * It does not takes any parameter:
+ *
+ * Then all this map attribute values will be replaced by their content.
+ */
+public class TextCalendarBodyToAttachment extends GenericMailet {
+    private static final String TEXT_CALENDAR_TYPE = "text/calendar";
+    private static final String CONTENT_TYPE_HEADER = "Content-Type";
+    private static final String CONTENT_TRANSFER_ENCODING_HEADER = "Content-transfer-encoding";
 
     @Override
     public String getMailetInfo() {
-        return "Calendar save the bodyText as attachment";
+        return "Moves body part of content type text/calendar to attachment";
     }
 
     @Override
@@ -52,7 +65,7 @@ public class ICALBodyTextToAttachment extends GenericMailet {
 
     private boolean isTextCalendar(MimeMessage mimeMessage) throws MailetException {
         try {
-            return mimeMessage.isMimeType(TEXT_MIME_TYPE);
+            return mimeMessage.isMimeType(TEXT_CALENDAR_TYPE);
         } catch (MessagingException e) {
             throw new MailetException("Could not retrieve contenttype of MimePart.", e);
         }
@@ -68,21 +81,23 @@ public class ICALBodyTextToAttachment extends GenericMailet {
 
     @VisibleForTesting
     void processTextBodyAsAttachment(MimeMessage mimeMessage) throws MailetException {
-        if (!isTextCalendar(mimeMessage)) {
-            return;
-        }
         try {
             Multipart multipart = new MimeMultipart();
-            SharedByteArrayInputStream content = (SharedByteArrayInputStream)mimeMessage.getContent();
-
-            MimeBodyPart fileBody = new MimeBodyPart(content.newStream(0, mimeMessage.getSize()));
-            fileBody.setDisposition(Part.ATTACHMENT);
-            multipart.addBodyPart(fileBody);
+            multipart.addBodyPart(getMimeBodyPart(mimeMessage, mimeMessage.getRawInputStream()));
 
             mimeMessage.setContent(multipart);
+            mimeMessage.setHeader(CONTENT_TRANSFER_ENCODING_HEADER, mimeMessage.getEncoding());
             mimeMessage.saveChanges();
-        } catch (MessagingException | IOException e) {
+        } catch (MessagingException e) {
             throw new MailetException("Could not retrieve message from Mail object", e);
         }
     }
+
+    private MimeBodyPart getMimeBodyPart(MimeMessage mimeMessage, InputStream mimeContent) throws MessagingException {
+        MimeBodyPart fileBody = new MimeBodyPart(mimeContent);
+        fileBody.setDisposition(Part.ATTACHMENT);
+        fileBody.setHeader(CONTENT_TYPE_HEADER, mimeMessage.getContentType());
+        return fileBody;
+    }
+
 }

@@ -1,25 +1,25 @@
-Return-Path: <yprovost@linagora.com>
+Return-Path: <local@localhost.com>
 MIME-Version: 1.0
-X-Classification-Guess: {"mailboxId":"ef6890c0-243a-11e7-b008-ddd22b16a7b9","mailboxName":"Linagora.Studio.DDD","confidence":94.36473846435547}
-Delivered-To: ddolcimascolo@linagora.com
-Received: from smtp.linagora.dc1 (EHLO smtp.linagora.com) ([172.16.18.53])
-          by james.openpaas.linagora.com (JAMES SMTP Server ) with ESMTP ID 1407088133
-          for <ddolcimascolo@james.linagora.com>;
+X-Classification-Guess: {"mailboxId":"ef6890c0-243a-11e7-b008-ddd22b16a7b9","mailboxName":"Localhost","confidence":94.36473846435547}
+Delivered-To: to@localhost.com
+Received: from smtp.localhost.dc1 (EHLO smtp.localhost.com)
+          by james.localhost.com (JAMES SMTP Server ) with ESMTP ID 1407088133
+          for <user@james.localhost.com>;
           Wed, 26 Jul 2017 08:33:46 +0000 (UTC)
 Received: from [10.11.0.85] (unknown [88.208.91.78])
 	(using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
 	(No client certificate requested)
-	by smtp.linagora.com (Postfix) with ESMTPSA id 9034565A
-	for <ddolcimascolo@linagora.com>; Wed, 26 Jul 2017 10:34:02 +0200 (CEST)
-From: Yann Provost <yprovost@linagora.com>
+	by smtp.localhost.com (Postfix) with ESMTPSA id 9034565A
+	for <user@loalhost.com>; Wed, 26 Jul 2017 10:34:02 +0200 (CEST)
+From: User From <fromUser@localhost.com>
 Message-ID: <2d0fa16c-4c37-58de-1acc-50b5f6a23a58@linagora.com>
-To: David DOLCIMASCOLO <ddolcimascolo@linagora.com>
+To: User To <toUser@linagora.com>
 Date: Wed, 26 Jul 2017 10:34:02 +0200
 Subject: =?UTF-8?B?UsOpcG9uc2Ugw6AgbA==?=
  =?UTF-8?B?4oCZaW52aXRhdGlvbiAoQWNjZXB0w6llKcKgOiBbQSBDT05GSVJNRVJd?=
  =?UTF-8?Q?_Call_OVH?=
 Content-class: urn:content-classes:calendarmessage
-Content-type: text/calendar; method=REPLY; charset=UTF-8
+Content-Type: text/calendar; method=REPLY; charset=UTF-8
 Content-transfer-encoding: 8BIT
 
 BEGIN:VCALENDAR
@@ -35,10 +35,9 @@ UID:f1514f44bf39311568d6407249cb76c48103fcd1fb398c3c501cb72b2d293f36e047fe
 
 SUMMARY:[A CONFIRMER] Call OVH
 PRIORITY:5
-ORGANIZER;CN=David DOLCIMASCOLO;X-OBM-ID=486:mailto:ddolcimascolo@linagora
- .com
+ORGANIZER;CN=User;X-OBM-ID=486:mailto:userTo@localhost.com
 ATTENDEE;CN=Yann PROVOST;PARTSTAT=ACCEPTED;CUTYPE=INDIVIDUAL;X-OBM-ID=810:
- mailto:yprovost@linagora.com
+ mailto:user1To@linagora.com
 DTSTART:20170727T130000Z
 DURATION:PT1H
 TRANSP:OPAQUE

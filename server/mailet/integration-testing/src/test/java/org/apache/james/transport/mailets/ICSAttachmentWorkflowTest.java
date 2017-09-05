@@ -20,9 +20,10 @@
 package org.apache.james.transport.mailets;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
-
+import javax.mail.Header;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.mailbox.model.MailboxConstants;
@@ -49,6 +50,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.jayway.awaitility.Awaitility;
@@ -76,7 +78,7 @@ public class ICSAttachmentWorkflowTest {
     private static final String JSON_MAIL_ATTRIBUTE = "ical.json";
     private static final String EXCHANGE_NAME = "myExchange";
     private static final String ROUTING_KEY = "myRoutingKey";
-    
+
     private static final String ICS_UID = "f1514f44bf39311568d640727cff54e819573448d09d2e5677987ff29caa01a9e047feb2aab16e43439a608f28671ab7c10e754ce92be513f8e04ae9ff15e65a9819cf285a6962bc";
     private static final String ICS_DTSTAMP = "20170106T115036Z";
     private static final String ICS_SEQUENCE = "0";
@@ -161,7 +163,7 @@ public class ICSAttachmentWorkflowTest {
             " S-ACTION;X-OBM-ID=769:MAILTO:nguyen@linagora.com\n" +
             "END:VEVENT\n" +
             "END:VCALENDAR\n";
-    
+
     private static final String ICS_3 = "BEGIN:VCALENDAR\n" +
             "PRODID:-//Aliasource Groupe LINAGORA//OBM Calendar 3.2.1-rc2//FR\n" +
             "CALSCALE:GREGORIAN\n" +
@@ -493,7 +495,7 @@ public class ICSAttachmentWorkflowTest {
                             .build())
                     .addMailet(MailetConfiguration.builder()
                         .match("All")
-                        .clazz("org.apache.james.jmap.mailet.ICALBodyTextToAttachment")
+                        .clazz("org.apache.james.jmap.mailet.TextCalendarBodyToAttachment")
                         .build())
                     .addMailet(MailetConfiguration.builder()
                             .match("All")
@@ -831,7 +833,7 @@ public class ICSAttachmentWorkflowTest {
     }
 
     @Test
-    public void mailShouldNotContentCalendarContentInTextBodyButAttachment() throws Exception {
+    public void mailShouldNotContainCalendarContentInTextBodyButAttachment() throws Exception {
         Mail mail = FakeMail.builder()
             .mimeMessage(calendarMessage)
             .sender(new MailAddress(FROM))
@@ -850,4 +852,30 @@ public class ICSAttachmentWorkflowTest {
         }
     }
 
+    @Test
+    public void mailShouldKeepAllHeadersWhenConvertingFromTextCalendarToAttachment() throws Exception {
+        List<Header> allHeaders = Collections.list(calendarMessage.getAllHeaders());
+        List<String> allStringHeaders = allHeaders.stream()
+            .map(Header::getName)
+            .collect(Guavate.toImmutableList());
+
+        Mail mail = FakeMail.builder()
+            .mimeMessage(calendarMessage)
+            .sender(new MailAddress(FROM))
+            .recipient(new MailAddress(RECIPIENT))
+            .build();
+
+        try (SMTPMessageSender messageSender = SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, JAMES_APACHE_ORG);
+             IMAPMessageReader imapMessageReader = new IMAPMessageReader(LOCALHOST_IP, IMAP_PORT)) {
+            messageSender.sendMessage(mail);
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(messageSender::messageHasBeenSent);
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(() -> imapMessageReader.userReceivedMessage(RECIPIENT, PASSWORD));
+
+            String messageHeaders = imapMessageReader.readFirstMessageHeadersInInbox(RECIPIENT, PASSWORD);
+
+            for (String header : allStringHeaders) {
+                assertThat(messageHeaders).contains(header);
+            }
+        }
+    }
 }
