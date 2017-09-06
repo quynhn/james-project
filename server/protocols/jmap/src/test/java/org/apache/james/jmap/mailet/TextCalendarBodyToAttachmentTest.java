@@ -219,7 +219,7 @@ public class TextCalendarBodyToAttachmentTest {
     }
 
     @Test
-    public void contentDispositionOfAttachmentShouldBeOverwriteWhenOriginalMessageHasContentDisposition() throws Exception {
+    public void contentDispositionOfAttachmentShouldBeOverwrittenWhenOriginalMessageHasContentDisposition() throws Exception {
         String messageContent = "Content-type: text/calendar; method=REPLY; charset=UTF-8\n" +
             "Content-Disposition: inline\n" +
             "\n" +

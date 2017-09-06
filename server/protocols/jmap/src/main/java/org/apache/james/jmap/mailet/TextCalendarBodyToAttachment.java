@@ -91,12 +91,12 @@ public class TextCalendarBodyToAttachment extends GenericMailet {
     }
 
     private MimeBodyPart moveHeaderContentFromMimeMessageToBodyPart(MimeMessage mimeMessage, MimeBodyPart fileBody) throws MessagingException {
-        List<Header> headers = Collections.list((Enumeration<Header>) mimeMessage.getAllHeaders())
+        List<Header> contentHeaders = Collections.list((Enumeration<Header>) mimeMessage.getAllHeaders())
             .stream()
             .filter(header -> header.getName().startsWith(HEADER_PREFIX_CONTENT))
             .collect(Guavate.toImmutableList());
 
-        for (Header header : headers) {
+        for (Header header : contentHeaders) {
             fileBody.setHeader(header.getName(), header.getValue());
             mimeMessage.removeHeader(header.getName());
         }
