@@ -19,7 +19,6 @@
 
 package org.apache.james.jmap.mailet;
 
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -57,7 +56,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class TextCalendarBodyToAttachment extends GenericMailet {
     private static final String TEXT_CALENDAR_TYPE = "text/calendar";
-    public static final String HEADER_PREFIX_CONTENT = "Content-";
+    private static final String CONTENT_HEADER_PREFIX = "Content-";
 
     @Override
     public String getMailetInfo() {
@@ -75,25 +74,24 @@ public class TextCalendarBodyToAttachment extends GenericMailet {
     @VisibleForTesting
     void processTextBodyAsAttachment(MimeMessage mimeMessage) throws MessagingException {
         Multipart multipart = new MimeMultipart();
-        multipart.addBodyPart(getMimeBodyPart(mimeMessage, mimeMessage.getRawInputStream()));
+        multipart.addBodyPart(createMimeBodyPartFromMimeMessage(mimeMessage));
 
         mimeMessage.setContent(multipart);
         mimeMessage.saveChanges();
     }
 
-    private MimeBodyPart getMimeBodyPart(MimeMessage mimeMessage, InputStream mimeContent) throws MessagingException {
-        MimeBodyPart fileBody = new MimeBodyPart(mimeContent);
-
-        fileBody = moveHeaderContentFromMimeMessageToBodyPart(mimeMessage, fileBody);
+    private MimeBodyPart createMimeBodyPartFromMimeMessage(MimeMessage mimeMessage) throws MessagingException {
+        MimeBodyPart fileBody = createMimeBodyPartAndMoveContentHeadersFromMimeMessageToMimePart(mimeMessage);
 
         fileBody.setDisposition(Part.ATTACHMENT);
         return fileBody;
     }
 
-    private MimeBodyPart moveHeaderContentFromMimeMessageToBodyPart(MimeMessage mimeMessage, MimeBodyPart fileBody) throws MessagingException {
+    private MimeBodyPart createMimeBodyPartAndMoveContentHeadersFromMimeMessageToMimePart(MimeMessage mimeMessage) throws MessagingException {
+        MimeBodyPart fileBody = new MimeBodyPart(mimeMessage.getRawInputStream());
         List<Header> contentHeaders = Collections.list((Enumeration<Header>) mimeMessage.getAllHeaders())
             .stream()
-            .filter(header -> header.getName().startsWith(HEADER_PREFIX_CONTENT))
+            .filter(header -> header.getName().startsWith(CONTENT_HEADER_PREFIX))
             .collect(Guavate.toImmutableList());
 
         for (Header header : contentHeaders) {

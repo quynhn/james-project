@@ -445,7 +445,6 @@ public class ICSAttachmentWorkflowTest {
     private MimeMessage messageWithICSBase64Attached;
     private MimeMessage messageWithThreeICSAttached;
     private MimeMessage yahooInvitationMessage;
-    private MimeMessage calendarMessage;
 
     @Before
     public void setup() throws Exception {
@@ -560,8 +559,6 @@ public class ICSAttachmentWorkflowTest {
             .build();
 
         yahooInvitationMessage = MimeMessageBuilder.mimeMessageFromStream(ClassLoader.getSystemResourceAsStream("eml/yahooInvitation.eml"));
-
-        calendarMessage = MimeMessageBuilder.mimeMessageFromStream(ClassLoader.getSystemResourceAsStream("eml/calendar.eml"));
 
         messageWithThreeICSAttached = MimeMessageBuilder.mimeMessageBuilder()
             .setMultipartWithBodyParts(
@@ -832,6 +829,7 @@ public class ICSAttachmentWorkflowTest {
 
     @Test
     public void mailShouldNotContainCalendarContentInTextBodyButAttachment() throws Exception {
+        MimeMessage calendarMessage = MimeMessageBuilder.mimeMessageFromStream(ClassLoader.getSystemResourceAsStream("eml/calendar.eml"));
         Mail mail = FakeMail.builder()
             .mimeMessage(calendarMessage)
             .sender(new MailAddress(FROM))
