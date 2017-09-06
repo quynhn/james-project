@@ -20,7 +20,11 @@
 package org.apache.james.jmap.mailet;
 
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 
+import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
@@ -31,6 +35,7 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 
+import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
@@ -45,13 +50,14 @@ import com.google.common.annotations.VisibleForTesting;
  *
  * Sample configuration:
  * <p/>
- * <mailet match="All" class="TextCalendarBodyToAttachment"/>
+ * <pre><code>
+ * &lt;mailet match="All" class="TextCalendarBodyToAttachment"/&gt;
+ * </code></pre>
  *
  */
 public class TextCalendarBodyToAttachment extends GenericMailet {
     private static final String TEXT_CALENDAR_TYPE = "text/calendar";
-    private static final String CONTENT_TYPE_HEADER = "Content-Type";
-    private static final String CONTENT_TRANSFER_ENCODING_HEADER = "Content-transfer-encoding";
+    public static final String HEADER_PREFIX_CONTENT = "Content-";
 
     @Override
     public String getMailetInfo() {
@@ -78,8 +84,21 @@ public class TextCalendarBodyToAttachment extends GenericMailet {
     private MimeBodyPart getMimeBodyPart(MimeMessage mimeMessage, InputStream mimeContent) throws MessagingException {
         MimeBodyPart fileBody = new MimeBodyPart(mimeContent);
         fileBody.setDisposition(Part.ATTACHMENT);
-        fileBody.setHeader(CONTENT_TYPE_HEADER, mimeMessage.getContentType());
-        fileBody.setHeader(CONTENT_TRANSFER_ENCODING_HEADER, mimeMessage.getEncoding());
+
+        return moveHeaderContentFromMimeMessageToBodyPart(mimeMessage, fileBody);
+    }
+
+    private MimeBodyPart moveHeaderContentFromMimeMessageToBodyPart(MimeMessage mimeMessage, MimeBodyPart fileBody) throws MessagingException {
+        List<Header> headers = Collections.list((Enumeration<Header>) mimeMessage.getAllHeaders())
+            .stream()
+            .filter(header -> header.getName().startsWith(HEADER_PREFIX_CONTENT))
+            .collect(Guavate.toImmutableList());
+
+        for (Header header : headers) {
+            fileBody.setHeader(header.getName(), header.getValue());
+            mimeMessage.removeHeader(header.getName());
+        }
+
         return fileBody;
     }
 

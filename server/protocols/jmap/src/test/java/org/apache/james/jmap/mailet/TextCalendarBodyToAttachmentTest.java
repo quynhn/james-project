@@ -172,4 +172,30 @@ public class TextCalendarBodyToAttachmentTest {
         BodyPart firstBodyPart = multipart.getBodyPart(firstBodyPartIndex);
         assertThat(firstBodyPart.getHeader("Content-transfer-encoding")).containsExactly("8BIT");
     }
+
+    @Test
+    public void contentClassOfAttachmentShouldBeTakenFromOriginalMessage() throws Exception {
+        Mail mail = FakeMail.builder()
+            .mimeMessage(calendarMessage)
+            .build();
+
+        mailet.service(mail);
+
+        Multipart multipart = (Multipart)mail.getMessage().getContent();
+
+        int firstBodyPartIndex = 0;
+        BodyPart firstBodyPart = multipart.getBodyPart(firstBodyPartIndex);
+        assertThat(firstBodyPart.getHeader("Content-class")).containsExactly("urn:content-classes:calendarmessage");
+    }
+
+    @Test
+    public void contentClassHeaderShouldBeRemoveFromOriginalMessage() throws Exception {
+        Mail mail = FakeMail.builder()
+            .mimeMessage(calendarMessage)
+            .build();
+
+        mailet.service(mail);
+
+        assertThat(mail.getMessage().getHeader("Content-class")).isNullOrEmpty();
+    }
 }
