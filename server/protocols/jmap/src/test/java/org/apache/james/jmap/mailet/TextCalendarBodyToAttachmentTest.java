@@ -25,27 +25,21 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
-import java.util.Collections;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 import javax.mail.BodyPart;
-import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.mailet.Mail;
-import org.apache.mailet.MailetException;
 import org.apache.mailet.base.test.FakeMail;
 import org.apache.mailet.base.test.FakeMailetConfig;
 import org.apache.mailet.base.test.MimeMessageBuilder;
-import org.assertj.core.groups.Tuple;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import com.google.common.collect.ImmutableList;
 
 public class TextCalendarBodyToAttachmentTest {
     @Rule
@@ -71,7 +65,7 @@ public class TextCalendarBodyToAttachmentTest {
 
     @Test
     public void serviceShouldThrowWhenCanNotGetMessageFromMail() throws Exception {
-        expectedException.expect(MailetException.class);
+        expectedException.expect(MessagingException.class);
         Mail mail = mock(Mail.class);
         when(mail.getMessage())
             .thenThrow(MessagingException.class);
@@ -81,7 +75,7 @@ public class TextCalendarBodyToAttachmentTest {
 
     @Test
     public void serviceShouldThrowWhenMessageCanNotGetContentType() throws Exception {
-        expectedException.expect(MailetException.class);
+        expectedException.expect(MessagingException.class);
 
         MimeMessage message = mock(MimeMessage.class);
         Mail mail = FakeMail.from(message);
@@ -97,7 +91,7 @@ public class TextCalendarBodyToAttachmentTest {
             "Content-transfer-encoding: 8BIT\n" +
             "\n" +
             "BEGIN:VCALENDAR";
-        MimeMessage message = MimeMessageBuilder.mimeMessageFromStream(new ByteArrayInputStream(messageContent.getBytes()));
+        MimeMessage message = MimeMessageBuilder.mimeMessageFromStream(new ByteArrayInputStream(messageContent.getBytes(StandardCharsets.US_ASCII)));
 
         Mail mail = FakeMail.builder()
             .mimeMessage(message)
@@ -105,7 +99,7 @@ public class TextCalendarBodyToAttachmentTest {
 
         mailet.service(mail);
 
-        assertThat(mail.getMessage().isMimeType("text/*")).isTrue();
+        assertThat(mail.getMessage().isMimeType("text/html")).isTrue();
         assertThat(mail.getMessage().getDisposition()).isNull();
     }
 
@@ -115,7 +109,7 @@ public class TextCalendarBodyToAttachmentTest {
             "Content-transfer-encoding: 8BIT\n" +
             "\n" +
             "BEGIN:VCALENDAR";
-        MimeMessage message = MimeMessageBuilder.mimeMessageFromStream(new ByteArrayInputStream(messageContent.getBytes()));
+        MimeMessage message = MimeMessageBuilder.mimeMessageFromStream(new ByteArrayInputStream(messageContent.getBytes(StandardCharsets.US_ASCII)));
 
         Mail mail = FakeMail.builder()
             .mimeMessage(message)
@@ -134,7 +128,7 @@ public class TextCalendarBodyToAttachmentTest {
             "BEGIN:VCALENDAR\n" +
             "END:VEVENT\n" +
             "END:VCALENDAR";
-        MimeMessage message = MimeMessageBuilder.mimeMessageFromStream(new ByteArrayInputStream(messageContent.getBytes()));
+        MimeMessage message = MimeMessageBuilder.mimeMessageFromStream(new ByteArrayInputStream(messageContent.getBytes(StandardCharsets.US_ASCII)));
 
         Mail mail = FakeMail.builder()
             .mimeMessage(message)
@@ -150,30 +144,7 @@ public class TextCalendarBodyToAttachmentTest {
     }
 
     @Test
-    public void serviceShouldKeepHeaderValueExceptContentTypeAndMessageIdAndEncodingWhenConverting() throws Exception {
-        List<String> headerChanged = ImmutableList.of("Content-Type", "Message-ID", "Content-transfer-encoding");
-        List<Header> allHeaders = Collections.list(calendarMessage.getAllHeaders());
-
-        Mail mail = FakeMail.builder()
-            .mimeMessage(calendarMessage)
-            .build();
-
-        mailet.service(mail);
-
-        List<Header> actualHeaders = Collections.list(mail.getMessage().getAllHeaders());
-        for (Header header : allHeaders) {
-            if (!headerChanged.contains(header.getName())) {
-                assertThat(actualHeaders)
-                    .extracting(Header::getName, Header::getValue)
-                    .contains(Tuple.tuple(header.getName(), header.getValue()));
-            }
-        }
-    }
-
-    @Test
     public void contentTypeOfAttachmentShouldBeTakenFromOriginalMessage() throws Exception {
-        String originalContentType = calendarMessage.getContentType();
-
         Mail mail = FakeMail.builder()
             .mimeMessage(calendarMessage)
             .build();
@@ -184,13 +155,11 @@ public class TextCalendarBodyToAttachmentTest {
 
         int firstBodyPartIndex = 0;
         BodyPart firstBodyPart = multipart.getBodyPart(firstBodyPartIndex);
-        assertThat(firstBodyPart.getContentType()).isEqualTo(originalContentType);
+        assertThat(firstBodyPart.getContentType()).isEqualTo("text/calendar; method=REPLY; charset=UTF-8");
     }
 
     @Test
     public void contentTransferEncodingOfAttachmentShouldBeTakenFromOriginalMessage() throws Exception {
-        String originalContentTransferEncoding = calendarMessage.getEncoding();
-
         Mail mail = FakeMail.builder()
             .mimeMessage(calendarMessage)
             .build();
@@ -201,6 +170,6 @@ public class TextCalendarBodyToAttachmentTest {
 
         int firstBodyPartIndex = 0;
         BodyPart firstBodyPart = multipart.getBodyPart(firstBodyPartIndex);
-        assertThat(firstBodyPart.getHeader("Content-transfer-encoding")).containsExactly(originalContentTransferEncoding);
+        assertThat(firstBodyPart.getHeader("Content-transfer-encoding")).containsExactly("8BIT");
     }
 }

@@ -20,6 +20,7 @@
 package org.apache.james.jmap.mailet;
 
 import java.io.InputStream;
+
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
@@ -28,7 +29,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.mailet.Mail;
-import org.apache.mailet.MailetException;
 import org.apache.mailet.base.GenericMailet;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -43,6 +43,10 @@ import com.google.common.annotations.VisibleForTesting;
  * <br />
  * It does not takes any parameter
  *
+ * Sample configuration:
+ * <p/>
+ * <mailet match="All" class="TextCalendarBodyToAttachment"/>
+ *
  */
 public class TextCalendarBodyToAttachment extends GenericMailet {
     private static final String TEXT_CALENDAR_TYPE = "text/calendar";
@@ -56,39 +60,19 @@ public class TextCalendarBodyToAttachment extends GenericMailet {
 
     @Override
     public void service(Mail mail) throws MessagingException {
-        MimeMessage message = getMessageFromMail(mail);
-        if (isTextCalendar(message)) {
-            processTextBodyAsAttachment(message);
-        }
-    }
-
-    private boolean isTextCalendar(MimeMessage mimeMessage) throws MailetException {
-        try {
-            return mimeMessage.isMimeType(TEXT_CALENDAR_TYPE);
-        } catch (MessagingException e) {
-            throw new MailetException("Could not retrieve contenttype of MimePart.", e);
-        }
-    }
-
-    private MimeMessage getMessageFromMail(Mail mail) throws MailetException {
-        try {
-            return mail.getMessage();
-        } catch (MessagingException e) {
-            throw new MailetException("Could not retrieve message from Mail object", e);
+        MimeMessage mimeMessage = mail.getMessage();
+        if (mimeMessage.isMimeType(TEXT_CALENDAR_TYPE)) {
+            processTextBodyAsAttachment(mimeMessage);
         }
     }
 
     @VisibleForTesting
-    void processTextBodyAsAttachment(MimeMessage mimeMessage) throws MailetException {
-        try {
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(getMimeBodyPart(mimeMessage, mimeMessage.getRawInputStream()));
+    void processTextBodyAsAttachment(MimeMessage mimeMessage) throws MessagingException {
+        Multipart multipart = new MimeMultipart();
+        multipart.addBodyPart(getMimeBodyPart(mimeMessage, mimeMessage.getRawInputStream()));
 
-            mimeMessage.setContent(multipart);
-            mimeMessage.saveChanges();
-        } catch (MessagingException e) {
-            throw new MailetException("Could not retrieve message from Mail object", e);
-        }
+        mimeMessage.setContent(multipart);
+        mimeMessage.saveChanges();
     }
 
     private MimeBodyPart getMimeBodyPart(MimeMessage mimeMessage, InputStream mimeContent) throws MessagingException {
