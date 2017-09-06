@@ -83,9 +83,11 @@ public class TextCalendarBodyToAttachment extends GenericMailet {
 
     private MimeBodyPart getMimeBodyPart(MimeMessage mimeMessage, InputStream mimeContent) throws MessagingException {
         MimeBodyPart fileBody = new MimeBodyPart(mimeContent);
-        fileBody.setDisposition(Part.ATTACHMENT);
 
-        return moveHeaderContentFromMimeMessageToBodyPart(mimeMessage, fileBody);
+        fileBody = moveHeaderContentFromMimeMessageToBodyPart(mimeMessage, fileBody);
+
+        fileBody.setDisposition(Part.ATTACHMENT);
+        return fileBody;
     }
 
     private MimeBodyPart moveHeaderContentFromMimeMessageToBodyPart(MimeMessage mimeMessage, MimeBodyPart fileBody) throws MessagingException {

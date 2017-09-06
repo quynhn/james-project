@@ -198,4 +198,46 @@ public class TextCalendarBodyToAttachmentTest {
 
         assertThat(mail.getMessage().getHeader("Content-class")).isNullOrEmpty();
     }
+
+    @Test
+    public void contentDispositionHeaderShouldBeRemoveFromOriginalMessage() throws Exception {
+        String messageContent = "Content-type: text/calendar; method=REPLY; charset=UTF-8\n" +
+            "Content-Disposition: inline\n" +
+            "\n" +
+            "BEGIN:VCALENDAR\n" +
+            "END:VEVENT\n" +
+            "END:VCALENDAR";
+        MimeMessage message = MimeMessageBuilder.mimeMessageFromStream(new ByteArrayInputStream(messageContent.getBytes(StandardCharsets.US_ASCII)));
+
+        Mail mail = FakeMail.builder()
+            .mimeMessage(message)
+            .build();
+
+        mailet.service(mail);
+
+        assertThat(mail.getMessage().getHeader("Content-Disposition")).isNullOrEmpty();
+    }
+
+    @Test
+    public void contentDispositionOfAttachmentShouldBeOverwriteWhenOriginalMessageHasContentDisposition() throws Exception {
+        String messageContent = "Content-type: text/calendar; method=REPLY; charset=UTF-8\n" +
+            "Content-Disposition: inline\n" +
+            "\n" +
+            "BEGIN:VCALENDAR\n" +
+            "END:VEVENT\n" +
+            "END:VCALENDAR";
+        MimeMessage message = MimeMessageBuilder.mimeMessageFromStream(new ByteArrayInputStream(messageContent.getBytes(StandardCharsets.US_ASCII)));
+
+        Mail mail = FakeMail.builder()
+            .mimeMessage(message)
+            .build();
+
+        mailet.service(mail);
+
+        Multipart multipart = (Multipart)mail.getMessage().getContent();
+
+        int firstBodyPartIndex = 0;
+        BodyPart firstBodyPart = multipart.getBodyPart(firstBodyPartIndex);
+        assertThat(firstBodyPart.getHeader("Content-Disposition")).containsExactly("attachment");
+    }
 }
