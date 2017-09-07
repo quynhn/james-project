@@ -38,11 +38,10 @@ import com.github.steveash.guavate.Guavate;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * This mailet convert Content-Type of MimeMessage from text/calendar to mulitpart/mixed
+ * This mailet converts Content-Type of MimeMessage from text/calendar to mulitpart/mixed
  *
- * The BodyPart should be retrieved from content of text/calendar with
- * - The same content-type from original message
- * - The same content-transfer-encoding from original message
+ * The BodyPart should be retrieved from content of text/calendar with all the same "Content-*" headers from original message
+ * and those "Content-" header are removed from original message
  *
  * <br />
  * It does not takes any parameter
