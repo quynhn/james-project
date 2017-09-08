@@ -72,33 +72,37 @@ public class TextCalendarBodyToAttachment extends GenericMailet {
 
     @VisibleForTesting
     void processTextBodyAsAttachment(MimeMessage mimeMessage) throws MessagingException {
+        List<Header> contentHeaders = getContentHeadersFromMimeMessage(mimeMessage);
+
+        removeAllContentHeaderFromMimeMessage(mimeMessage, contentHeaders);
+
         Multipart multipart = new MimeMultipart();
-        multipart.addBodyPart(createMimeBodyPartFromMimeMessage(mimeMessage));
+        multipart.addBodyPart(createMimeBodyPartWithContentHeadersFromMimeMessage(mimeMessage, contentHeaders));
 
         mimeMessage.setContent(multipart);
         mimeMessage.saveChanges();
     }
 
-    private MimeBodyPart createMimeBodyPartFromMimeMessage(MimeMessage mimeMessage) throws MessagingException {
-        MimeBodyPart fileBody = createMimeBodyPartAndMoveContentHeadersFromMimeMessageToMimePart(mimeMessage);
+    private List<Header> getContentHeadersFromMimeMessage(MimeMessage mimeMessage) throws MessagingException {
+        return Collections.list((Enumeration<Header>) mimeMessage.getAllHeaders())
+            .stream()
+            .filter(header -> header.getName().startsWith(CONTENT_HEADER_PREFIX))
+            .collect(Guavate.toImmutableList());
+    }
+
+    private MimeBodyPart createMimeBodyPartWithContentHeadersFromMimeMessage(MimeMessage mimeMessage, List<Header> contentHeaders) throws MessagingException {
+        MimeBodyPart fileBody = new MimeBodyPart(mimeMessage.getRawInputStream());
+        for (Header header : contentHeaders) {
+            fileBody.setHeader(header.getName(), header.getValue());
+        }
 
         fileBody.setDisposition(Part.ATTACHMENT);
         return fileBody;
     }
 
-    private MimeBodyPart createMimeBodyPartAndMoveContentHeadersFromMimeMessageToMimePart(MimeMessage mimeMessage) throws MessagingException {
-        MimeBodyPart fileBody = new MimeBodyPart(mimeMessage.getRawInputStream());
-        List<Header> contentHeaders = Collections.list((Enumeration<Header>) mimeMessage.getAllHeaders())
-            .stream()
-            .filter(header -> header.getName().startsWith(CONTENT_HEADER_PREFIX))
-            .collect(Guavate.toImmutableList());
-
+    private void removeAllContentHeaderFromMimeMessage(MimeMessage mimeMessage, List<Header> contentHeaders) throws MessagingException {
         for (Header header : contentHeaders) {
-            fileBody.setHeader(header.getName(), header.getValue());
             mimeMessage.removeHeader(header.getName());
         }
-
-        return fileBody;
     }
-
 }
