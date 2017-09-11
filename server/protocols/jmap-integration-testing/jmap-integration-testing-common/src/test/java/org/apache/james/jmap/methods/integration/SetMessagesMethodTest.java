@@ -3713,6 +3713,8 @@ public abstract class SetMessagesMethodTest {
             calmlyAwait.atMost(Duration.ONE_MINUTE).until(messageSender::messageHasBeenSent);
         }
 
+        calmlyAwait.atMost(30, TimeUnit.SECONDS).until( () -> isAnyMessageFoundInInbox(accessToken));
+
         String message = ARGUMENTS + ".list[0]";
         String firstAttachment = message + ".attachments[0]";
 
