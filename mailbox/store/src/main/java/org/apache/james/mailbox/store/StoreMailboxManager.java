@@ -717,9 +717,16 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     private boolean isReadable(MailboxSession session, Mailbox mailbox) throws MailboxException {
-        return (Objects.equals(mailbox.getUser(), session.getUser().getUserName())
-            && Objects.equals(mailbox.getNamespace(), MailboxConstants.USER_NAMESPACE))
-        || hasRight(mailbox, Right.Read, session);
+        return (isSameUser(session, mailbox) && isUserNamespace(mailbox))
+                || hasRight(mailbox, Right.Read, session);
+    }
+
+    private boolean isSameUser(MailboxSession session, Mailbox mailbox) {
+        return Objects.equals(mailbox.getUser(), session.getUser().getUserName());
+    }
+
+    private boolean isUserNamespace(Mailbox mailbox) {
+        return Objects.equals(mailbox.getNamespace(), MailboxConstants.USER_NAMESPACE);
     }
 
     private SimpleMailboxMetaData toMailboxMetadata(MailboxSession session, List<Mailbox> mailboxes, Mailbox mailbox) {
