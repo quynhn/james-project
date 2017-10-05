@@ -97,7 +97,7 @@ public class InMemoryMessageManagerTestSystem extends MessageManagerTestSystem {
 
     private Optional<MailboxMetaData> retrieveMailbox(final MailboxId mailboxId, MailboxSession mailboxSession) throws MailboxException {
         MailboxQuery userMailboxesQuery = MailboxQuery.privateMailboxesBuilder(mailboxSession)
-            .expression(Wildcard.instance)
+            .expression(Wildcard.INSTANCE)
             .build();
         return mailboxManager.search(userMailboxesQuery, mailboxSession)
             .stream()

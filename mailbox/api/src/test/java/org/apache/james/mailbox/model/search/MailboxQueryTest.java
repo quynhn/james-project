@@ -59,7 +59,7 @@ public class MailboxQueryTest {
 
         assertThat(actual.getNamespace()).contains(expected.getNamespace());
         assertThat(actual.getUser()).contains(expected.getUser());
-        assertThat(actual.getMailboxNameExpression()).isEqualTo(Wildcard.instance);
+        assertThat(actual.getMailboxNameExpression()).isEqualTo(Wildcard.INSTANCE);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class MailboxQueryTest {
 
         assertThat(actual.getNamespace()).contains(mailboxPath.getNamespace());
         assertThat(actual.getUser()).contains(mailboxPath.getUser());
-        assertThat(actual.getMailboxNameExpression()).isEqualTo(Wildcard.instance);
+        assertThat(actual.getMailboxNameExpression()).isEqualTo(Wildcard.INSTANCE);
     }
 
     @Test

@@ -125,7 +125,7 @@ public class MailboxProbeImpl implements GuiceProbe, MailboxProbe {
     private List<MailboxMetaData> searchUserMailboxes(MailboxSession session) throws MailboxException {
         return mailboxManager.search(
             MailboxQuery.privateMailboxesBuilder(session)
-                .expression(Wildcard.instance)
+                .expression(Wildcard.INSTANCE)
                 .build(),
             session);
     }

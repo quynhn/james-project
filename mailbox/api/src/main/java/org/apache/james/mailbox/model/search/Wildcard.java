@@ -25,7 +25,7 @@ import com.google.common.base.Preconditions;
 
 public class Wildcard implements MailboxNameExpression {
 
-    public static Wildcard instance = new Wildcard();
+    public static final Wildcard INSTANCE = new Wildcard();
 
     private Wildcard() {
     }

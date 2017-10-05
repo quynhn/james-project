@@ -47,7 +47,7 @@ public final class MailboxQuery {
     }
 
     public static class Builder {
-        private static final Wildcard DEFAULT_WILDCARD = Wildcard.instance;
+        private static final Wildcard DEFAULT_WILDCARD = Wildcard.INSTANCE;
 
         Optional<String> username;
         Optional<String> namespace;
@@ -95,7 +95,7 @@ public final class MailboxQuery {
         }
         
         public Builder matchesAllMailboxNames() {
-            this.mailboxNameExpression = Optional.of(Wildcard.instance);
+            this.mailboxNameExpression = Optional.of(Wildcard.INSTANCE);
             return this;
         }
         
