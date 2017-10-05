@@ -28,31 +28,31 @@ public class WildcardTest {
 
     @Test
     public void isWildShouldBeTrue() {
-        assertThat(new Wildcard().isWild())
+        assertThat(Wildcard.instance.isWild())
             .isTrue();
     }
 
     @Test
     public void getCombinedNameShouldReturnWildcard() {
-        assertThat(new Wildcard().getCombinedName())
+        assertThat(Wildcard.instance.getCombinedName())
             .isEqualTo(String.valueOf(MailboxNameExpression.FREEWILDCARD));
     }
 
     @Test
     public void isExpressionMatchShouldMatchAnyValue() {
-        assertThat(new Wildcard().isExpressionMatch("any"))
+        assertThat(Wildcard.instance.isExpressionMatch("any"))
             .isTrue();
     }
 
     @Test
     public void isExpressionMatchShouldMatchEmptyValue() {
-        assertThat(new Wildcard().isExpressionMatch(""))
+        assertThat(Wildcard.instance.isExpressionMatch(""))
             .isTrue();
     }
 
     @Test
     public void isExpressionMatchShouldThrowOnNullValue() {
-        assertThatThrownBy(() -> new Wildcard().isExpressionMatch(null))
+        assertThatThrownBy(() -> Wildcard.instance.isExpressionMatch(null))
             .isInstanceOf(NullPointerException.class);
     }
 

@@ -126,7 +126,7 @@ abstract public class AbstractStorageQuota extends AbstractQuotaMatcher {
             // TODO: See JAMES-1198
             List<MailboxMetaData> mList = manager.search(
                     MailboxQuery.privateMailboxesBuilder(session)
-                        .expression(new Wildcard())
+                        .expression(Wildcard.instance)
                         .build(),
                     session);
             for (MailboxMetaData aMList : mList) {

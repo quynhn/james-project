@@ -25,6 +25,11 @@ import com.google.common.base.Preconditions;
 
 public class Wildcard implements MailboxNameExpression {
 
+    public static Wildcard instance = new Wildcard();
+
+    private Wildcard() {
+    }
+
     @Override
     public boolean isExpressionMatch(String name) {
         Preconditions.checkNotNull(name);
