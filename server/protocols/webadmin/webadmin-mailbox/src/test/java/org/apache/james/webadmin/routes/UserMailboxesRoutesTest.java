@@ -349,8 +349,7 @@ public class UserMailboxesRoutesTest {
         @Test
         public void putShouldAddAMailbox() {
             with()
-                .put(MAILBOX_NAME)
-            .prettyPeek();
+                .put(MAILBOX_NAME);
 
             when()
                 .get()
