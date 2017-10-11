@@ -148,15 +148,22 @@ public class ListProcessor extends AbstractMailboxProcessor<ListRequest> {
                     basePath = PathConverter.forSession(session).buildFullPath(finalReferencename);
                 }
 
-                results = getMailboxManager().search(
+                if (mailboxName.equals("*")) {
+                    results = getMailboxManager().search(
                         MailboxQuery.builder()
-                            .userAndNamespaceFrom(basePath)
+                            .matchesAllMailboxNames()
+                            .build(),
+                        mailboxSession);
+                } else {
+                    results = getMailboxManager().search(
+                        MailboxQuery.builder()
                             .expression(new PrefixedRegex(
                                 basePath.getName(),
                                 CharsetUtil.decodeModifiedUTF7(mailboxName),
                                 mailboxSession.getPathDelimiter()))
                             .build()
                         , mailboxSession);
+                }
             }
 
             for (MailboxMetaData metaData : results) {
