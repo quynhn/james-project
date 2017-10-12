@@ -26,12 +26,16 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.github.steveash.guavate.Guavate;
+import com.google.common.base.Preconditions;
 
 public class CommutativityChecker<T> {
     private final Set<T> valuesToTest;
     private final BinaryOperator<T> operationToTest;
 
     public CommutativityChecker(Set<T> valuesToTest, BinaryOperator<T> operationToTest) {
+        Preconditions.checkNotNull(valuesToTest);
+        Preconditions.checkNotNull(operationToTest);
+        Preconditions.checkArgument(valuesToTest.size() > 1, "You must to pass more than one value to check commutativity");
         this.valuesToTest = valuesToTest;
         this.operationToTest = operationToTest;
     }
