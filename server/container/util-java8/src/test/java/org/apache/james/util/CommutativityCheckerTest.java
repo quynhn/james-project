@@ -76,7 +76,7 @@ public class CommutativityCheckerTest {
         CommutativityChecker<Integer> commutativityChecker = new CommutativityChecker<>(integers, binaryOperator);
 
         assertThat(commutativityChecker.findNonCommutativeInput())
-            .containsOnly(Pair.of(2, 1), Pair.of(1, 2));
+            .containsOnly(Pair.of(2, 1));
     }
 
     @Test
@@ -86,10 +86,8 @@ public class CommutativityCheckerTest {
         CommutativityChecker<Integer> commutativityChecker = new CommutativityChecker<>(integers, binaryOperator);
 
         assertThat(commutativityChecker.findNonCommutativeInput())
-            .containsOnly(Pair.of(2, 1),
-                Pair.of(1, 2),
-                Pair.of(0, 2),
-                Pair.of(2, 0));
+            .containsOnly(Pair.of(1, 2),
+                Pair.of(0, 2));
     }
 
     @Test

@@ -20,6 +20,7 @@
 package org.apache.james.util;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
@@ -53,9 +54,19 @@ public class CommutativityChecker<T> {
         return !leftThenRight.equals(rightThenLeft);
     }
 
-    private Stream<Pair<T, T>> combineWithValues(T value1) {
-        return valuesToTest.stream()
-            .filter(value2 -> value2 != value1)
-            .map(value2 -> Pair.of(value1, value2));
+    private Stream<Pair<T, T>> combineWithValues(T value) {
+        return skipUntil(valuesToTest.stream(), value)
+            .filter(value2 -> value2 != value)
+            .map(value2 -> Pair.of(value, value2));
+    }
+
+    public Stream<T> skipUntil(Stream<T> stream, T value) {
+        AtomicInteger seenCount = new AtomicInteger(0);
+        return stream.filter(v -> {
+                if (v == value) {
+                    seenCount.incrementAndGet();
+                }
+                return seenCount.get() > 0;
+            });
     }
 }
