@@ -38,11 +38,13 @@ import org.apache.james.jmap.model.MessageFactory;
 import org.apache.james.jmap.model.MessageFactory.MetaDataWithContent;
 import org.apache.james.jmap.model.MessageProperties;
 import org.apache.james.jmap.model.MessageProperties.HeaderProperty;
+import org.apache.james.jmap.utils.KeywordsCombiner;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageIdManager;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.FetchGroupImpl;
 import org.apache.james.mailbox.model.MailboxId;
+import org.apache.james.mailbox.model.MessageMetaData;
 import org.apache.james.mailbox.model.MessageResult;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.util.MDCBuilder;
@@ -167,11 +169,16 @@ public class GetMessagesMethod implements Method {
                 .distinct()
                 .collect(Guavate.toImmutableList());
             try {
+                Keywords keywords = messageResults.stream()
+                    .map(MessageMetaData::getFlags)
+                    .map(keywordsFactory::fromFlags)
+                    .reduce(new KeywordsCombiner())
+                    .get();
                 return Stream.of(
                     MetaDataWithContent.builderFromMessageResult(firstMessageResult)
                         .messageId(firstMessageResult.getMessageId())
                         .mailboxIds(mailboxIds)
-                        .keywords(keywordsFactory.fromFlags(firstMessageResult.getFlags()))
+                        .keywords(keywords)
                         .build());
             } catch (Exception e) {
                 LOGGER.error("Can not convert MessageResults to MetaData with content for messageId " + firstMessageResult.getMessageId() + " in " + mailboxIds, e);
