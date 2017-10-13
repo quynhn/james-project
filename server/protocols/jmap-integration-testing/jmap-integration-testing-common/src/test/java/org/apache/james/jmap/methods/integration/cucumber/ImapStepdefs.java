@@ -93,6 +93,12 @@ public class ImapStepdefs {
         imapConnections.put(mailbox, imapMessageReader);
     }
 
+    @Then("^the user set flags via IMAP to \"([^\"]*)\" for all messages in mailbox \"([^\"]*)\"$")
+    public void test(String flags, String mailbox) throws Throwable {
+        IMAPMessageReader imapMessageReader = imapConnections.get(mailbox);
+        imapMessageReader.setFlagsForAllMessagesInMailbox(flags);
+    }
+
     @Then("^the user has a IMAP RECENT and a notification about (\\d+) new messages on connection for mailbox \"([^\"]*)\"$")
     public void checkNotificationForNewMessageOnActiveConnection(int numberOfMessages, String mailbox) throws Throwable {
         IMAPMessageReader imapMessageReader = imapConnections.get(mailbox);
