@@ -20,42 +20,47 @@
 package org.apache.james.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import org.apache.commons.net.imap.IMAPClient;
 import org.junit.Test;
 
 public class IMAPMessageReaderTest {
-    IMAPClient imapClient = mock(IMAPClient.class);
+    private static final IMAPClient NULL_IMAP_CLIENT = null;
+    private IMAPMessageReader testee = new IMAPMessageReader(NULL_IMAP_CLIENT);
 
     @Test
     public void userReceivedMessageWithFlagsInMailboxShouldReturnTrueWhenSingleFlag() throws Exception {
-        when(imapClient.getReplyString()).thenReturn("* 1 FETCH (FLAGS (\\Flagged) )\n" +
-            "AAAC OK FETCH completed.");
-        IMAPMessageReader testee = new IMAPMessageReader(imapClient);
+        String replyString = "* 1 FETCH (FLAGS (\\Flagged) )\n" +
+            "AAAC OK FETCH completed.";
 
-        assertThat(testee.userReceivedMessageWithFlagsInMailbox("user", "password", "mailbox", "\\Flagged"))
+        assertThat(testee.isCompletedWithFlags("\\Flagged", replyString))
             .isTrue();
     }
 
     @Test
-    public void userReceivedMessageWithFlagsInMailboxShouldReturnTrueWhenSeveralFlags() throws Exception {
-        when(imapClient.getReplyString()).thenReturn("* 1 FETCH (FLAGS (\\Flagged \\Seen) )\n" +
-            "AAAC OK FETCH completed.");
-        IMAPMessageReader testee = new IMAPMessageReader(imapClient);
+    public void userReceivedMessageWithFlagsInMailboxShouldReturnFalseWhenCompletedButNoFlag() throws Exception {
+        String replyString = "* 1 FETCH (FLAGS (\\Seen) )\n" +
+            "AAAC OK FETCH completed.";
 
-        assertThat(testee.userReceivedMessageWithFlagsInMailbox("user", "password", "mailbox", "\\Flagged \\Seen"))
+        assertThat(testee.isCompletedWithFlags("\\Flagged", replyString))
+            .isFalse();
+    }
+
+    @Test
+    public void userReceivedMessageWithFlagsInMailboxShouldReturnTrueWhenSeveralFlags() throws Exception {
+        String replyString = "* 1 FETCH (FLAGS (\\Flagged \\Seen) )\n" +
+            "AAAC OK FETCH completed.";
+
+        assertThat(testee.isCompletedWithFlags("\\Flagged \\Seen", replyString))
             .isTrue();
     }
 
     @Test
     public void userReceivedMessageWithFlagsInMailboxShouldReturnTrueWhenSeveralFlagsInAnyOrder() throws Exception {
-        when(imapClient.getReplyString()).thenReturn("* 1 FETCH (FLAGS (\\Flagged \\Seen) )\n" +
-            "AAAC OK FETCH completed.");
-        IMAPMessageReader testee = new IMAPMessageReader(imapClient);
+        String replyString = "* 1 FETCH (FLAGS (\\Flagged \\Seen) )\n" +
+            "AAAC OK FETCH completed.";
 
-        assertThat(testee.userReceivedMessageWithFlagsInMailbox("user", "password", "mailbox", "\\Seen \\Flagged"))
+        assertThat(testee.isCompletedWithFlags("\\Seen \\Flagged", replyString))
             .isTrue();
     }
 }

@@ -76,6 +76,11 @@ public class IMAPMessageReader implements Closeable {
         connectAndSelect(user, password, mailbox);
         imapClient.fetch("1:1", "ALL");
         String replyString = imapClient.getReplyString();
+        return isCompletedWithFlags(flags, replyString);
+    }
+
+    @VisibleForTesting
+    boolean isCompletedWithFlags(String flags, String replyString) {
         return replyString.contains("OK FETCH completed") &&
             Splitter.on(" ")
             .splitToList(flags)
