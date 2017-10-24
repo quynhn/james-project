@@ -32,7 +32,8 @@ import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.modules.MailboxProbeImpl;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
+
+import com.google.common.collect.ImmutableList;
 
 import cucumber.api.java.en.When;
 import cucumber.runtime.java.guice.ScenarioScoped;
