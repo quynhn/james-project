@@ -16,7 +16,6 @@
 # specific language governing permissions and limitations      *
 # under the License.                                           *
 # **************************************************************/
-
 Feature: Keywords consistency on delegation mailbox
 
   Background:
@@ -34,12 +33,12 @@ Feature: Keywords consistency on delegation mailbox
     When "alice@domain.tld" asks for message list in mailboxes "shared,notShared" with flag "$Flagged"
     Then the message list contains "m1"
 
-  Scenario: getMessageList filtered by flag should keep flag on delegation mailbox
+  Scenario: getMessageList filtered by flag should keep flag on non-shared mailbox
     Given "bob@domain.tld" set flags on "m1" to "$Flagged"
     When "alice@domain.tld" asks for message list in mailboxes "notShared" with flag "$Flagged"
     Then the message list is empty
 
-  Scenario: getMessageList filtered by flag should keep flag on non-shared mailbox
+  Scenario: getMessageList filtered by flag should keep flag on delegation mailbox
     Given "bob@domain.tld" set flags on "m1" to "$Flagged"
     When "alice@domain.tld" asks for message list in mailboxes "shared" with flag "$Flagged"
     Then the message list contains "m1"
