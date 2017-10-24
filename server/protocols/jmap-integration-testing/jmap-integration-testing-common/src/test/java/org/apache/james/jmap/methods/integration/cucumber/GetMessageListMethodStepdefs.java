@@ -61,13 +61,13 @@ public class GetMessageListMethodStepdefs {
         this.messagesMethodStepdefs = messagesMethodStepdefs;
     }
 
-    @When("^the user asks for message list in mailboxes \"([^\"]*)\" with flag \"([^\"]*)\"$")
-    public void getMessageList(List<String> mailboxes, String flag) throws Exception {
+    @When("^\"([^\"]*)\" asks for message list in mailboxes \"([^\"]*)\" with flag \"([^\"]*)\"$")
+    public void getMessageList(String username, List<String> mailboxes, String flag) throws Exception {
         String mailboxIds = Joiner.on("\",\"")
             .join(mailboxes.stream()
                 .map(mailbox -> mainStepdefs.jmapServer
                     .getProbe(MailboxProbeImpl.class)
-                    .getMailbox(MailboxConstants.USER_NAMESPACE, userStepdefs.getConnectedUser(), mailbox)
+                    .getMailbox(MailboxConstants.USER_NAMESPACE, username, mailbox)
                     .getMailboxId()
                     .serialize())
                 .collect(Guavate.toImmutableList()));
@@ -81,11 +81,11 @@ public class GetMessageListMethodStepdefs {
             flag));
     }
 
-    @When("^the user asks for message list in mailbox \"([^\"]*)\" with flag \"([^\"]*)\"$")
-    public void getMessageList(String mailbox, String flag) throws Exception {
+    @When("^\"([^\"]*)\" asks for message list in mailbox \"([^\"]*)\" with flag \"([^\"]*)\"$")
+    public void getMessageList(String username, String mailbox, String flag) throws Exception {
         MailboxId mailboxId = mainStepdefs.jmapServer
             .getProbe(MailboxProbeImpl.class)
-            .getMailbox(MailboxConstants.USER_NAMESPACE, userStepdefs.getConnectedUser(), mailbox)
+            .getMailbox(MailboxConstants.USER_NAMESPACE, username, mailbox)
             .getMailboxId();
 
         post(String.format(

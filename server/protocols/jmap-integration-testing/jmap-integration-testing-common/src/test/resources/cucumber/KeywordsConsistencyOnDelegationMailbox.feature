@@ -28,27 +28,27 @@ Feature: Keywords consistency on delegation mailbox
     And "alice@domain.tld" shares its mailbox "shared" with rights "lrw" with "bob@domain.tld"
     And "alice@domain.tld" is connected
     And "alice@domain.tld" has a message "m1" in "notShared" mailbox with subject "My awesome subject", content "This is the content"
-    And the user copy "m1" from mailbox "notShared" to mailbox "shared"
+    And "alice@domain.tld" copy "m1" from mailbox "notShared" to mailbox "shared"
 
   Scenario: getMessageList filtered by flag should combine flag when delegation mailbox
     Given "bob@domain.tld" is connected
-    And the user set flags on "m1" to "$Flagged"
+    And "bob@domain.tld" set flags on "m1" to "$Flagged"
     When "alice@domain.tld" is connected
-    And the user asks for message list in mailboxes "shared,notShared" with flag "$Flagged"
+    And "alice@domain.tld" asks for message list in mailboxes "shared,notShared" with flag "$Flagged"
     Then the message list contains "m1"
 
   Scenario: getMessageList filtered by flag should keep flag on delegation mailbox
     Given "bob@domain.tld" is connected
-    And the user set flags on "m1" to "$Flagged"
+    And "bob@domain.tld" set flags on "m1" to "$Flagged"
     When "alice@domain.tld" is connected
-    And the user asks for message list in mailboxes "notShared" with flag "$Flagged"
+    And "alice@domain.tld" asks for message list in mailboxes "notShared" with flag "$Flagged"
     Then the message list is empty
 
   Scenario: getMessageList filtered by flag should keep flag on non-shared mailbox
     Given "bob@domain.tld" is connected
-    And the user set flags on "m1" to "$Flagged"
+    And "bob@domain.tld" set flags on "m1" to "$Flagged"
     When "alice@domain.tld" is connected
-    And the user asks for message list in mailboxes "shared" with flag "$Flagged"
+    And "alice@domain.tld" asks for message list in mailboxes "shared" with flag "$Flagged"
     Then the message list contains "m1"
 
   # It does not work for now such as we search by flag first the we filter by inMailbox.
@@ -58,21 +58,21 @@ Feature: Keywords consistency on delegation mailbox
     Given "bob@domain.tld" is connected
     And message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" is connected
-    And the user asks for message list in mailboxes "shared,notShared" with flag "$Draft"
+    And "alice@domain.tld" asks for message list in mailboxes "shared,notShared" with flag "$Draft"
     Then the message list is empty
 
   Scenario: Get message list should keep flags on non-shared mailbox
     Given "bob@domain.tld" is connected
     And message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" is connected
-    And the user asks for message list in mailbox "notShared" with flag "$Draft"
+    And "alice@domain.tld" asks for message list in mailbox "notShared" with flag "$Draft"
     Then the message list is empty
 
   Scenario: Get message list should keep flags on shared mailbox
     Given "bob@domain.tld" is connected
     And message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" is connected
-    And the user asks for message list in mailbox "shared" with flag "$Draft"
+    And "alice@domain.tld" asks for message list in mailbox "shared" with flag "$Draft"
     Then the message list contains "m1"
 
   Scenario: getMessage with shared user should return message with combine flag when delegation mailbox
@@ -101,9 +101,9 @@ Feature: Keywords consistency on delegation mailbox
 
   Scenario: message should update message status based on delegation mailbox
     Given "alice@domain.tld" is connected
-    And the user set flags on "m1" to "$Flagged,$Seen"
+    And "alice@domain.tld" set flags on "m1" to "$Flagged,$Seen"
     And "bob@domain.tld" is connected
-    And the user set flags on "m1" to "$Seen"
+    And "bob@domain.tld" set flags on "m1" to "$Seen"
     When "alice@domain.tld" is connected
     And "alice@domain.tld" ask for messages "m1"
     Then no error is returned
@@ -112,7 +112,7 @@ Feature: Keywords consistency on delegation mailbox
 
   Scenario: message should keep origin message status when cut the sharing
     And "bob@domain.tld" is connected
-    And the user set flags on "m1" to "$Flagged"
+    And "bob@domain.tld" set flags on "m1" to "$Flagged"
     And "alice@domain.tld" shares its mailbox "shared" with rights "" with "bob@domain.tld"
     When "alice@domain.tld" is connected
     And "alice@domain.tld" ask for messages "m1"
@@ -133,7 +133,7 @@ Feature: Keywords consistency on delegation mailbox
 
   Scenario: getMessage on mailbox should keep its flag as it is when owner
       And "alice@domain.tld" is connected
-      And the user set flags on "m1" to "$Flagged"
+      And "alice@domain.tld" set flags on "m1" to "$Flagged"
       When "alice@domain.tld" ask for messages "m1"
       Then no error is returned
       And the message has IMAP flag "\Flagged" in mailbox "shared"
@@ -174,7 +174,7 @@ Feature: Keywords consistency on delegation mailbox
 
   Scenario: message should combine flag if not Draft on all mailboxes
     Given "alice@domain.tld" is connected
-    And the user set flags on "m1" to "$Flagged"
+    And "alice@domain.tld" set flags on "m1" to "$Flagged"
     When "alice@domain.tld" ask for messages "m1"
     Then no error is returned
     And the keywords of the message is $Flagged
