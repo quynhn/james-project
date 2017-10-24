@@ -71,13 +71,6 @@ Feature: Keywords consistency on delegation mailbox
     Then no error is returned
     And the keywords of the message is $Flagged
 
-  Scenario: getMessage should keep origin message status when cut the sharing
-    Given message "m1" has flags $Flagged in mailbox "shared" of user "alice@domain.tld"
-    And "alice@domain.tld" shares its mailbox "shared" with rights "" with "bob@domain.tld"
-    When "bob@domain.tld" ask for messages "m1"
-    Then no error is returned
-    And the message has no keyword
-
   Scenario: message should update message status based on delegation mailbox
     Given "alice@domain.tld" set flags on "m1" to "$Flagged,$Seen"
     And "bob@domain.tld" set flags on "m1" to "$Seen"
