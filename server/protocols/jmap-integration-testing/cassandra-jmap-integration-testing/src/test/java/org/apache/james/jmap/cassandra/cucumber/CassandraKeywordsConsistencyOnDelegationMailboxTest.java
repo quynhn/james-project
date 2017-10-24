@@ -21,7 +21,6 @@ package org.apache.james.jmap.cassandra.cucumber;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import cucumber.api.CucumberOptions;
@@ -30,7 +29,6 @@ import cucumber.api.junit.Cucumber;
 @RunWith(Cucumber.class)
 @CucumberOptions(features="classpath:cucumber/KeywordsConsistencyOnDelegationMailbox.feature",
     glue={"org.apache.james.jmap.methods.integration", "org.apache.james.jmap.cassandra.cucumber"},
-    tags = {"~@Ignore"},
     strict = true)
 public class CassandraKeywordsConsistencyOnDelegationMailboxTest {
 

@@ -44,13 +44,10 @@ Feature: Keywords consistency on delegation mailbox
     When "alice@domain.tld" asks for message list in mailboxes "shared" with flag "$Flagged"
     Then the message list contains "m1"
 
-  # It does not work for now such as we search by flag first the we filter by inMailbox.
-  # We do not know where can we combine/intersect flag
-  @Ignore
-  Scenario: Get message list should intercept Draft flag on all mailbox
+  Scenario: Get message list should select Draft flag on all mailbox
     Given message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" asks for message list in mailboxes "shared,notShared" with flag "$Draft"
-    Then the message list is empty
+    Then the message list contains "m1"
 
   Scenario: Get message list should keep flags on non-shared mailbox
     Given message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"

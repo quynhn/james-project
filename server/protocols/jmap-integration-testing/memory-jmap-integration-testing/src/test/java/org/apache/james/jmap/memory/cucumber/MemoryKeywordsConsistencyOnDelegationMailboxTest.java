@@ -27,7 +27,6 @@ import cucumber.api.junit.Cucumber;
 @RunWith(Cucumber.class)
 @CucumberOptions(features="classpath:cucumber/KeywordsConsistencyOnDelegationMailbox.feature",
     glue={"org.apache.james.jmap.methods.integration", "org.apache.james.jmap.memory.cucumber"},
-    tags = {"~@Ignore"},
     strict = true)
 public class MemoryKeywordsConsistencyOnDelegationMailboxTest {
 }
