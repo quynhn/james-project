@@ -62,7 +62,7 @@ public class ImapStepdefs {
         }
     }
 
-    @Then("^the message is \"([^\"]*)\" on \"([^\"]*)\"$")
+    @Then("^the message has IMAP flag \"([^\"]*)\" in mailbox \"([^\"]*)\"$")
     public void hasMessageWithFlagInMailbox(String flags, String mailbox) throws Throwable {
         try (IMAPMessageReader imapMessageReader = new IMAPMessageReader(LOCALHOST, IMAP_PORT);) {
             assertThat(
