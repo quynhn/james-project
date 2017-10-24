@@ -108,13 +108,13 @@ Feature: Keywords consistency on delegation mailbox
     Then no error is returned
     And the keywords of the message is $Draft
 
-  Scenario: message should intesect flag when Draft
+  Scenario: message should intersect flag when Draft
     Given message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" ask for messages "m1"
     Then no error is returned
     And the message has no keyword
 
-  Scenario: message should intesect flag when Draft after cut sharing
+  Scenario: message should intersect flag when Draft after cut sharing
     Given message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     And "alice@domain.tld" shares its mailbox "shared" with rights "" with "bob@domain.tld"
     When "alice@domain.tld" ask for messages "m1"
@@ -134,7 +134,7 @@ Feature: Keywords consistency on delegation mailbox
     Then no error is returned
     And the keywords of the message is $Flagged
 
-  Scenario: message should intesect Draft flag with onwer mailbox
+  Scenario: message should intersect Draft flag with onwer mailbox
     Given the user has an open IMAP connection with mailbox "shared" selected
     And the user set flags via IMAP to "\DRAFT" for all messages in mailbox "shared"
     When "alice@domain.tld" ask for messages "m1"
