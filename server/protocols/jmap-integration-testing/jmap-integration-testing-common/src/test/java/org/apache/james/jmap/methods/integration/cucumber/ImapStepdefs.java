@@ -62,12 +62,12 @@ public class ImapStepdefs {
         }
     }
 
-    @Then("^the message has IMAP flag \"([^\"]*)\" in mailbox \"([^\"]*)\"$")
-    public void hasMessageWithFlagInMailbox(String flags, String mailbox) throws Throwable {
+    @Then("^the message has IMAP flag \"([^\"]*)\" in mailbox \"([^\"]*)\" for \"([^\"]*)\"$")
+    public void hasMessageWithFlagInMailbox(String flags, String mailbox, String username) throws Throwable {
         try (IMAPMessageReader imapMessageReader = new IMAPMessageReader(LOCALHOST, IMAP_PORT);) {
             assertThat(
-                imapMessageReader.userReceivedMessageWithFlagsInMailbox(userStepdefs.getConnectedUser(),
-                    userStepdefs.getUserPassword(userStepdefs.getConnectedUser()),
+                imapMessageReader.userReceivedMessageWithFlagsInMailbox(username,
+                    userStepdefs.getUserPassword(username),
                     mailbox,
                     flags))
                 .isTrue();
