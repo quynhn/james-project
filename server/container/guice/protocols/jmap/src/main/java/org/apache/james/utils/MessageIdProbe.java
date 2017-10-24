@@ -52,9 +52,9 @@ public class MessageIdProbe implements GuiceProbe {
         return messageIdManager.getMessages(ImmutableList.of(messageId), FetchGroupImpl.FULL_CONTENT, mailboxSession);
     }
 
-    public void setFlag(String user, Flags newFlags, MessageId messageId, List<MailboxId> mailboxIds) throws MailboxException {
+    public void updateNewFlags(String user, Flags newFlags, MessageId messageId, List<MailboxId> mailboxIds) throws MailboxException {
         MailboxSession mailboxSession = mailboxManager.createSystemSession(user);
 
-        messageIdManager.setFlags(newFlags, FlagsUpdateMode.ADD, messageId, mailboxIds, mailboxSession);
+        messageIdManager.setFlags(newFlags, FlagsUpdateMode.REPLACE, messageId, mailboxIds, mailboxSession);
     }
 }
