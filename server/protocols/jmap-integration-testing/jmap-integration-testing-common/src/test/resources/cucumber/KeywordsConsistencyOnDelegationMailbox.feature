@@ -54,7 +54,7 @@ Feature: Keywords consistency on delegation mailbox
   # It does not work for now such as we search by flag first the we filter by inMailbox.
   # We do not know where can we combine/intersect flag
   @Ignore
-  Scenario: Get message list should insection Draft flag on all mailbox
+  Scenario: Get message list should intercept Draft flag on all mailbox
     Given "bob@domain.tld" is connected
     And message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" is connected
@@ -107,8 +107,8 @@ Feature: Keywords consistency on delegation mailbox
     When "alice@domain.tld" is connected
     And "alice@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the message has IMAP flag "\Flagged \Seen" in mailbox "notShared"
-    And the message has IMAP flag "\Seen" in mailbox "shared"
+    And the message has IMAP flag "\Flagged \Seen" in mailbox "notShared" for "alice@domain.tld"
+    And the message has IMAP flag "\Seen" in mailbox "shared" for "alice@domain.tld"
 
   Scenario: message should keep origin message status when cut the sharing
     And "bob@domain.tld" is connected
@@ -117,8 +117,8 @@ Feature: Keywords consistency on delegation mailbox
     When "alice@domain.tld" is connected
     And "alice@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the message has IMAP flag "\Flagged" in mailbox "shared"
-    And the message has IMAP flag "" in mailbox "notShared"
+    And the message has IMAP flag "\Flagged" in mailbox "shared" for "alice@domain.tld"
+    And the message has IMAP flag "" in mailbox "notShared" for "alice@domain.tld"
 
   Scenario: getMessage should keep origin message status when delegation mailbox
     Given "alice@domain.tld" is connected
@@ -136,8 +136,8 @@ Feature: Keywords consistency on delegation mailbox
       And "alice@domain.tld" set flags on "m1" to "$Flagged"
       When "alice@domain.tld" ask for messages "m1"
       Then no error is returned
-      And the message has IMAP flag "\Flagged" in mailbox "shared"
-      And the message has IMAP flag "\Flagged" in mailbox "notShared"
+      And the message has IMAP flag "\Flagged" in mailbox "shared" for "alice@domain.tld"
+      And the message has IMAP flag "\Flagged" in mailbox "notShared" for "alice@domain.tld"
 
   Scenario: messages should keep Draft flag as it is when onwer
     Given "bob@domain.tld" is connected

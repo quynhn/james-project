@@ -32,7 +32,7 @@ import cucumber.api.junit.Cucumber;
     glue={"org.apache.james.jmap.methods.integration", "org.apache.james.jmap.cassandra.cucumber"},
     tags = {"~@Ignore"},
     strict = true)
-public class CassandraKeywordsInconsistenciesOnDelegationMailboxTest {
+public class CassandraKeywordsConsistencyOnDelegationMailboxTest {
 
     @BeforeClass
     public static void init() {

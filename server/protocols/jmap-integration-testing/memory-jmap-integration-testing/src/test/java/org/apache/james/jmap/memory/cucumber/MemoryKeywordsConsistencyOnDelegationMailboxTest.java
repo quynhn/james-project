@@ -29,5 +29,5 @@ import cucumber.api.junit.Cucumber;
     glue={"org.apache.james.jmap.methods.integration", "org.apache.james.jmap.memory.cucumber"},
     tags = {"~@Ignore"},
     strict = true)
-public class MemoryKeywordsInconsistenciesOnDelegationMailboxTest {
+public class MemoryKeywordsConsistencyOnDelegationMailboxTest {
 }
