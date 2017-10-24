@@ -96,11 +96,11 @@ Feature: Keywords consistency on delegation mailbox
     And the keywords of the message is $Flagged,$Seen
 
   Scenario: getMessage on mailbox should keep its flag as it is when owner
-      And "alice@domain.tld" set flags on "m1" to "$Flagged"
-      When "alice@domain.tld" ask for messages "m1"
-      Then no error is returned
-      And the message has IMAP flag "\Flagged" in mailbox "shared" for "alice@domain.tld"
-      And the message has IMAP flag "\Flagged" in mailbox "notShared" for "alice@domain.tld"
+    Given "alice@domain.tld" set flags on "m1" to "$Flagged"
+    When "alice@domain.tld" ask for messages "m1"
+    Then no error is returned
+    And the message has IMAP flag "\Flagged" in mailbox "shared" for "alice@domain.tld"
+    And the message has IMAP flag "\Flagged" in mailbox "notShared" for "alice@domain.tld"
 
   Scenario: messages should keep Draft flag as it is when onwer
     Given message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
