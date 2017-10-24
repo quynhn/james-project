@@ -80,7 +80,7 @@ Feature: Keywords consistency on delegation mailbox
     And the message has IMAP flag "\Seen" in mailbox "shared" for "alice@domain.tld"
 
   Scenario: message should keep origin message status when cut the sharing
-    And "bob@domain.tld" set flags on "m1" to "$Flagged"
+    Given "bob@domain.tld" set flags on "m1" to "$Flagged"
     And "alice@domain.tld" shares its mailbox "shared" with rights "" with "bob@domain.tld"
     When "alice@domain.tld" ask for messages "m1"
     Then no error is returned
