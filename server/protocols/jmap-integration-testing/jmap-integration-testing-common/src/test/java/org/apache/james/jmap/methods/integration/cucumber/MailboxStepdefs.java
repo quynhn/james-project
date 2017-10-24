@@ -19,8 +19,10 @@
 
 package org.apache.james.jmap.methods.integration.cucumber;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -28,9 +30,12 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.apache.james.jmap.api.access.AccessToken;
+import org.apache.james.mailbox.exception.UnsupportedRightException;
 import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxConstants;
 import org.apache.james.mailbox.model.MailboxPath;
+
+import com.github.steveash.guavate.Guavate;
 
 import cucumber.api.java.en.Given;
 import cucumber.runtime.java.guice.ScenarioScoped;
@@ -58,20 +63,10 @@ public class MailboxStepdefs {
         mainStepdefs.aclProbe.addRights(mailboxPath, shareTo, rights);
     }
 
-    @Given("^\"([^\"]*)\" shares its mailbox with write right \"([^\"]*)\" with \"([^\"]*)\"$")
-    public void shareMailboxWithWriteRight(String owner, String mailbox, String shareTo) throws Throwable {
+    @Given("^\"([^\"]*)\" shares its mailbox \"([^\"]*)\" with rights \"([^\"]*)\" with \"([^\"]*)\"$")
+    public void shareMailboxWithRight(String owner, String mailbox, String rights, String shareTo) throws Throwable {
         MailboxPath mailboxPath = MailboxPath.forUser(owner, mailbox);
-        MailboxACL.Rfc4314Rights rights = new MailboxACL.Rfc4314Rights(MailboxACL.Right.Lookup, MailboxACL.Right.Read, MailboxACL.Right.Write);
 
-        mainStepdefs.aclProbe.addRights(mailboxPath, shareTo, rights);
+        mainStepdefs.aclProbe.replaceRights(mailboxPath, shareTo, MailboxACL.Rfc4314Rights.fromSerializedRfc4314Rights(rights));
     }
-
-    @Given("^\"([^\"]*)\" does not share its mailbox \"([^\"]*)\" with \"([^\"]*)\"$")
-    public void notShareMailbox(String owner, String mailbox, String shareTo) throws Throwable {
-        MailboxPath mailboxPath = MailboxPath.forUser(owner, mailbox);
-        MailboxACL.Rfc4314Rights rights = new MailboxACL.Rfc4314Rights();
-
-        mainStepdefs.aclProbe.replaceRights(mailboxPath, shareTo, rights);
-    }
-
 }
