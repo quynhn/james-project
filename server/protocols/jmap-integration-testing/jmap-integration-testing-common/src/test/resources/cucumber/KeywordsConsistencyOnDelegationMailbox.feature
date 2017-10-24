@@ -76,7 +76,7 @@ Feature: Keywords consistency on delegation mailbox
     And "alice@domain.tld" shares its mailbox "shared" with rights "" with "bob@domain.tld"
     When "bob@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the message has no keywords
+    And the message has no keyword
 
   Scenario: message should update message status based on delegation mailbox
     Given "alice@domain.tld" set flags on "m1" to "$Flagged,$Seen"
@@ -119,14 +119,14 @@ Feature: Keywords consistency on delegation mailbox
     Given message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the message has no keywords
+    And the message has no keyword
 
   Scenario: message should intesect flag when Draft after cut sharing
     Given message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     And "alice@domain.tld" shares its mailbox "shared" with rights "" with "bob@domain.tld"
     When "alice@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the message has no keywords
+    And the message has no keyword
 
   Scenario: message should combine flag if not Draft
     Given the user has an open IMAP connection with mailbox "shared" selected
@@ -146,4 +146,4 @@ Feature: Keywords consistency on delegation mailbox
     And the user set flags via IMAP to "\DRAFT" for all messages in mailbox "shared"
     When "alice@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the message has no keywords
+    And the message has no keyword
