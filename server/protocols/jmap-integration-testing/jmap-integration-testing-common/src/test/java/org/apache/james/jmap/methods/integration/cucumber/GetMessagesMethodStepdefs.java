@@ -677,8 +677,8 @@ public class GetMessagesMethodStepdefs {
             .containsOnlyElementsOf(keywords);
     }
 
-    @Then("^the message has no keywords$")
-    public void assertKeywordsOfMessageShouldNotDisplay() throws Exception {
+    @Then("^the message has no keyword$")
+    public void assertMessageHasNoKeyword() throws Exception {
         assertThat(jsonPath.<Map<String, Boolean>>read(FIRST_MESSAGE + ".keywords"))
             .isNullOrEmpty();
     }
