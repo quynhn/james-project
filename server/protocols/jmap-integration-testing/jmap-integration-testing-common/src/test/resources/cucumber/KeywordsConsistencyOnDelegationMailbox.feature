@@ -25,158 +25,157 @@ Feature: Keywords consistency on delegation mailbox
     And a user "bob@domain.tld"
     And "alice@domain.tld" has a mailbox "notShared"
     And "alice@domain.tld" has a mailbox "shared"
-    And "alice@domain.tld" shares its mailbox with write right "shared" with "bob@domain.tld"
+    And "alice@domain.tld" shares its mailbox "shared" with rights "lrw" with "bob@domain.tld"
     And "alice@domain.tld" is connected
-    And the user has a message "mess" in "notShared" mailbox with subject "My awesome subject", content "This is the content"
-    And the user copy "mess" from mailbox "notShared" to mailbox "shared"
+    And "alice@domain.tld" has a message "m1" in "notShared" mailbox with subject "My awesome subject", content "This is the content"
+    And the user copy "m1" from mailbox "notShared" to mailbox "shared"
 
   Scenario: getMessageList filtered by flag should combine flag when delegation mailbox
     Given "bob@domain.tld" is connected
-    And the user set flags on "mess" to "$Flagged"
+    And the user set flags on "m1" to "$Flagged"
     When "alice@domain.tld" is connected
     And the user asks for message list in mailboxes "shared,notShared" with flag "$Flagged"
-    Then the message list has size 1
-    And the message list contains "mess"
+    Then the message list contains "m1"
 
   Scenario: getMessageList filtered by flag should keep flag on delegation mailbox
     Given "bob@domain.tld" is connected
-    And the user set flags on "mess" to "$Flagged"
+    And the user set flags on "m1" to "$Flagged"
     When "alice@domain.tld" is connected
     And the user asks for message list in mailboxes "notShared" with flag "$Flagged"
     Then the message list is empty
 
   Scenario: getMessageList filtered by flag should keep flag on non-shared mailbox
     Given "bob@domain.tld" is connected
-    And the user set flags on "mess" to "$Flagged"
+    And the user set flags on "m1" to "$Flagged"
     When "alice@domain.tld" is connected
     And the user asks for message list in mailboxes "shared" with flag "$Flagged"
-    Then the message list has size 1
-    And the message list contains "mess"
+    Then the message list contains "m1"
 
+  # It does not work for now such as we search by flag first the we filter by inMailbox.
+  # We do not know where can we combine/intersect flag
   @Ignore
-  Scenario: (Does not work) Get message list should insection Draft flag on all mailbox
+  Scenario: Get message list should insection Draft flag on all mailbox
     Given "bob@domain.tld" is connected
-    And the user set flags $Draft via messageIdProbe of "mess" on "shared" of user "alice@domain.tld"
+    And message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" is connected
     And the user asks for message list in mailboxes "shared,notShared" with flag "$Draft"
     Then the message list is empty
 
   Scenario: Get message list should keep flags on non-shared mailbox
     Given "bob@domain.tld" is connected
-    And the user set flags $Draft via messageIdProbe of "mess" on "shared" of user "alice@domain.tld"
+    And message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" is connected
     And the user asks for message list in mailbox "notShared" with flag "$Draft"
     Then the message list is empty
 
   Scenario: Get message list should keep flags on shared mailbox
     Given "bob@domain.tld" is connected
-    And the user set flags $Draft via messageIdProbe of "mess" on "shared" of user "alice@domain.tld"
+    And message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" is connected
     And the user asks for message list in mailbox "shared" with flag "$Draft"
-    Then the message list has size 1
-    And the message list contains "mess"
+    Then the message list contains "m1"
 
   Scenario: getMessage with shared user should return message with combine flag when delegation mailbox
     Given "alice@domain.tld" is connected
-    And the user set flags $Flagged via messageIdProbe of "mess" on "shared" of user "alice@domain.tld"
+    And message "m1" has flags $Flagged in mailbox "shared" of user "alice@domain.tld"
     When "bob@domain.tld" is connected
-    And the user ask for messages "mess"
+    And "bob@domain.tld" ask for messages "m1"
     Then no error is returned
     And the keywords of the message is $Flagged
 
   Scenario: getMessage of owner mailbox should return message with combine flag when delegation mailbox
     Given "alice@domain.tld" is connected
-    And the user set flags $Flagged via messageIdProbe of "mess" on "shared" of user "alice@domain.tld"
-    When the user ask for messages "mess"
+    And message "m1" has flags $Flagged in mailbox "shared" of user "alice@domain.tld"
+    When "alice@domain.tld" ask for messages "m1"
     Then no error is returned
     And the keywords of the message is $Flagged
 
   Scenario: getMessage should keep origin message status when cut the sharing
     Given "alice@domain.tld" is connected
-    And the user set flags $Flagged via messageIdProbe of "mess" on "shared" of user "alice@domain.tld"
-    When "alice@domain.tld" does not share its mailbox "shared" with "bob@domain.tld"
-    And "bob@domain.tld" is connected
-    And the user ask for messages "mess"
+    And message "m1" has flags $Flagged in mailbox "shared" of user "alice@domain.tld"
+    And "alice@domain.tld" shares its mailbox "shared" with rights "" with "bob@domain.tld"
+    When "bob@domain.tld" is connected
+    And "bob@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the empty keywords of the message
+    And the message has no keywords
 
   Scenario: message should update message status based on delegation mailbox
     Given "alice@domain.tld" is connected
-    And the user set flags on "mess" to "$Flagged,$Seen"
+    And the user set flags on "m1" to "$Flagged,$Seen"
     And "bob@domain.tld" is connected
-    And the user set flags on "mess" to "$Seen"
+    And the user set flags on "m1" to "$Seen"
     When "alice@domain.tld" is connected
-    And the user ask for messages "mess"
+    And "alice@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the message is "\Flagged \Seen" on "notShared"
-    And the message is "\Seen" on "shared"
+    And the message has IMAP flag "\Flagged \Seen" in mailbox "notShared"
+    And the message has IMAP flag "\Seen" in mailbox "shared"
 
   Scenario: message should keep origin message status when cut the sharing
     And "bob@domain.tld" is connected
-    And the user set flags on "mess" to "$Flagged"
-    When "alice@domain.tld" does not share its mailbox "shared" with "bob@domain.tld"
-    And "alice@domain.tld" is connected
-    And the user ask for messages "mess"
+    And the user set flags on "m1" to "$Flagged"
+    And "alice@domain.tld" shares its mailbox "shared" with rights "" with "bob@domain.tld"
+    When "alice@domain.tld" is connected
+    And "alice@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the message is "\Flagged" on "shared"
-    And the message is "" on "notShared"
+    And the message has IMAP flag "\Flagged" in mailbox "shared"
+    And the message has IMAP flag "" in mailbox "notShared"
 
   Scenario: getMessage should keep origin message status when delegation mailbox
     Given "alice@domain.tld" is connected
-    And the user set flags $Flagged via messageIdProbe of "mess" on "notShared" of user "alice@domain.tld"
+    And message "m1" has flags $Flagged in mailbox "notShared" of user "alice@domain.tld"
     And "bob@domain.tld" is connected
-    And the user set flags $Seen via messageIdProbe of "mess" on "shared" of user "alice@domain.tld"
-    When "alice@domain.tld" does not share its mailbox "shared" with "bob@domain.tld"
-    And "alice@domain.tld" is connected
-    And the user ask for messages "mess"
+    And message "m1" has flags $Seen in mailbox "shared" of user "alice@domain.tld"
+    And "alice@domain.tld" shares its mailbox "shared" with rights "" with "bob@domain.tld"
+    When "alice@domain.tld" is connected
+    And "alice@domain.tld" ask for messages "m1"
     Then no error is returned
     And the keywords of the message is $Flagged,$Seen
 
   Scenario: getMessage on mailbox should keep its flag as it is when owner
       And "alice@domain.tld" is connected
-      And the user set flags on "mess" to "$Flagged"
-      When the user ask for messages "mess"
+      And the user set flags on "m1" to "$Flagged"
+      When "alice@domain.tld" ask for messages "m1"
       Then no error is returned
-      And the message is "\Flagged" on "shared"
-      And the message is "\Flagged" on "notShared"
+      And the message has IMAP flag "\Flagged" in mailbox "shared"
+      And the message has IMAP flag "\Flagged" in mailbox "notShared"
 
   Scenario: messages should keep Draft flag as it is when onwer
     Given "bob@domain.tld" is connected
-    And the user set flags $Draft via messageIdProbe of "mess" on "shared" of user "alice@domain.tld"
+    And message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "bob@domain.tld" is connected
-    And the user ask for messages "mess"
+    And "bob@domain.tld" ask for messages "m1"
     Then no error is returned
     And the keywords of the message is $Draft
 
   Scenario: message should intesect flag when Draft
     Given "bob@domain.tld" is connected
-    And the user set flags $Draft via messageIdProbe of "mess" on "shared" of user "alice@domain.tld"
+    And message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
     When "alice@domain.tld" is connected
-    And the user ask for messages "mess"
+    And "alice@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the empty keywords of the message
+    And the message has no keywords
 
   Scenario: message should intesect flag when Draft after cut sharing
     Given "bob@domain.tld" is connected
-    And the user set flags $Draft via messageIdProbe of "mess" on "shared" of user "alice@domain.tld"
-    When "alice@domain.tld" does not share its mailbox "shared" with "bob@domain.tld"
-    And "alice@domain.tld" is connected
-    And the user ask for messages "mess"
+    And message "m1" has flags $Draft in mailbox "shared" of user "alice@domain.tld"
+    And "alice@domain.tld" shares its mailbox "shared" with rights "" with "bob@domain.tld"
+    When "alice@domain.tld" is connected
+    And "alice@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the empty keywords of the message
+    And the message has no keywords
 
   Scenario: message should combine flag if not Draft
     Given "alice@domain.tld" is connected
     And the user has an open IMAP connection with mailbox "shared" selected
     And the user set flags via IMAP to "\FLAGGED" for all messages in mailbox "shared"
-    When the user ask for messages "mess"
+    When "alice@domain.tld" ask for messages "m1"
     Then no error is returned
     And the keywords of the message is $Flagged
 
   Scenario: message should combine flag if not Draft on all mailboxes
     Given "alice@domain.tld" is connected
-    And the user set flags on "mess" to "$Flagged"
-    When the user ask for messages "mess"
+    And the user set flags on "m1" to "$Flagged"
+    When "alice@domain.tld" ask for messages "m1"
     Then no error is returned
     And the keywords of the message is $Flagged
 
@@ -184,6 +183,6 @@ Feature: Keywords consistency on delegation mailbox
     Given "alice@domain.tld" is connected
     And the user has an open IMAP connection with mailbox "shared" selected
     And the user set flags via IMAP to "\DRAFT" for all messages in mailbox "shared"
-    When the user ask for messages "mess"
+    When "alice@domain.tld" ask for messages "m1"
     Then no error is returned
-    And the empty keywords of the message
+    And the message has no keywords

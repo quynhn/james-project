@@ -139,9 +139,9 @@ public class SetMessagesMethodStepdefs {
         mainStepdefs.awaitMethod.run();
     }
 
-    @When("^the user set flags (.*) via messageIdProbe of \"([^\"]*)\" on \"([^\"]*)\" of user \"([^\"]*)\"")
-    public void setDraftFlag(List<String> keywords, String message, String mailbox, String mailboxOwner) throws Exception {
-        Flags newFlags = Keywords.factory().fromList(keywords).asFlags();
+    @When("^message \"([^\"]*)\" has flags (.*) in mailbox \"([^\"]*)\" of user \"([^\"]*)\"")
+    public void setMessageFlagsInSpecifiedMailbox(String message, List<String> flags, String mailbox, String mailboxOwner) throws Exception {
+        Flags newFlags = Keywords.factory().fromList(flags).asFlags();
         String username = userStepdefs.getConnectedUser();
         MessageId messageId = getMessagesMethodStepdefs.getMessageId(message);
         MailboxId mailboxId = mainStepdefs.jmapServer
@@ -149,7 +149,7 @@ public class SetMessagesMethodStepdefs {
             .getMailbox(MailboxConstants.USER_NAMESPACE, mailboxOwner, mailbox)
             .getMailboxId();
 
-        mainStepdefs.messageIdProbe.setFlag(username, newFlags, messageId, ImmutableList.of(mailboxId));
+        mainStepdefs.messageIdProbe.updateNewFlags(username, newFlags, messageId, ImmutableList.of(mailboxId));
         mainStepdefs.awaitMethod.run();
     }
 }
