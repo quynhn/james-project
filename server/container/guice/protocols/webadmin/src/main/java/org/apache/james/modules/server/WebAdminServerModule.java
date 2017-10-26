@@ -41,6 +41,9 @@ import org.apache.james.webadmin.WebAdminServer;
 import org.apache.james.webadmin.authentication.AuthenticationFilter;
 import org.apache.james.webadmin.authentication.JwtFilter;
 import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
+import org.apache.james.webadmin.authorization.AuthorizationFilter;
+import org.apache.james.webadmin.authorization.JwtAuthorizationFilter;
+import org.apache.james.webadmin.authorization.NoAuthorizationFilter;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +108,20 @@ public class WebAdminServerModule extends AbstractModule {
             return new NoAuthenticationFilter();
         } catch (FileNotFoundException e) {
             return new NoAuthenticationFilter();
+        }
+    }
+
+    @Provides
+    public AuthorizationFilter providesAuthorizationFilter(PropertiesProvider propertiesProvider,
+                                                           JwtTokenVerifier jwtTokenVerifier) throws Exception {
+        try {
+            PropertiesConfiguration configurationFile = propertiesProvider.getConfiguration("webadmin");
+            if (configurationFile.getBoolean("jwt.enabled", DEFAULT_JWT_DISABLED)) {
+                return new JwtAuthorizationFilter(jwtTokenVerifier);
+            }
+            return new NoAuthorizationFilter();
+        } catch (FileNotFoundException e) {
+            return new NoAuthorizationFilter();
         }
     }
 
