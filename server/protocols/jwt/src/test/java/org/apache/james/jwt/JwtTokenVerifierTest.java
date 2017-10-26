@@ -63,6 +63,11 @@ public class JwtTokenVerifierTest {
         "bmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.2XijNOVI9LXP9nWf-oj2SEWWNlcwmxzlQNGK1WdaWcQ";
     private static final String TOKEN_NONE_ALGORITHM_NO_SIGNATURE = "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiIxMjM0NTY3ODkwIiwi" +
         "bmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.";
+    private static final String VALID_TOKEN_CLAIM = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbiI6dHJ1ZSwicmVzb3VyY2" +
+        "VUeXBlIjoiZ3JvdXAiLCJyZXNvdXJjZU5hbWUiOiJnb0Bnby5hZ28iLCJhY3Rpb24iOiJhZGRNZW1iZXJzIiwiaWF0IjoxNTA4OTg4NDM0fQ.K4" +
+        "YhHt7wav36wKYxk9I-EXQ2iIPc5UdmeC7eTJhZBUfzMudjtBfZR4ef6_9F8rZ1ozhj_rem1t2-Y7y_XSAx7ajqsfodJ7Qys_jfflXQP1WIzRDyH" +
+        "K5haYa7DNmyh14gP9r_JOAz3Lhy5sAxMPhQhJDNRwDHOxLFP9fHnL9WHEKRjrini-eaZLsD8q5FxTu79xxGvH9bMPqbuOo48hSAuWbJ11wqj7m9" +
+        "nEZjAJLLuPMQ6A03OhU4a1Jj2rnStqbFx0avEZFVn9QOES8kFuKCrsNpMi0QhkqRhyB4QQ9XcdoXaUymsbYzMRBkhmLJYaNsyLkaJVJFui9MMVooU_lWJg";
     private JwtTokenVerifier sut;
 
     @Rule
@@ -168,4 +173,21 @@ public class JwtTokenVerifierTest {
         assertThat(authorized).isFalse();
     }
 
+    @Test
+    public void extractClaimsShouldReturnClaimsWithResourceType() throws Exception {
+        assertThat(sut.extractClaims(VALID_TOKEN_CLAIM).get("resourceType", String.class))
+            .isEqualTo("group");
+    }
+
+    @Test
+    public void extractClaimsShouldReturnClaimsWithResourceName() throws Exception {
+        assertThat(sut.extractClaims(VALID_TOKEN_CLAIM).get("resourceName", String.class))
+            .isEqualTo("go@go.ago");
+    }
+
+    @Test
+    public void extractClaimsShouldReturnClaimsWithAction() throws Exception {
+        assertThat(sut.extractClaims(VALID_TOKEN_CLAIM).get("action", String.class))
+            .isEqualTo("addMembers");
+    }
 }

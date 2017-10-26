@@ -57,10 +57,12 @@ public class JwtTokenVerifier {
     }
 
     public String extractLogin(String token) throws JwtException {
-        Jws<Claims> jws = parseToken(token);
-        return jws
-                .getBody()
-                .getSubject();
+        return extractClaims(token)
+            .getSubject();
+    }
+
+    public Claims extractClaims(String token) throws JwtException {
+        return parseToken(token).getBody();
     }
 
     public boolean hasAttribute(String attributeName, Object expectedValue, String token) {
@@ -79,8 +81,8 @@ public class JwtTokenVerifier {
 
     private Jws<Claims> parseToken(String token) throws JwtException {
         return Jwts
-                .parser()
-                .setSigningKey(pubKeyProvider.get())
-                .parseClaimsJws(token);
+            .parser()
+            .setSigningKey(pubKeyProvider.get())
+            .parseClaimsJws(token);
     }
 }
