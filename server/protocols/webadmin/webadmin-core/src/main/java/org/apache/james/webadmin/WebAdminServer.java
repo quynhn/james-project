@@ -29,6 +29,7 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.james.lifecycle.api.Configurable;
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.webadmin.authentication.AuthenticationFilter;
+import org.apache.james.webadmin.authorization.AuthorizationFilter;
 import org.apache.james.webadmin.mdc.MDCCleanupFilter;
 import org.apache.james.webadmin.mdc.MDCFilter;
 import org.apache.james.webadmin.metric.MetricPostFilter;
@@ -49,15 +50,18 @@ public class WebAdminServer implements Configurable {
     private final Set<Routes> routesList;
     private final Service service;
     private final AuthenticationFilter authenticationFilter;
+    private final AuthorizationFilter authorizationFilter;
     private final MetricFactory metricFactory;
 
     // Spark do not allow to retrieve allocated port when using a random port. Thus we generate the port.
     @Inject
-    protected WebAdminServer(WebAdminConfiguration configuration, Set<Routes> routesList, AuthenticationFilter authenticationFilter,
-                           MetricFactory metricFactory) {
+    protected WebAdminServer(WebAdminConfiguration configuration, Set<Routes> routesList,
+                             AuthenticationFilter authenticationFilter, AuthorizationFilter authorizationFilter,
+                             MetricFactory metricFactory) {
         this.configuration = configuration;
         this.routesList = routesList;
         this.authenticationFilter = authenticationFilter;
+        this.authorizationFilter = authorizationFilter;
         this.metricFactory = metricFactory;
         this.service = Service.ignite();
     }
@@ -69,7 +73,7 @@ public class WebAdminServer implements Configurable {
             configureHTTPS();
             configureCORS();
             configureMetrics();
-            service.before(authenticationFilter);
+            service.before(authorizationFilter);
             service.before((request, response) -> response.type(Constants.JSON_CONTENT_TYPE));
             configureMDC();
             routesList.forEach(routes -> routes.define(service));

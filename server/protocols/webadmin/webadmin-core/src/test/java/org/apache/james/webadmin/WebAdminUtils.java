@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.apache.james.metrics.api.MetricFactory;
 import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
+import org.apache.james.webadmin.authorization.NoAuthorizationFilter;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -31,6 +32,8 @@ public class WebAdminUtils {
     public static WebAdminConfiguration webAdminConfigurationForTesting() {
         return WebAdminConfiguration.builder()
             .enabled()
+            .CORSenabled()
+            .jwtEnabled()
             .port(new RandomPort())
             .build();
     }
@@ -39,6 +42,7 @@ public class WebAdminUtils {
         return new WebAdminServer(webAdminConfigurationForTesting(),
             ImmutableSet.copyOf(routes),
             new NoAuthenticationFilter(),
+            new NoAuthorizationFilter(),
             metricFactory);
     }
 

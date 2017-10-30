@@ -29,6 +29,7 @@ import com.google.common.base.Preconditions;
 public class WebAdminConfiguration {
 
     public static final boolean DEFAULT_CORS_DISABLED = false;
+    public static final boolean DEFAULT_JWT_DISABLED = false;
     public static final String CORS_ALL_ORIGINS = "*";
     public static final String DEFAULT_HOST = "localhost";
 
@@ -47,6 +48,7 @@ public class WebAdminConfiguration {
         private Optional<TlsConfiguration> tlsConfiguration = Optional.empty();
         private Optional<String> urlCORSOrigin = Optional.empty();
         private Optional<String> host = Optional.empty();
+        private Optional<Boolean> jwtEnable = Optional.empty();
 
         public Builder tls(TlsConfiguration tlsConfiguration) {
             this.tlsConfiguration = Optional.of(tlsConfiguration);
@@ -98,6 +100,15 @@ public class WebAdminConfiguration {
             return this;
         }
 
+        public Builder enableJWT(boolean isEnable) {
+            this.jwtEnable = Optional.of(isEnable);
+            return this;
+        }
+
+        public Builder jwtEnabled() {
+            return enableJWT(true);
+        }
+
         public WebAdminConfiguration build() {
             Preconditions.checkState(enabled.isPresent(), "You need to explicitly enable or disable WebAdmin server");
             Preconditions.checkState(!enabled.get() || port.isPresent(), "You need to specify a port for WebAdminConfiguration");
@@ -105,6 +116,7 @@ public class WebAdminConfiguration {
                 port,
                 tlsConfiguration,
                 enableCORS.orElse(DEFAULT_CORS_DISABLED),
+                jwtEnable.orElse(DEFAULT_JWT_DISABLED),
                 urlCORSOrigin.orElse(CORS_ALL_ORIGINS),
                 host.orElse(DEFAULT_HOST));
         }
@@ -114,16 +126,18 @@ public class WebAdminConfiguration {
     private final Optional<Port> port;
     private final Optional<TlsConfiguration> tlsConfiguration;
     private final boolean enableCORS;
+    private final boolean enableJWT;
     private final String urlCORSOrigin;
     private final String host;
 
     @VisibleForTesting
     WebAdminConfiguration(boolean enabled, Optional<Port> port, Optional<TlsConfiguration> tlsConfiguration,
-                          boolean enableCORS, String urlCORSOrigin, String host) {
+                          boolean enableCORS, boolean enableJWT, String urlCORSOrigin, String host) {
         this.enabled = enabled;
         this.port = port;
         this.tlsConfiguration = tlsConfiguration;
         this.enableCORS = enableCORS;
+        this.enableJWT = enableJWT;
         this.urlCORSOrigin = urlCORSOrigin;
         this.host = host;
     }
@@ -154,6 +168,10 @@ public class WebAdminConfiguration {
 
     public String getHost() {
         return host;
+    }
+
+    public boolean isEnableJWT() {
+        return enableJWT;
     }
 
     @Override

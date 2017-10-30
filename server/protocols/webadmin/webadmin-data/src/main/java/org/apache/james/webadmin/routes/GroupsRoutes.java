@@ -47,6 +47,12 @@ import org.apache.james.user.api.UsersRepositoryException;
 import org.apache.james.util.streams.Iterators;
 import org.apache.james.webadmin.Constants;
 import org.apache.james.webadmin.Routes;
+import org.apache.james.webadmin.authorization.AuthorizationFilter;
+import org.apache.james.webadmin.authorization.AuthorizationLevel;
+import org.apache.james.webadmin.authorization.AuthorizationLevel.Action;
+import org.apache.james.webadmin.authorization.AuthorizationLevel.ResourceType;
+import org.apache.james.webadmin.authorization.AuthorizationResource;
+import org.apache.james.webadmin.authorization.JwtAuthorizationFilter;
 import org.apache.james.webadmin.utils.JsonExtractException;
 import org.apache.james.webadmin.utils.JsonTransformer;
 import org.eclipse.jetty.http.HttpStatus;
@@ -110,13 +116,21 @@ public class GroupsRoutes implements Routes {
         @ApiResponse(code = 500, message = "Internal server error - Something went bad on the server side.")
     })
     public Set<String> listGroups(Request request, Response response) throws RecipientRewriteTableException {
-        return Optional.ofNullable(recipientRewriteTable.getAllMappings())
-            .map(mappings ->
-                mappings.entrySet().stream()
-                    .filter(e -> e.getValue().contains(Mapping.Type.Address))
-                    .map(Map.Entry::getKey)
-                    .collect(Guavate.toImmutableSortedSet()))
-            .orElse(ImmutableSortedSet.of());
+        boolean isAllow = Optional.<AuthorizationLevel>ofNullable(request.attribute(JwtAuthorizationFilter.AUTHORIZATION_DATA))
+            .orElse(AuthorizationFilter.JWT_DISABLED)
+            .allowOnResource(new AuthorizationResource(ResourceType.ADDRESS_GROUPS.toString(), "", Action.ADDRESS_GROUPS_LIST_GROUPS.getAction()),
+                             new AuthorizationResource(ResourceType.ADDRESS_GROUPS.toString(), null, Action.ADDRESS_GROUPS_LIST_GROUPS.getAction()));
+        if (isAllow) {
+            return Optional.ofNullable(recipientRewriteTable.getAllMappings())
+                .map(mappings ->
+                    mappings.entrySet().stream()
+                        .filter(e -> e.getValue().contains(Mapping.Type.Address))
+                        .map(Map.Entry::getKey)
+                        .collect(Guavate.toImmutableSortedSet()))
+                .orElse(ImmutableSortedSet.of());
+        }
+        response.status(HttpStatus.FORBIDDEN_403);
+        return ImmutableSortedSet.of();
     }
 
     @PUT
@@ -134,12 +148,19 @@ public class GroupsRoutes implements Routes {
         @ApiResponse(code = 500, message = "Internal server error - Something went bad on the server side.")
     })
     public HaltException addToGroup(Request request, Response response) throws JsonExtractException, AddressException, RecipientRewriteTableException, UsersRepositoryException, DomainListException {
-        MailAddress groupAddress = parseMailAddress(request.params(GROUP_ADDRESS));
-        ensureRegisteredDomain(groupAddress.getDomain());
-        ensureNotShadowingAnotherAddress(groupAddress);
-        MailAddress userAddress = parseMailAddress(request.params(USER_ADDRESS));
-        recipientRewriteTable.addAddressMapping(groupAddress.getLocalPart(), groupAddress.getDomain(), userAddress.asString());
-        return halt(HttpStatus.CREATED_201);
+        String groupAddressString = request.params(GROUP_ADDRESS);
+        boolean isAllow = Optional.<AuthorizationLevel>ofNullable(request.attribute(JwtAuthorizationFilter.AUTHORIZATION_DATA))
+            .orElse(AuthorizationFilter.JWT_DISABLED)
+            .allowOnResource(new AuthorizationResource(ResourceType.ADDRESS_GROUPS.toString(), groupAddressString, Action.ADDRESS_GROUPS_ADD_MEMBER.getAction()));
+        if (isAllow) {
+            MailAddress groupAddress = parseMailAddress(request.params(GROUP_ADDRESS));
+            ensureRegisteredDomain(groupAddress.getDomain());
+            ensureNotShadowingAnotherAddress(groupAddress);
+            MailAddress userAddress = parseMailAddress(request.params(USER_ADDRESS));
+            recipientRewriteTable.addAddressMapping(groupAddress.getLocalPart(), groupAddress.getDomain(), userAddress.asString());
+            return halt(HttpStatus.CREATED_201);
+        }
+        return halt(HttpStatus.FORBIDDEN_403);
     }
 
     private void ensureRegisteredDomain(String domain) throws DomainListException {
@@ -168,10 +189,17 @@ public class GroupsRoutes implements Routes {
         @ApiResponse(code = 500, message = "Internal server error - Something went bad on the server side.")
     })
     public HaltException removeFromGroup(Request request, Response response) throws JsonExtractException, AddressException, RecipientRewriteTableException {
-        MailAddress groupAddress = parseMailAddress(request.params(GROUP_ADDRESS));
-        MailAddress userAddress = parseMailAddress(request.params(USER_ADDRESS));
-        recipientRewriteTable.removeAddressMapping(groupAddress.getLocalPart(), groupAddress.getDomain(), userAddress.asString());
-        return halt(HttpStatus.OK_200);
+        String groupAddressString = request.params(GROUP_ADDRESS);
+        boolean isAllow = Optional.<AuthorizationLevel>ofNullable(request.attribute(JwtAuthorizationFilter.AUTHORIZATION_DATA))
+            .orElse(AuthorizationFilter.JWT_DISABLED)
+            .allowOnResource(new AuthorizationResource(ResourceType.ADDRESS_GROUPS.toString(), groupAddressString, Action.ADDRESS_GROUPS_REMOVE_MEMBER.getAction()));
+        if (isAllow) {
+            MailAddress groupAddress = parseMailAddress(groupAddressString);
+            MailAddress userAddress = parseMailAddress(request.params(USER_ADDRESS));
+            recipientRewriteTable.removeAddressMapping(groupAddress.getLocalPart(), groupAddress.getDomain(), userAddress.asString());
+            return halt(HttpStatus.OK_200);
+        }
+        return halt(HttpStatus.FORBIDDEN_403);
     }
 
     @GET
@@ -187,15 +215,23 @@ public class GroupsRoutes implements Routes {
         @ApiResponse(code = 500, message = "Internal server error - Something went bad on the server side.")
     })
     public ImmutableSortedSet<String> listGroupMembers(Request request, Response response) throws RecipientRewriteTable.ErrorMappingException, RecipientRewriteTableException {
-        MailAddress groupAddress = parseMailAddress(request.params(GROUP_ADDRESS));
-        Mappings mappings = recipientRewriteTable.getMappings(groupAddress.getLocalPart(), groupAddress.getDomain());
+        String groupAddressString = request.params(GROUP_ADDRESS);
+        boolean isAllow = Optional.<AuthorizationLevel>ofNullable(request.attribute(JwtAuthorizationFilter.AUTHORIZATION_DATA))
+            .orElse(AuthorizationFilter.JWT_DISABLED)
+            .allowOnResource(new AuthorizationResource(ResourceType.ADDRESS_GROUPS.toString(), groupAddressString, Action.ADDRESS_GROUPS_VIEW_MEMBERS.getAction()));
+        if (isAllow) {
+            MailAddress groupAddress = parseMailAddress(groupAddressString);
+            Mappings mappings = recipientRewriteTable.getMappings(groupAddress.getLocalPart(), groupAddress.getDomain());
 
-        ensureNonEmptyMappings(mappings);
+            ensureNonEmptyMappings(mappings);
 
-        return Iterators
+            return Iterators
                 .toStream(mappings.select(Mapping.Type.Address).iterator())
                 .map(Mapping::getAddress)
                 .collect(Guavate.toImmutableSortedSet());
+        }
+        response.status(HttpStatus.FORBIDDEN_403);
+        return ImmutableSortedSet.of();
     }
 
     private MailAddress parseMailAddress(String address) {
