@@ -151,7 +151,7 @@ public class MailboxEventDispatcher {
         listener.event(eventFactory.mailboxAdded(session, mailbox));
     }
 
-    public void aclLookupAdded(MailboxSession session, MailboxPath mailboxPath, MailboxId mailboxId, ACLDiff aclDiff) {
+    public void aclUpdated(MailboxSession session, MailboxPath mailboxPath, MailboxId mailboxId, ACLDiff aclDiff) {
         listener.event(eventFactory.aclUpdated(session, mailboxPath, mailboxId, aclDiff));
     }
 }
