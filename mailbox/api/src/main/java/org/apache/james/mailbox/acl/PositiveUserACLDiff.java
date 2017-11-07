@@ -48,6 +48,10 @@ public class PositiveUserACLDiff {
             .filter(this::hasPositiveUserKey);
     }
 
+    public ACLDiff getAclDiff() {
+        return aclDiff;
+    }
+
     private boolean hasPositiveUserKey(MailboxACL.Entry entry) {
         return !entry.getKey().isNegative()
             && entry.getKey().getNameType().equals(MailboxACL.NameType.user);

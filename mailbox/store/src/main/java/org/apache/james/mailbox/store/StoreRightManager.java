@@ -124,9 +124,8 @@ public class StoreRightManager implements RightManager {
         assertSharesBelongsToUserDomain(mailboxPath.getUser(), mailboxACLCommand);
         MailboxMapper mapper = mailboxSessionMapperFactory.getMailboxMapper(session);
         Mailbox mailbox = mapper.findMailboxByPath(mailboxPath);
-        mapper.execute(Mapper.toTransaction(() -> mapper.updateACL(mailbox, mailboxACLCommand)));
+        ACLDiff aclDiff = mapper.updateACL(mailbox, mailboxACLCommand);
 
-        ACLDiff aclDiff = ACLDiff.computeDiff(mailbox.getACL(), mailbox.getACL().apply(mailboxACLCommand));
         dispatcher.aclUpdated(session, mailboxPath, mailbox.getMailboxId(), aclDiff);
     }
 
