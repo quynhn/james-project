@@ -59,7 +59,7 @@ public class BroadcastDelegatingMailboxListenerTest {
     @Before
     public void setUp() throws Exception {
         mailboxSession = new MockMailboxSession("benwa");
-        event = new MailboxListener.Event(mailboxSession, MAILBOX_PATH) {};
+        event = new MailboxListener.Event(mailboxSession, MAILBOX_ID) {};
 
         mockedEventSerializer = mock(EventSerializer.class);
         mockedPublisher = mock(Publisher.class);
@@ -169,7 +169,7 @@ public class BroadcastDelegatingMailboxListenerTest {
 
     @Test
     public void deletionDistantEventsShouldBeWellHandled() throws Exception {
-        final MailboxListener.Event event = new MailboxListener.MailboxDeletion(mailboxSession, MAILBOX_PATH);
+        final MailboxListener.Event event = new MailboxListener.MailboxDeletion(mailboxSession, MAILBOX_ID);
         broadcastDelegatingMailboxListener.addListener(MAILBOX_ID, mailboxEventCollector, mailboxSession);
         when(mockedEventSerializer.deSerializeEvent(BYTES)).thenReturn(event);
 
@@ -182,7 +182,7 @@ public class BroadcastDelegatingMailboxListenerTest {
 
     @Test
     public void renameDistantEventsShouldBeWellHandled() throws Exception {
-        final MailboxListener.Event event = new MailboxListener.MailboxRenamed(mailboxSession, MAILBOX_PATH) {
+        final MailboxListener.Event event = new MailboxListener.MailboxRenamed(mailboxSession, MAILBOX_ID) {
             @Override
             public MailboxPath getNewPath() {
                 return MAILBOX_PATH_NEW;
@@ -190,7 +190,7 @@ public class BroadcastDelegatingMailboxListenerTest {
 
             @Override
             public MailboxPath getOldPath() {
-                return getMailboxPath();
+                return MAILBOX_PATH;
             }
         };
         when(mockedEventSerializer.deSerializeEvent(BYTES)).thenReturn(event);

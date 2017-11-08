@@ -120,9 +120,6 @@ public class BroadcastDelegatingMailboxListener implements DistributedDelegating
         Collection<MailboxListener> listenerSnapshot = mailboxListenerRegistry.getLocalMailboxListeners(event.getMailboxId());
         if (event instanceof MailboxDeletion) {
             mailboxListenerRegistry.deleteRegistryFor(event.getMailboxId());
-        } else if (event instanceof MailboxRenamed) {
-            MailboxRenamed renamed = (MailboxRenamed) event;
-            mailboxListenerRegistry.handleRename(renamed.getOldPath(), renamed.getMailboxId());
         }
         for (MailboxListener listener : listenerSnapshot) {
             eventDelivery.deliver(listener, event);

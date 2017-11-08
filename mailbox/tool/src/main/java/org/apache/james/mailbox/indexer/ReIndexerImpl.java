@@ -90,7 +90,7 @@ public class ReIndexerImpl implements ReIndexer {
         GlobalRegistration globalRegistration = new GlobalRegistration();
         mailboxManager.addGlobalListener(globalRegistration, mailboxSession);
         try {
-            handleFullReindexingIterations(mailboxPaths, globalRegistration);
+            handleFullReindexingIterations(mailboxPaths, globalRegistration, mailboxSession);
         } finally {
             mailboxManager.removeGlobalListener(globalRegistration, mailboxSession);
         }
@@ -119,9 +119,12 @@ public class ReIndexerImpl implements ReIndexer {
         }
     }
 
-    private void handleFullReindexingIterations(List<MailboxPath> mailboxPaths, GlobalRegistration globalRegistration) throws MailboxException {
+    private void handleFullReindexingIterations(List<MailboxPath> mailboxPaths, GlobalRegistration globalRegistration, MailboxSession session) throws MailboxException {
         for (MailboxPath mailboxPath : mailboxPaths) {
-            Optional<MailboxPath> pathToIndex = globalRegistration.getPathToIndex(mailboxPath);
+            MailboxId mailboxId = mailboxSessionMapperFactory.getMailboxMapper(session)
+                .findMailboxByPath(mailboxPath)
+                .getMailboxId();
+            Optional<MailboxPath> pathToIndex = globalRegistration.getPathToIndex(mailboxId);
             if (pathToIndex.isPresent()) {
                 try {
                     reIndex(pathToIndex.get());

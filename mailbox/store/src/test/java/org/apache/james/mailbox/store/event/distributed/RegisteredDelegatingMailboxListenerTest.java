@@ -35,6 +35,8 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.event.EventSerializer;
+import org.apache.james.mailbox.store.mail.MailboxMapper;
+import org.apache.james.mailbox.store.mail.model.impl.SimpleMailbox;
 import org.apache.james.mailbox.store.publisher.MessageConsumer;
 import org.apache.james.mailbox.store.publisher.Publisher;
 import org.apache.james.mailbox.store.publisher.Topic;
@@ -65,13 +67,18 @@ public class RegisteredDelegatingMailboxListenerTest {
     @Before
     public void setUp() throws Exception {
         mailboxSession = new MockMailboxSession("benwa");
-        event = new MailboxListener.Event(mailboxSession, MAILBOX_PATH) {};
+        event = new MailboxListener.Event(mailboxSession, MAILBOX_ID) {};
 
         mockedEventSerializer = mock(EventSerializer.class);
         mockedPublisher = mock(Publisher.class);
         mockedMailboxPathRegister = mock(MailboxPathRegister.class);
         MessageConsumer messageConsumer = mock(MessageConsumer.class);
         MailboxSessionMapperFactory mailboxSessionMapperFactory = mock(MailboxSessionMapperFactory.class);
+        MailboxMapper mailboxMapper = mock(MailboxMapper.class);
+
+        when(mailboxSessionMapperFactory.getMailboxMapper(mailboxSession)).thenReturn(mailboxMapper);
+        when(mailboxMapper.findMailboxById(MAILBOX_ID)).thenReturn(new SimpleMailbox(MAILBOX_PATH, 42, MAILBOX_ID));
+
         testee = new RegisteredDelegatingMailboxListener(mockedEventSerializer, mockedPublisher, messageConsumer, mockedMailboxPathRegister, mailboxSessionMapperFactory);
         mailboxEventCollector = new EventCollector(MailboxListener.ListenerType.MAILBOX);
         eachEventCollector = new EventCollector(MailboxListener.ListenerType.EACH_NODE);
@@ -113,7 +120,7 @@ public class RegisteredDelegatingMailboxListenerTest {
 
     @Test
     public void onceListenersShouldBeTriggered() throws Exception {
-        MailboxListener.Event event = new MailboxListener.Event(mailboxSession, MAILBOX_PATH) {};
+        MailboxListener.Event event = new MailboxListener.Event(mailboxSession, MAILBOX_ID) {};
         testee.addGlobalListener(onceEventCollector, mailboxSession);
         when(mockedMailboxPathRegister.getTopics(MAILBOX_PATH)).thenReturn(Sets.newHashSet(TOPIC));
         when(mockedMailboxPathRegister.getLocalTopic()).thenReturn(TOPIC);
@@ -161,7 +168,7 @@ public class RegisteredDelegatingMailboxListenerTest {
 
     @Test
     public void deletionEventsShouldBeWellHandled() throws Exception {
-        MailboxListener.Event event = new MailboxListener.MailboxDeletion(mailboxSession, MAILBOX_PATH);
+        MailboxListener.Event event = new MailboxListener.MailboxDeletion(mailboxSession, MAILBOX_ID);
         testee.addListener(MAILBOX_ID, mailboxEventCollector, mailboxSession);
         verify(mockedMailboxPathRegister).register(MAILBOX_PATH);
         when(mockedMailboxPathRegister.getTopics(MAILBOX_PATH)).thenReturn(Sets.newHashSet(TOPIC, TOPIC_2));
@@ -181,7 +188,7 @@ public class RegisteredDelegatingMailboxListenerTest {
 
     @Test
     public void renameEventsShouldBeWellHandled() throws Exception {
-        MailboxListener.Event event = new MailboxListener.MailboxRenamed(mailboxSession, MAILBOX_PATH) {
+        MailboxListener.Event event = new MailboxListener.MailboxRenamed(mailboxSession, MAILBOX_ID) {
             @Override
             public MailboxPath getNewPath() {
                 return MAILBOX_PATH_NEW;

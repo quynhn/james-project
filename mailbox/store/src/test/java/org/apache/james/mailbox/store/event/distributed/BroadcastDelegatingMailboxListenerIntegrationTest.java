@@ -118,8 +118,7 @@ public class BroadcastDelegatingMailboxListenerIntegrationTest {
 
     @Test
     public void mailboxEventListenersShouldBeTriggeredIfRegistered() throws Exception {
-        SimpleMailbox simpleMailbox = new SimpleMailbox(MAILBOX_PATH_1, 42);
-        simpleMailbox.setMailboxId(TestId.of(52));
+        SimpleMailbox simpleMailbox = new SimpleMailbox(MAILBOX_PATH_1, 42, MAILBOX_ID_1);
         final MailboxListener.Event event = new EventFactory().added(mailboxSession, new TreeMap<>(), simpleMailbox, EMPTY_MESSAGE_CACHE);
 
         broadcastDelegatingMailboxListener1.event(event);

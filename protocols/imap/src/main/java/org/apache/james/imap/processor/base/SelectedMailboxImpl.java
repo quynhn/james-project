@@ -169,6 +169,11 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
         return path;
     }
 
+    @Override
+    public synchronized MailboxId getId() {
+        return mailboxId;
+    }
+
     private void checkExpungedRecents() {
         for (MessageUid uid : expungedUids()) {
             removeRecent(uid);
@@ -313,7 +318,7 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
     public synchronized void event(Event event) {
 
         // Check if the event was for the mailbox we are observing
-        if (event.getMailboxPath().equals(getPath())) {
+        if (event.getMailboxId().equals(getId())) {
             final long eventSessionId = event.getSession().getSessionId();
             if (event instanceof MessageEvent) {
                 final MessageEvent messageEvent = (MessageEvent) event;
@@ -351,8 +356,8 @@ public class SelectedMailboxImpl implements SelectedMailbox, MailboxListener{
 
                             while (flags.hasNext()) {
                                 if (Flag.RECENT.equals(flags.next())) {
-                                    MailboxPath path = sm.getPath();
-                                    if (path != null && path.equals(event.getMailboxPath())) {
+                                    MailboxId mailboxId = sm.getId();
+                                    if (mailboxId != null && mailboxId.equals(event.getMailboxId())) {
                                         sm.addRecent(u.getUid());
                                     }
                                 }

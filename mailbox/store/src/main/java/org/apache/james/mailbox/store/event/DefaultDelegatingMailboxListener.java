@@ -90,9 +90,6 @@ public class DefaultDelegatingMailboxListener implements DelegatingMailboxListen
         Collection<MailboxListener> listenerSnapshot = registry.getLocalMailboxListeners(event.getMailboxId());
         if (event instanceof MailboxDeletion && listenerSnapshot.size() > 0) {
             registry.deleteRegistryFor(event.getMailboxId());
-        } else if (event instanceof MailboxRenamed && listenerSnapshot.size() > 0) {
-            MailboxRenamed renamed = (MailboxRenamed) event;
-            registry.handleRename(renamed.getOldPath(), renamed.getMailboxId());
         }
         deliverEventToMailboxListeners(event, listenerSnapshot);
         deliverEventToGlobalListeners(event);

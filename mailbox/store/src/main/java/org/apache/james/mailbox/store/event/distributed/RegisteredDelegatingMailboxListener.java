@@ -141,7 +141,6 @@ public class RegisteredDelegatingMailboxListener implements DistributedDelegatin
             mailboxPathRegister.doCompleteUnRegister(getMailboxPath(event.getMailboxId(), event.getSession()));
         } else if (event instanceof MailboxRenamed && listenerSnapshot.size() > 0) {
             MailboxRenamed renamed = (MailboxRenamed) event;
-            mailboxListenerRegistry.handleRename(renamed.getOldPath(), renamed.getMailboxId());
             mailboxPathRegister.doRename(renamed.getOldPath(), renamed.getNewPath());
         }
         for (MailboxListener listener : listenerSnapshot) {
@@ -157,8 +156,8 @@ public class RegisteredDelegatingMailboxListener implements DistributedDelegatin
         }
     }
 
-    private void sendToRemoteJames(Event event) {
-        Set<Topic> topics = mailboxPathRegister.getTopics(event.getMailboxPath());
+    private void sendToRemoteJames(Event event) throws MailboxException {
+        Set<Topic> topics = mailboxPathRegister.getTopics(getMailboxPath(event.getMailboxId(), event.getSession()));
         topics.remove(mailboxPathRegister.getLocalTopic());
         if (topics.size() > 0) {
             sendEventToRemotesJamesByTopic(event, topics);

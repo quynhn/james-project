@@ -143,11 +143,9 @@ public class CassandraBasedRegisteredDistributedMailboxDelegatingListenerTest {
             cassandra.getTypesProvider(),
             messageIdFactory);
 
-        simpleMailbox = new SimpleMailbox(MAILBOX_PATH_1, 42);
-        simpleMailbox.setMailboxId(MAILBOX_ID_1);
+        simpleMailbox = new SimpleMailbox(MAILBOX_PATH_1, 42, MAILBOX_ID_1);
 
-        SimpleMailbox simpleMailbox2 = new SimpleMailbox(MAILBOX_PATH_2, 43);
-        simpleMailbox2.setMailboxId(MAILBOX_ID_2);
+        SimpleMailbox simpleMailbox2 = new SimpleMailbox(MAILBOX_PATH_2, 43, MAILBOX_ID_2);
 
         mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).save(simpleMailbox);
         mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).save(simpleMailbox2);
@@ -219,6 +217,7 @@ public class CassandraBasedRegisteredDistributedMailboxDelegatingListenerTest {
         final MailboxListener.Event event = new EventFactory().added(mailboxSession, uids, simpleMailbox, EMPTY_MESSAGE_CACHE);
 
         registeredDelegatingMailboxListener1.event(event);
+        registeredDelegatingMailboxListener2.event(event);
 
         assertThat(eventCollectorMailbox1.getEvents()).hasSize(1);
         assertThat(eventCollectorMailbox2.getEvents()).hasSize(1);

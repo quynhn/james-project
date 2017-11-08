@@ -70,8 +70,8 @@ public class MailboxListenerRegistry {
         listeners.removeAll(mailboxId);
     }
 
-    public void handleRename(MailboxPath oldName, MailboxId mailboxId) {
-        listeners.putAll(mailboxId, listeners.removeAll(oldName));
+    public static void main(String[] agrs) throws Exception {
+        Multimap<MailboxId, MailboxListener> listeners;
+        System.out.println("VO vin");
     }
-
 }

@@ -135,38 +135,6 @@ public class MailboxListenerRegistryTest {
     }
 
     @Test
-    public void handleRenameShouldMoveListeners() throws Exception {
-        testee.addListener(MAILBOX_ID, mailboxListener);
-        testee.addListener(MAILBOX_ID, otherMailboxListener);
-
-        testee.handleRename(MAILBOX_PATH, OTHER_MAILBOX_ID);
-
-        assertThat(testee.getLocalMailboxListeners(MAILBOX_ID)).isEmpty();
-        assertThat(testee.getLocalMailboxListeners(OTHER_MAILBOX_ID)).containsOnly(mailboxListener, otherMailboxListener);
-    }
-
-    @Test
-    public void handleRenameShouldPreservePreviouslyRegisteredListeners() throws Exception {
-        testee.addListener(OTHER_MAILBOX_ID, mailboxListener);
-
-        testee.handleRename(MAILBOX_PATH, OTHER_MAILBOX_ID);
-
-        assertThat(testee.getLocalMailboxListeners(MAILBOX_ID)).isEmpty();
-        assertThat(testee.getLocalMailboxListeners(OTHER_MAILBOX_ID)).containsOnly(mailboxListener);
-    }
-
-    @Test
-    public void handleRenameShouldMergeListenersIfNeeded() throws Exception {
-        testee.addListener(MAILBOX_ID, mailboxListener);
-        testee.addListener(OTHER_MAILBOX_ID, otherMailboxListener);
-
-        testee.handleRename(MAILBOX_PATH, OTHER_MAILBOX_ID);
-
-        assertThat(testee.getLocalMailboxListeners(MAILBOX_ID)).isEmpty();
-        assertThat(testee.getLocalMailboxListeners(OTHER_MAILBOX_ID)).containsOnly(mailboxListener, otherMailboxListener);
-    }
-
-    @Test
     public void removeGlobalListenerShouldNotThrowOnAbsentListener() throws Exception {
         testee.removeGlobalListener(mailboxListener);
     }
