@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+
 import javax.inject.Inject;
 
 import org.apache.james.mailbox.MailboxManager;
@@ -33,6 +34,7 @@ import org.apache.james.mailbox.indexer.events.ImpactingEventType;
 import org.apache.james.mailbox.indexer.events.ImpactingMessageEvent;
 import org.apache.james.mailbox.indexer.registrations.GlobalRegistration;
 import org.apache.james.mailbox.indexer.registrations.MailboxRegistration;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
@@ -100,7 +102,8 @@ public class ReIndexerImpl implements ReIndexer {
         LOGGER.info("Intend to reindex {}",path);
         Mailbox mailbox = mailboxSessionMapperFactory.getMailboxMapper(mailboxSession).findMailboxByPath(path);
         messageSearchIndex.deleteAll(mailboxSession, mailbox);
-        mailboxManager.addListener(path, mailboxRegistration, mailboxSession);
+        MailboxId mailboxId = mailbox.getMailboxId();
+        mailboxManager.addListener(mailboxId, mailboxRegistration, mailboxSession);
         try {
             handleMailboxIndexingIterations(mailboxSession,
                 mailboxRegistration,
@@ -112,7 +115,7 @@ public class ReIndexerImpl implements ReIndexer {
                         NO_LIMIT));
             LOGGER.info("Finish to reindex " + path);
         } finally {
-            mailboxManager.removeListener(path, mailboxRegistration, mailboxSession);
+            mailboxManager.removeListener(mailboxId, mailboxRegistration, mailboxSession);
         }
     }
 

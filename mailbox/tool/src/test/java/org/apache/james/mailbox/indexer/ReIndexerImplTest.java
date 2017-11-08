@@ -31,6 +31,7 @@ import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxSession;
 import org.apache.james.mailbox.MessageUid;
 import org.apache.james.mailbox.mock.MockMailboxSession;
+import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageRange;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
@@ -78,7 +79,8 @@ public class ReIndexerImplTest {
             .thenReturn(mailboxMapper);
         final MailboxMessage message = new MessageBuilder().build();
         final SimpleMailbox mailbox = new SimpleMailbox(INBOX, 42);
-        mailbox.setMailboxId(message.getMailboxId());
+        MailboxId mailboxId = message.getMailboxId();
+        mailbox.setMailboxId(mailboxId);
         when(mailboxMapper.findMailboxByPath(INBOX)).thenReturn(mailbox);
         when(messageMapper.findInMailbox(mailbox, MessageRange.all(), MessageMapper.FetchType.Full, LIMIT))
             .thenReturn(Lists.newArrayList(message).iterator());
@@ -90,8 +92,8 @@ public class ReIndexerImplTest {
         verify(mailboxSessionMapperFactory).getMessageMapper(mockMailboxSession);
         verify(mailboxMapper).findMailboxByPath(INBOX);
         verify(messageMapper).findInMailbox(mailbox, MessageRange.all(), MessageMapper.FetchType.Full, LIMIT);
-        verify(mailboxManager).addListener(eq(INBOX), any(MailboxListener.class), any(MailboxSession.class));
-        verify(mailboxManager).removeListener(eq(INBOX), any(MailboxListener.class), any(MailboxSession.class));
+        verify(mailboxManager).addListener(eq(mailboxId), any(MailboxListener.class), any(MailboxSession.class));
+        verify(mailboxManager).removeListener(eq(mailboxId), any(MailboxListener.class), any(MailboxSession.class));
         verify(messageSearchIndex).add(any(MailboxSession.class), eq(mailbox), eq(message));
         verify(messageSearchIndex).deleteAll(any(MailboxSession.class), eq(mailbox));
         verifyNoMoreInteractions(mailboxMapper, mailboxSessionMapperFactory, messageSearchIndex, messageMapper, mailboxMapper);

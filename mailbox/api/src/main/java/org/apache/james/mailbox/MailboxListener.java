@@ -137,6 +137,7 @@ public interface MailboxListener {
          * @return name, not null
          */
         public abstract MailboxPath getNewPath();
+        public abstract MailboxPath getOldPath();
     }
 
 

@@ -169,6 +169,11 @@ public class EventFactory {
         }
 
         @Override
+        public MailboxPath getOldPath() {
+            return getMailboxPath();
+        }
+
+        @Override
         public Mailbox getMailbox() {
             return newMailbox;
         }
