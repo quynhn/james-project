@@ -54,14 +54,14 @@ public class GlobalRegistrationTest {
 
     @Test
     public void pathToIndexShouldNotBeChangedByDefault() {
-        assertThat(globalRegistration.getPathToIndex(MAILBOX_ID).get()).isEqualTo(INBOX);
+        assertThat(globalRegistration.getPathToIndex(MAILBOX_ID)).isNotPresent();
     }
 
     @Test
-    public void pathToIndexShouldNotBeChangedByAddedEvents() {
-        MailboxListener.Event event = eventFactory.mailboxAdded(session, MAILBOX);
+    public void pathToIndexShouldNotBeChangedByRenamedEvents() {
+        MailboxListener.Event event = eventFactory.mailboxRenamed(session, INBOX, new SimpleMailbox(NEW_PATH, 42, MAILBOX_ID));
         globalRegistration.event(event);
-        assertThat(globalRegistration.getPathToIndex(MAILBOX_ID).get()).isEqualTo(INBOX);
+        assertThat(globalRegistration.getPathToIndex(MAILBOX_ID).get()).isEqualTo(NEW_PATH);
     }
 
     @Test

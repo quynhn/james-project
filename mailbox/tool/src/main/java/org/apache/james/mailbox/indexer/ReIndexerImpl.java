@@ -121,6 +121,7 @@ public class ReIndexerImpl implements ReIndexer {
 
     private void handleFullReindexingIterations(List<MailboxPath> mailboxPaths, GlobalRegistration globalRegistration, MailboxSession session) throws MailboxException {
         for (MailboxPath mailboxPath : mailboxPaths) {
+            System.out.println("mailboxPath: " + mailboxPath + " || " + session.getUser().getUserName());
             MailboxId mailboxId = mailboxSessionMapperFactory.getMailboxMapper(session)
                 .findMailboxByPath(mailboxPath)
                 .getMailboxId();

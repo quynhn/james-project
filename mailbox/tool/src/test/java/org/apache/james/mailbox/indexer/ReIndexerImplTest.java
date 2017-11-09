@@ -34,6 +34,7 @@ import org.apache.james.mailbox.mock.MockMailboxSession;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageRange;
+import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.store.MailboxSessionMapperFactory;
 import org.apache.james.mailbox.store.MessageBuilder;
 import org.apache.james.mailbox.store.mail.MailboxMapper;
@@ -100,7 +101,7 @@ public class ReIndexerImplTest {
     }
 
     @Test
-    public void mailboxPathUserShouldBeUsedWhenReIndexing() throws Exception {
+    public void mailboxPathUserShouldNotBeUsedWhenReIndexing() throws Exception {
         MockMailboxSession systemMailboxSession = new MockMailboxSession("re-indexing");
         when(mailboxManager.createSystemSession("re-indexing"))
             .thenReturn(systemMailboxSession);
@@ -110,15 +111,19 @@ public class ReIndexerImplTest {
 
         String user1 = "user1@james.org";
         MailboxPath user1MailboxPath = MailboxPath.forUser(user1, "Inbox");
+        Mailbox user1Mailbox = new SimpleMailbox(user1MailboxPath, 42, TestId.of(1));
         MockMailboxSession user1MailboxSession = new MockMailboxSession(user1);
         when(mailboxManager.createSystemSession(user1))
             .thenReturn(user1MailboxSession);
         MailboxMapper user1MailboxMapper = mock(MailboxMapper.class);
         when(mailboxSessionMapperFactory.getMailboxMapper(user1MailboxSession))
             .thenReturn(user1MailboxMapper);
-        Mailbox user1Mailbox = mock(Mailbox.class);
+
+        when(mailboxMapper.findMailboxByPath(user1MailboxPath))
+            .thenReturn(user1Mailbox);
         when(user1MailboxMapper.findMailboxByPath(user1MailboxPath))
             .thenReturn(user1Mailbox);
+
         MessageMapper user1MessageMapper = mock(MessageMapper.class);
         when(mailboxSessionMapperFactory.getMessageMapper(user1MailboxSession))
             .thenReturn(user1MessageMapper);
@@ -133,7 +138,6 @@ public class ReIndexerImplTest {
 
         reIndexer.reIndex();
 
-        verify(messageSearchIndex).deleteAll(user1MailboxSession, user1Mailbox);
-        verify(messageSearchIndex).add(user1MailboxSession, user1Mailbox, user1MailboxMessage);
+        verifyNoMoreInteractions(messageSearchIndex);
     }
 }
