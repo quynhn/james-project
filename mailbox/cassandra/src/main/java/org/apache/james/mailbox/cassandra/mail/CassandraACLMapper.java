@@ -132,17 +132,15 @@ public class CassandraACLMapper {
 
         PositiveUserACLChanged positiveUserAclChanged = updateAcl(cassandraId, aclWithVersion -> aclWithVersion.apply(command), replacement);
 
-        userMailboxRightsDAO.update(cassandraId, positiveUserAclChanged).join();
-
-        return ACLDiff.computeDiff(positiveUserAclChanged.getOldACL(), positiveUserAclChanged.getNewACL());
+        return userMailboxRightsDAO.update(cassandraId, positiveUserAclChanged);
     }
 
-    public void setACL(CassandraId cassandraId, MailboxACL mailboxACL) throws MailboxException {
+    public ACLDiff setACL(CassandraId cassandraId, MailboxACL mailboxACL) throws MailboxException {
         PositiveUserACLChanged positiveUserAclChanged = updateAcl(cassandraId,
             acl -> new ACLWithVersion(acl.version, mailboxACL),
             mailboxACL);
 
-        userMailboxRightsDAO.update(cassandraId, positiveUserAclChanged).join();
+        return userMailboxRightsDAO.update(cassandraId, positiveUserAclChanged);
     }
 
     private PositiveUserACLChanged updateAcl(CassandraId cassandraId, Function<ACLWithVersion, ACLWithVersion> aclTransformation, MailboxACL replacement) throws MailboxException {
