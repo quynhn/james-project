@@ -100,6 +100,8 @@ public class SelectedMailboxImplTest {
 
         when(mailbox.generateAssociatedPath())
             .thenReturn(mailboxPath);
+        when(mailbox.getMailboxId())
+            .thenReturn(MAILBOX_ID);
     }
 
     @After

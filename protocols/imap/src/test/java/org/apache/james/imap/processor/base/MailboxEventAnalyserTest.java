@@ -110,6 +110,8 @@ public class MailboxEventAnalyserTest {
             .thenReturn(ImmutableList.of(MESSAGE_UID).iterator());
         when(messageManager.getMessages(any(), any(), any()))
             .thenReturn(new SingleMessageResultIterator(messageResult));
+        when(messageManager.getId())
+            .thenReturn(MAILBOX_ID);
 
         testee = new SelectedMailboxImpl(mailboxManager, imapSession, MAILBOX_PATH);
     }
