@@ -242,3 +242,18 @@ Feature: GetMailboxes method
     Then the mailbox "shared2" has 0 messages
     And the mailbox "shared2" has 0 unseen messages
 
+  Scenario: User can share sub-mailbox without sharing its parent
+    Given "alice@domain.tld" has a mailbox "mailbox1"
+    And "alice@domain.tld" has a mailbox "mailbox1.shared"
+    And "alice@domain.tld" shares her mailbox "mailbox1.shared" with "bob@domain.tld" with "aeirwt" rights
+    When "bob@domain.tld" ask for mailboxes
+    Then the mailbox "shared" should be present
+    And the mailbox "mailbox1" should not be present
+
+  Scenario: User can share sub-mailbox without sharing its parent but still see parent when lookup right
+    Given "alice@domain.tld" has a mailbox "mailbox1"
+    And "alice@domain.tld" has a mailbox "mailbox1.shared"
+    And "alice@domain.tld" shares her mailbox "mailbox1.shared" with "bob@domain.tld" with "l" rights
+    When "bob@domain.tld" ask for mailboxes
+    Then the mailbox "shared" should be present
+    And the mailbox "mailbox1" should be present

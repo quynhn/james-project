@@ -68,6 +68,11 @@ public class GetMailboxesMethodStepdefs {
         assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".list[*].name")).contains(mailboxName);
     }
 
+    @Then("^the mailbox \"([^\"]*)\" should not be present$")
+    public void assertNoMailboxesNames(String mailboxName) throws Exception {
+        assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".list[*].name")).doesNotContain(mailboxName);
+    }
+
     @Then("^the mailbox \"([^\"]*)\" has (\\d+) (?:messages|message)$")
     public void assertNumberOfMessages(String mailboxName, int numberOfMessages) throws Exception {
         assertThat(httpClient.jsonPath.<List<Integer>>read(ARGUMENTS + ".list[?].totalMessages",
