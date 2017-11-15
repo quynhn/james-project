@@ -63,7 +63,7 @@ public class GetMailboxesMethodStepdefs {
         assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".list")).hasSize(numberOfMailboxes);
     }
 
-    @Then("^the mailbox \"([^\"]*)\" should be present in \"([^\"]*)\" namespace$")
+    @Then("^the mailboxes should contain \"([^\"]*)\" in \"([^\"]*)\" namespace$")
     public void assertMailboxesNames(String mailboxName, String namespace) throws Exception {
         assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".list[*].name")).contains(mailboxName);
         assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".list[?].namespace.type",
@@ -71,7 +71,7 @@ public class GetMailboxesMethodStepdefs {
             .containsOnly(namespace);
     }
 
-    @Then("^the mailbox \"([^\"]*)\" should not be present$")
+    @Then("^the mailboxes should not contain \"([^\"]*)\"$")
     public void assertNoMailboxesNames(String mailboxName) throws Exception {
         assertThat(httpClient.jsonPath.<List<String>>read(ARGUMENTS + ".list[*].name")).doesNotContain(mailboxName);
     }
