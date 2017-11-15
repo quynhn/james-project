@@ -247,13 +247,13 @@ Feature: GetMailboxes method
     And "alice@domain.tld" has a mailbox "mailbox1.shared"
     And "alice@domain.tld" shares her mailbox "mailbox1.shared" with "bob@domain.tld" with "aeirwt" rights
     When "bob@domain.tld" ask for mailboxes
-    Then the mailbox "shared" should be present
+    Then the mailbox "shared" should be present in "Delegated" namespace
     And the mailbox "mailbox1" should not be present
 
-  Scenario: User can share sub-mailbox without sharing its parent but still see parent when lookup right
+  Scenario: User can share sub-mailbox without sharing its parent and then sharee can see the parent mailbox
     Given "alice@domain.tld" has a mailbox "mailbox1"
     And "alice@domain.tld" has a mailbox "mailbox1.shared"
     And "alice@domain.tld" shares her mailbox "mailbox1.shared" with "bob@domain.tld" with "l" rights
     When "bob@domain.tld" ask for mailboxes
-    Then the mailbox "shared" should be present
-    And the mailbox "mailbox1" should be present
+    Then the mailbox "shared" should be present in "Delegated" namespace
+    And the mailbox "mailbox1" should be present in "Delegated" namespace
