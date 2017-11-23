@@ -21,9 +21,11 @@ package org.apache.james.transport.mailets;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Properties;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
+import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.MailAddress;
@@ -87,17 +89,26 @@ public class ContactExtractor extends GenericMailet implements Mailet {
     @Override
     public void service(Mail mail) throws MessagingException {
         try {
+            MimeMessage message = mail.getMessage();
+
+            Properties props = System.getProperties();
+            props.put("mail.mime.address.strict", false);
+            Session session = Session.getDefaultInstance(props);
+            MimeMessage newMessage = new MimeMessage(session, message.getInputStream());
+            newMessage.saveChanges();
+            mail.setMessage(newMessage);
+
             Optional<String> payload = extractContacts(mail);
             LOGGER.debug("payload : {}", payload);
             payload.ifPresent(x -> mail.setAttribute(extractAttributeTo, x));
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error("Error while extracting contacts", e);
         }
     }
 
     private Optional<String> extractContacts(Mail mail) throws MessagingException, IOException {
         MimeMessage message = mail.getMessage();
-
         return Optional.of(mail.getSender())
             .map(MailAddress::asString)
             .filter(Throwing.predicate(sender -> hasRecipients(message)))

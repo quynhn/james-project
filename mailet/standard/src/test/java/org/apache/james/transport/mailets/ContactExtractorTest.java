@@ -25,7 +25,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.util.Properties;
+
 import javax.mail.MessagingException;
+import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.james.core.MailAddress;
@@ -69,7 +73,7 @@ public class ContactExtractorTest {
                 .mailetName("Test")
                 .mailetContext(mailetContext)
                 .build();
-        
+
         assertThatThrownBy(() -> mailet.init(customMailetConfig))
             .isInstanceOf(MailetException.class);
     }
@@ -86,7 +90,7 @@ public class ContactExtractorTest {
 
     @Test
     public void serviceShouldNotThrowWhenJsonProcessingFails() throws Exception {
-        FakeMail mail = FakeMail.builder().mimeMessage(MimeMessageBuilder.defaultMimeMessage())
+        FakeMail mail = FakeMail.builder().mimeMessage(MimeMessageBuilder.mimeMessageBuilder().build())
                 .sender(new MailAddress(SENDER))
                 .recipient(new MailAddress(TO))
                 .build();
@@ -247,4 +251,31 @@ public class ContactExtractorTest {
 
         assertThat(hasRecipients).isFalse();
     }
+
+    @Test
+    public void serviceShouldUnscrambleRecipients2() throws Exception {
+        String rawMessage = "From: sender@example.com\r\n"
+            + "To: =?UTF-8?Q?vroma_>>_Fr=c3=a9d=c3=a9ric_VROMAN?= <fvroman@linagora.com>\r\n"
+            + "Subject: extract this recipient please\r\n"
+            + "\r\n"
+            + "Please!";
+        ByteArrayInputStream mb = new ByteArrayInputStream(rawMessage.getBytes());
+//        Properties props = System.getProperties();
+//        props.put("mail.mime.address.strict", false);
+//        Session session = Session.getDefaultInstance(props);
+//        MimeMessage message = new MimeMessage(session, mb);
+
+        MimeMessage message = MimeMessageBuilder.mimeMessageFromStream(mb);
+        FakeMail mail = FakeMail.builder().mimeMessage(message)
+            .sender(new MailAddress(SENDER))
+            .recipient(new MailAddress("fv@example.com"))
+            .build();
+        mailet.init(mailetConfig);
+
+        String expectedMessage = "{\"userEmail\" : \"" + SENDER + "\", \"emails\" : [ \"\\\"vroma >> Frédéric VROMAN\\\" <fvroman@linagora.com>\" ]}";
+        mailet.service(mail);
+
+        assertThatJson(mail.getAttribute(ATTRIBUTE).toString()).isEqualTo(expectedMessage);
+    }
+
 }
