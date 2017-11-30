@@ -18,15 +18,22 @@
  ****************************************************************/
 
 package org.apache.james;
+import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration.plist.PropertyListConfiguration;
+import org.apache.james.http.jetty.ConfigurationException;
 import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.store.search.PDFTextExtractor;
 import org.apache.james.modules.TestESMetricReporterModule;
+import org.apache.james.modules.TestIMAPServerModule;
 import org.apache.james.modules.TestJMAPServerModule;
 import org.apache.james.modules.protocols.JMAPServerModule;
+import org.apache.james.utils.ConfigurationProvider;
+import org.apache.james.utils.FileConfigurationProvider;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import com.google.inject.Inject;
 import com.google.inject.Module;
 
 
@@ -54,17 +61,75 @@ public class CassandraJmapTestRule implements TestRule {
             .overrideWith(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES))
             .overrideWith(new TestESMetricReporterModule())
             .overrideWith(guiceModuleTestRule.getModule())
-            .overrideWith(additionals);
+            .overrideWith(additionals)
+            .overrideWith(binder -> binder.bind(ConfigurationProvider.class).to(UnionConfigurationProvider.class));
     }
 
-    public GuiceJamesServer onlyJmapServer(Module... additionals) {
-        return new GuiceJamesServer()
-            .combineWith(CassandraJamesServerMain.cassandraServerModule, new JMAPServerModule(), CassandraJamesServerMain.webadmin)
-            .overrideWith(binder -> binder.bind(TextExtractor.class).to(PDFTextExtractor.class))
-            .overrideWith(new TestJMAPServerModule(LIMIT_TO_3_MESSAGES))
-            .overrideWith(new TestESMetricReporterModule())
-            .overrideWith(guiceModuleTestRule.getModule())
-            .overrideWith(additionals);
+    private static class UnionConfigurationProvider implements ConfigurationProvider {
+        private final FileConfigurationProvider fileConfigurationProvider;
+
+        @Inject
+        public UnionConfigurationProvider(FileConfigurationProvider fileConfigurationProvider) {
+            this.fileConfigurationProvider = fileConfigurationProvider;
+        }
+
+        @Override
+        public HierarchicalConfiguration getConfiguration(String component) throws org.apache.commons.configuration.ConfigurationException {
+            if (component.equals("imapserver")) {
+                return imapConfiguration();
+            } else if (component.equals("lmtpserver")) {
+                return lmtpConfiguration();
+            } else if (component.equals("managesieveserver")) {
+                return manageSieveConfiguration();
+            } else if (component.equals("pop3server")) {
+                return pop3Configuration();
+            } else if (component.equals("smtpserver")) {
+                return smtpConfiguration();
+            }
+            return fileConfigurationProvider.getConfiguration(component);
+        }
+
+        private HierarchicalConfiguration smtpConfiguration() {
+            HierarchicalConfiguration configuration = commonProperties();
+            configuration.addProperty("[@bind]", "0.0.0.0:1026");
+
+            return configuration;
+        }
+
+        private HierarchicalConfiguration commonProperties() {
+            PropertyListConfiguration configuration = new PropertyListConfiguration();
+            configuration.addProperty("[@connectionBacklog]", "200");
+            configuration.addProperty("[@keystore]", "file://conf/keystore");
+            configuration.addProperty("[@secret]", "james72laBalle");
+            configuration.addProperty("[@provider]", "org.bouncycastle.jce.provider.BouncyCastleProvider");
+            return configuration;
+        }
+
+        private HierarchicalConfiguration pop3Configuration() {
+            HierarchicalConfiguration configuration = commonProperties();
+            configuration.addProperty("[@bind]", "0.0.0.0:1111");
+            configuration.addProperty("[@]", "");
+            return configuration;
+        }
+
+        private HierarchicalConfiguration manageSieveConfiguration() {
+            HierarchicalConfiguration configuration = commonProperties();
+            configuration.addProperty("[@bind]", "0.0.0.0:4150");
+            configuration.addProperty("[@jmxName]", "managesieveserver");
+            configuration.addProperty("[@algorithm]", "SunX509");
+            return configuration;
+        }
+
+        private HierarchicalConfiguration imapConfiguration() throws ConfigurationException {
+            PropertyListConfiguration configuration = new PropertyListConfiguration();
+            configuration.addProperty("[@bind]", "0.0.0.0:1144");
+            return configuration;
+        }
+        private HierarchicalConfiguration lmtpConfiguration() throws ConfigurationException {
+            PropertyListConfiguration configuration = new PropertyListConfiguration();
+            configuration.addProperty("[@bind]", "127.0.0.1:1025");
+            return configuration;
+        }
     }
 
     @Override

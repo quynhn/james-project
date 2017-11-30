@@ -43,7 +43,7 @@ public class CassandraUserProvisionningConcurrencyTest extends UserProvisionning
 
     @Override
     protected GuiceJamesServer createJmapServer() {
-        return rule.onlyJmapServer(cassandra.getModule());
+        return rule.jmapServer(cassandra.getModule());
     }
 
 }
