@@ -76,7 +76,7 @@ public class CassandraMigrationRoutes implements Routes {
                     .statusCode(HttpStatus.BAD_REQUEST_400)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Invalid request for version upgrade")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             } catch (IllegalStateException e) {
                 LOGGER.info("The migration requested can not be performed.", e);
@@ -84,7 +84,7 @@ public class CassandraMigrationRoutes implements Routes {
                     .statusCode(HttpStatus.GONE_410)
                     .type(ErrorType.WRONG_STATE)
                     .message("The migration requested can not be performed")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             } catch (MigrationException e) {
                 LOGGER.error("An error lead to partial migration process", e);
@@ -92,7 +92,7 @@ public class CassandraMigrationRoutes implements Routes {
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .type(ErrorType.SERVER_ERROR)
                     .message("An error lead to partial migration process")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             }
             return Constants.EMPTY_BODY;
@@ -107,7 +107,7 @@ public class CassandraMigrationRoutes implements Routes {
                     .statusCode(HttpStatus.GONE_410)
                     .type(ErrorType.WRONG_STATE)
                     .message("The migration requested can not be performed")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             } catch (MigrationException e) {
                 LOGGER.error("An error lead to partial migration process", e);
@@ -115,7 +115,7 @@ public class CassandraMigrationRoutes implements Routes {
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500)
                     .type(ErrorType.SERVER_ERROR)
                     .message("An error lead to partial migration process")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             }
 

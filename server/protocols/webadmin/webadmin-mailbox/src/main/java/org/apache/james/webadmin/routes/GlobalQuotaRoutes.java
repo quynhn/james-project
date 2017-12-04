@@ -117,7 +117,7 @@ public class GlobalQuotaRoutes implements Routes {
                     .statusCode(HttpStatus.BAD_REQUEST_400)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Malformed JSON input")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             } catch (IllegalArgumentException e) {
                 LOGGER.info("Quota should be positive or unlimited (-1)", e);
@@ -125,7 +125,7 @@ public class GlobalQuotaRoutes implements Routes {
                     .statusCode(HttpStatus.BAD_REQUEST_400)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Quota should be positive or unlimited (-1)")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             }
             return Constants.EMPTY_BODY;
@@ -189,7 +189,7 @@ public class GlobalQuotaRoutes implements Routes {
                     .statusCode(HttpStatus.BAD_REQUEST_400)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Invalid quota. Need to be an integer value greater than 0")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             }
             return Constants.EMPTY_BODY;
@@ -249,7 +249,7 @@ public class GlobalQuotaRoutes implements Routes {
                     .statusCode(HttpStatus.BAD_REQUEST_400)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Invalid quota. Need to be an integer value greater than 0")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             }
             return Constants.EMPTY_BODY;

@@ -20,7 +20,13 @@
 package org.apache.james.webadmin.utils;
 
 import static spark.Spark.halt;
+
+import java.util.Objects;
+import java.util.Optional;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 import spark.HaltException;
 
@@ -41,10 +47,16 @@ public class ErrorResponder {
         }
     }
 
-    private int statusCode;
-    private ErrorType type;
-    private String message;
-    private String cause;
+    private Integer statusCode;
+    private Optional<ErrorType> type;
+    private Optional<String> message;
+    private Optional<Exception> cause;
+
+    public ErrorResponder() {
+        cause = Optional.empty();
+        type = Optional.empty();
+        message = Optional.empty();
+    }
 
     public static ErrorResponder builder() {
         return new ErrorResponder();
@@ -56,35 +68,40 @@ public class ErrorResponder {
     }
 
     public ErrorResponder type(ErrorType type) {
-        this.type = type;
+        this.type = Optional.of(type);
         return this;
     }
 
     public ErrorResponder message(String message) {
-        this.message = message;
+        this.message = Optional.of(message);
         return this;
     }
 
-    public ErrorResponder cause(String cause) {
-        this.cause = cause;
+    public ErrorResponder cause(Exception cause) {
+        this.cause = Optional.of(cause);
         return this;
     }
 
     public HaltException haltError() {
+        Preconditions.checkNotNull(statusCode, "statusCode must not be null in case of error");
         try {
-            return halt(statusCode, new JsonTransformer().render(new ErrorDetail(statusCode, type.getType(), message, cause)));
+            return halt(statusCode, new JsonTransformer().render(new ErrorDetail(statusCode,
+                type.map(type -> type.getType()).orElse(""),
+                message.orElse(""),
+                cause.map(e -> e.getMessage()).orElse(""))));
         } catch (JsonProcessingException e) {
             return halt(statusCode);
         }
     }
 
-    private static class ErrorDetail {
+    static class ErrorDetail {
         private final int statusCode;
         private final String type;
         private final String message;
         private final String cause;
 
-        public ErrorDetail(int statusCode, String type, String message, String cause) {
+        @VisibleForTesting
+        ErrorDetail(int statusCode, String type, String message, String cause) {
             this.statusCode = statusCode;
             this.type = type;
             this.message = message;
@@ -105,6 +122,24 @@ public class ErrorResponder {
 
         public String getCause() {
             return cause;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (o instanceof ErrorDetail) {
+                ErrorDetail that = (ErrorDetail) o;
+
+                return Objects.equals(this.statusCode, that.statusCode)
+                    && Objects.equals(this.type, that.type)
+                    && Objects.equals(this.message, that.message)
+                    && Objects.equals(this.cause, that.cause);
+            }
+            return false;
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hash(statusCode, type, message, cause);
         }
     }
 }

@@ -107,7 +107,7 @@ public class UserMailboxesRoutes implements Routes {
                     .statusCode(HttpStatus.NOT_FOUND_404)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Invalid get on user mailboxes")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             }
         }, jsonTransformer);
@@ -138,7 +138,7 @@ public class UserMailboxesRoutes implements Routes {
                     .statusCode(HttpStatus.NOT_FOUND_404)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Invalid delete on user mailboxes")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             } catch (MailboxHaveChildrenException e) {
                 LOGGER.info("Attempt to delete a mailbox with children");
@@ -146,7 +146,7 @@ public class UserMailboxesRoutes implements Routes {
                     .statusCode(HttpStatus.CONFLICT_409)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Attempt to delete a mailbox with children")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             } catch (IllegalArgumentException e) {
                 LOGGER.info("Attempt to create an invalid mailbox");
@@ -154,7 +154,7 @@ public class UserMailboxesRoutes implements Routes {
                     .statusCode(HttpStatus.BAD_REQUEST_400)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Attempt to create an invalid mailbox")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             }
             return Constants.EMPTY_BODY;
@@ -183,7 +183,7 @@ public class UserMailboxesRoutes implements Routes {
                     .statusCode(HttpStatus.NOT_FOUND_404)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Invalid delete on user mailboxes")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             }
             return Constants.EMPTY_BODY;
@@ -222,7 +222,7 @@ public class UserMailboxesRoutes implements Routes {
                     .statusCode(HttpStatus.NOT_FOUND_404)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Invalid get on user mailboxes")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             } catch (IllegalArgumentException e) {
                 LOGGER.info("Attempt to create an invalid mailbox");
@@ -230,7 +230,7 @@ public class UserMailboxesRoutes implements Routes {
                     .statusCode(HttpStatus.BAD_REQUEST_400)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Attempt to create an invalid mailbox")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             }
             return Constants.EMPTY_BODY;
@@ -262,7 +262,7 @@ public class UserMailboxesRoutes implements Routes {
                     .statusCode(HttpStatus.NOT_FOUND_404)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Invalid get on user mailboxes")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             } catch (IllegalArgumentException e) {
                 LOGGER.info("Attempt to create an invalid mailbox");
@@ -270,7 +270,7 @@ public class UserMailboxesRoutes implements Routes {
                     .statusCode(HttpStatus.BAD_REQUEST_400)
                     .type(ErrorType.INVALID_ARGUMENT)
                     .message("Attempt to create an invalid mailbox")
-                    .cause(e.getMessage())
+                    .cause(e)
                     .haltError();
             }
             return Constants.EMPTY_BODY;

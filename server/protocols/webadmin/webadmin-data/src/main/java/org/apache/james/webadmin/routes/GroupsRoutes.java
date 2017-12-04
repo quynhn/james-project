@@ -231,7 +231,7 @@ public class GroupsRoutes implements Routes {
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .type(ErrorType.INVALID_ARGUMENT)
                 .message("The group is not an email address")
-                .cause(e.getMessage())
+                .cause(e)
                 .haltError();
         } catch (UnsupportedEncodingException e) {
             LOGGER.error("UTF-8 should be a valid encoding");
@@ -239,7 +239,7 @@ public class GroupsRoutes implements Routes {
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500)
                 .type(ErrorType.SERVER_ERROR)
                 .message("Internal server error - Something went bad on the server side.")
-                .cause(e.getMessage())
+                .cause(e)
                 .haltError();
         }
     }

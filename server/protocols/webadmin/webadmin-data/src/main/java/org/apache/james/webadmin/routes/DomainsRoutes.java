@@ -173,7 +173,7 @@ public class DomainsRoutes implements Routes {
                 .statusCode(HttpStatus.NO_CONTENT_204)
                 .type(ErrorType.INVALID_ARGUMENT)
                 .message(domainName + " already exists")
-                .cause(e.getMessage())
+                .cause(e)
                 .haltError();
         } catch (IllegalArgumentException e) {
             LOGGER.info("Invalid request for domain creation");
@@ -181,7 +181,7 @@ public class DomainsRoutes implements Routes {
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .type(ErrorType.INVALID_ARGUMENT)
                 .message("Invalid request for domain creation " + domainName)
-                .cause(e.getMessage())
+                .cause(e)
                 .haltError();
         }
         return Constants.EMPTY_BODY;

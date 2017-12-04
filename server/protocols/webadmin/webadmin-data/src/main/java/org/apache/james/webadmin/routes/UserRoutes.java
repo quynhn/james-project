@@ -141,7 +141,7 @@ public class UserRoutes implements Routes {
                 .statusCode(HttpStatus.NO_CONTENT_204)
                 .type(ErrorType.INVALID_ARGUMENT)
                 .message("The user " + username + " does not exists")
-                .cause(e.getMessage())
+                .cause(e)
                 .haltError();
         } catch (IllegalArgumentException e) {
             LOGGER.info("Invalid user path", e);
@@ -149,7 +149,7 @@ public class UserRoutes implements Routes {
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .type(ErrorType.INVALID_ARGUMENT)
                 .message("Invalid user path")
-                .cause(e.getMessage())
+                .cause(e)
                 .haltError();
         }
     }
@@ -165,7 +165,7 @@ public class UserRoutes implements Routes {
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .type(ErrorType.INVALID_ARGUMENT)
                 .message("Error while deserializing addUser request")
-                .cause(e.getMessage())
+                .cause(e)
                 .haltError();
         } catch (IllegalArgumentException e) {
             LOGGER.info("Invalid user path", e);
@@ -173,7 +173,7 @@ public class UserRoutes implements Routes {
                 .statusCode(HttpStatus.BAD_REQUEST_400)
                 .type(ErrorType.INVALID_ARGUMENT)
                 .message("Invalid user path")
-                .cause(e.getMessage())
+                .cause(e)
                 .haltError();
         }
     }
