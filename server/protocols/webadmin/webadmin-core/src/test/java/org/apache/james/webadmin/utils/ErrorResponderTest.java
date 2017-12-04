@@ -22,6 +22,7 @@ package org.apache.james.webadmin.utils;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.junit.Test;
 
@@ -31,6 +32,9 @@ import com.jayway.jsonpath.JsonPath;
 import spark.HaltException;
 
 public class ErrorResponderTest {
+
+    public static final Optional<String> NO_CAUSE = Optional.empty();
+
     @Test
     public void haltErrorShouldThrowWhenNoStatusCode() throws Exception {
         assertThatThrownBy(() -> ErrorResponder.builder()
@@ -39,46 +43,69 @@ public class ErrorResponderTest {
     }
 
     @Test
+    public void haltErrorShouldThrowWhenNoType() throws Exception {
+        assertThatThrownBy(() -> ErrorResponder.builder()
+            .statusCode(400)
+            .haltError())
+            .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    public void haltErrorShouldThrowWhenNoMessage() throws Exception {
+        assertThatThrownBy(() -> ErrorResponder.builder()
+            .statusCode(400)
+            .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
+            .haltError())
+            .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
     public void haltErrorShouldReturnBodyWithStatusCodeWhenSetting() throws Exception {
         assertThatThrownBy(() -> ErrorResponder.builder()
-                .statusCode(400)
+                .statusCode(404)
+                .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
+                .message("Error")
                 .haltError())
             .isInstanceOf(HaltException.class)
-            .matches(e -> hasStatus(e, 400))
-            .matches(e -> bodyHasErrorDetail(e, new ErrorResponder.ErrorDetail(400, "", "", "")));
+            .matches(e -> hasStatus(e, 404))
+            .matches(e -> bodyHasErrorDetail(e, new ErrorResponder.ErrorDetail(404, "InvalidArgument", "Error", NO_CAUSE)));
     }
 
     @Test
     public void haltErrorShouldReturnBodyWithErrorTypeWhenSetting() throws Exception {
         assertThatThrownBy(() -> ErrorResponder.builder()
-            .statusCode(400)
-            .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
-            .haltError())
+                .statusCode(400)
+                .type(ErrorResponder.ErrorType.WRONG_STATE)
+                .message("Error")
+                .haltError())
             .isInstanceOf(HaltException.class)
             .matches(e -> hasStatus(e, 400))
-            .matches(e -> bodyHasErrorDetail(e, new ErrorResponder.ErrorDetail(400, "InvalidArgument", "", "")));
+            .matches(e -> bodyHasErrorDetail(e, new ErrorResponder.ErrorDetail(400, "WrongState", "Error", NO_CAUSE)));
     }
 
     @Test
     public void haltErrorShouldReturnBodyWithErrorMessageWhenSetting() throws Exception {
         assertThatThrownBy(() -> ErrorResponder.builder()
                 .statusCode(400)
-                .message("Error")
+                .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
+                .message("It has error")
                 .haltError())
             .isInstanceOf(HaltException.class)
             .matches(e -> hasStatus(e, 400))
-            .matches(e -> bodyHasErrorDetail(e, new ErrorResponder.ErrorDetail(400, "", "Error", "")));
+            .matches(e -> bodyHasErrorDetail(e, new ErrorResponder.ErrorDetail(400, "InvalidArgument", "It has error", NO_CAUSE)));
     }
 
     @Test
     public void haltErrorShouldReturnBodyWithCauseTypeWhenSetting() throws Exception {
         assertThatThrownBy(() -> ErrorResponder.builder()
                 .statusCode(400)
+                .type(ErrorResponder.ErrorType.INVALID_ARGUMENT)
+                .message("Error")
                 .cause(new IllegalArgumentException("The input data is invalid"))
                 .haltError())
             .isInstanceOf(HaltException.class)
             .matches(e -> hasStatus(e, 400))
-            .matches(e -> bodyHasErrorDetail(e, new ErrorResponder.ErrorDetail(400, "", "", "The input data is invalid")));
+            .matches(e -> bodyHasErrorDetail(e, new ErrorResponder.ErrorDetail(400, "InvalidArgument", "Error", Optional.of("The input data is invalid"))));
     }
 
     @Test
@@ -91,7 +118,7 @@ public class ErrorResponderTest {
             .haltError())
             .isInstanceOf(HaltException.class)
             .matches(e -> hasStatus(e, 400))
-            .matches(e -> bodyHasErrorDetail(e, new ErrorResponder.ErrorDetail(400, "InvalidArgument", "Error", "The input data is invalid")));
+            .matches(e -> bodyHasErrorDetail(e, new ErrorResponder.ErrorDetail(400, "InvalidArgument", "Error", Optional.of("The input data is invalid"))));
     }
 
     private boolean hasStatus(Throwable throwable, int status) {
@@ -106,7 +133,7 @@ public class ErrorResponderTest {
             jsonPath.read("$.statusCode"),
             jsonPath.read("$.type"),
             jsonPath.read("$.message"),
-            jsonPath.read("$.cause")));
+            Optional.ofNullable(jsonPath.read("$.cause"))));
     }
 
 }

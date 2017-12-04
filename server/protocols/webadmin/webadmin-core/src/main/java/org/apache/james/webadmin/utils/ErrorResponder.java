@@ -48,14 +48,12 @@ public class ErrorResponder {
     }
 
     private Integer statusCode;
-    private Optional<ErrorType> type;
-    private Optional<String> message;
+    private ErrorType type;
+    private String message;
     private Optional<Exception> cause;
 
     public ErrorResponder() {
         cause = Optional.empty();
-        type = Optional.empty();
-        message = Optional.empty();
     }
 
     public static ErrorResponder builder() {
@@ -68,12 +66,12 @@ public class ErrorResponder {
     }
 
     public ErrorResponder type(ErrorType type) {
-        this.type = Optional.of(type);
+        this.type = type;
         return this;
     }
 
     public ErrorResponder message(String message) {
-        this.message = Optional.of(message);
+        this.message = message;
         return this;
     }
 
@@ -84,11 +82,13 @@ public class ErrorResponder {
 
     public HaltException haltError() {
         Preconditions.checkNotNull(statusCode, "statusCode must not be null in case of error");
+        Preconditions.checkNotNull(type, "type must not be null in case of error");
+        Preconditions.checkNotNull(message, "message must not be null in case of error");
         try {
             return halt(statusCode, new JsonTransformer().render(new ErrorDetail(statusCode,
-                type.map(type -> type.getType()).orElse(""),
-                message.orElse(""),
-                cause.map(e -> e.getMessage()).orElse(""))));
+                type.getType(),
+                message,
+                cause.map(e -> Optional.of(e.getMessage())).orElse(Optional.empty()))));
         } catch (JsonProcessingException e) {
             return halt(statusCode);
         }
@@ -98,10 +98,10 @@ public class ErrorResponder {
         private final int statusCode;
         private final String type;
         private final String message;
-        private final String cause;
+        private final Optional<String> cause;
 
         @VisibleForTesting
-        ErrorDetail(int statusCode, String type, String message, String cause) {
+        ErrorDetail(int statusCode, String type, String message, Optional<String> cause) {
             this.statusCode = statusCode;
             this.type = type;
             this.message = message;
@@ -120,7 +120,7 @@ public class ErrorResponder {
             return message;
         }
 
-        public String getCause() {
+        public Optional<String> getCause() {
             return cause;
         }
 
