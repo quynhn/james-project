@@ -147,7 +147,7 @@ public class CassandraMigrationRoutesTest {
         when(schemaVersionDAO.getCurrentSchemaVersion()).thenReturn(CompletableFuture.completedFuture(Optional.of(OLDER_VERSION)));
 
         Map<String, Object> errors = given()
-            .body(String.valueOf("NonInt"))
+            .body("NonInt")
         .with()
             .post("/upgrade")
         .then()
@@ -192,7 +192,7 @@ public class CassandraMigrationRoutesTest {
         .with()
             .post("/upgrade")
         .then()
-            .statusCode(HttpStatus.GONE_410)
+            .statusCode(HttpStatus.CONFLICT_409)
             .contentType(ContentType.JSON)
             .extract()
             .body()
@@ -200,7 +200,7 @@ public class CassandraMigrationRoutesTest {
             .getMap(".");
 
         assertThat(errors)
-            .containsEntry("statusCode", HttpStatus.GONE_410)
+            .containsEntry("statusCode", HttpStatus.CONFLICT_409)
             .containsEntry("type", "WrongState")
             .containsEntry("message", "The migration requested can not be performed")
             .containsEntry("cause", "Current version is already up to date");
@@ -231,7 +231,7 @@ public class CassandraMigrationRoutesTest {
         Map<String, Object> errors = when()
             .post("/upgrade/latest")
         .then()
-            .statusCode(HttpStatus.GONE_410)
+            .statusCode(HttpStatus.CONFLICT_409)
             .contentType(ContentType.JSON)
             .extract()
             .body()
@@ -239,7 +239,7 @@ public class CassandraMigrationRoutesTest {
             .getMap(".");
 
         assertThat(errors)
-            .containsEntry("statusCode", HttpStatus.GONE_410)
+            .containsEntry("statusCode", HttpStatus.CONFLICT_409)
             .containsEntry("type", "WrongState")
             .containsEntry("message", "The migration requested can not be performed")
             .containsEntry("cause", "Current version is already up to date");
