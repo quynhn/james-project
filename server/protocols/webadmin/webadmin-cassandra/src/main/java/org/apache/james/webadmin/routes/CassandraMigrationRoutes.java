@@ -43,7 +43,6 @@ public class CassandraMigrationRoutes implements Routes {
     private static final String VERSION_BASE_LATEST = VERSION_BASE + "/latest";
     private static final String VERSION_UPGRADE_BASE = VERSION_BASE + "/upgrade";
     private static final String VERSION_UPGRADE_TO_LATEST_BASE = VERSION_UPGRADE_BASE + "/latest";
-    private static final int NO_CONTENT = 204;
 
     private final CassandraMigrationService cassandraMigrationService;
     private final JsonTransformer jsonTransformer;
@@ -69,7 +68,7 @@ public class CassandraMigrationRoutes implements Routes {
             try {
                 CassandraVersionRequest cassandraVersionRequest = CassandraVersionRequest.parse(request.body());
                 cassandraMigrationService.upgradeToVersion(cassandraVersionRequest.getValue());
-                response.status(NO_CONTENT);
+                response.status(HttpStatus.NO_CONTENT_204);
             } catch (NullPointerException | IllegalArgumentException e) {
                 LOGGER.info("Invalid request for version upgrade");
                 throw ErrorResponder.builder()
