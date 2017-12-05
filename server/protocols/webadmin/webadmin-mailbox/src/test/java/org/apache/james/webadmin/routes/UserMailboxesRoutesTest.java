@@ -473,7 +473,7 @@ public class UserMailboxesRoutesTest {
                 .put()
             .then()
                 .statusCode(HttpStatus.NOT_FOUND_404)
-                .body(containsString("HttpStatus.NOT_FOUND_404 Not found"));
+                .body(containsString(HttpStatus.NOT_FOUND_404 + " Not found"));
         }
 
         @Test
@@ -482,7 +482,7 @@ public class UserMailboxesRoutesTest {
                 .put(SEPARATOR)
             .then()
                 .statusCode(HttpStatus.NOT_FOUND_404)
-                .body(containsString("HttpStatus.NOT_FOUND_404 Not found"));
+                .body(containsString(HttpStatus.NOT_FOUND_404 + " Not found"));
         }
 
         @Test
