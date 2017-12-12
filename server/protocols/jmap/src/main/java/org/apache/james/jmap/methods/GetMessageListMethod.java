@@ -34,6 +34,7 @@ import org.apache.james.jmap.model.FilterCondition;
 import org.apache.james.jmap.model.GetMessageListRequest;
 import org.apache.james.jmap.model.GetMessageListResponse;
 import org.apache.james.jmap.model.GetMessagesRequest;
+import org.apache.james.jmap.model.Number;
 import org.apache.james.jmap.utils.FilterToSearchQuery;
 import org.apache.james.jmap.utils.SortConverter;
 import org.apache.james.mailbox.MailboxManager;
@@ -126,9 +127,9 @@ public class GetMessageListMethod implements Method {
             MultimailboxesSearchQuery searchQuery = convertToSearchQuery(messageListRequest);
             mailboxManager.search(searchQuery,
                 mailboxSession,
-                messageListRequest.getLimit().orElse(maximumLimit) + messageListRequest.getPosition().orElse(DEFAULT_POSITION))
+                messageListRequest.getLimit().map(Number::asInt).orElse(maximumLimit) + messageListRequest.getPosition().map(Number::asLong).orElse(DEFAULT_POSITION))
                 .stream()
-                .skip(messageListRequest.getPosition().orElse(DEFAULT_POSITION))
+                .skip(messageListRequest.getPosition().map(Number::asLong).orElse(DEFAULT_POSITION))
                 .forEach(builder::messageId);
             return builder.build();
         } catch (MailboxException e) {
