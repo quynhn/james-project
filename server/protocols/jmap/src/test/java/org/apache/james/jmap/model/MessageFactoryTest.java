@@ -83,7 +83,7 @@ public class MessageFactoryTest {
         Message testee = messageFactory.fromMetaDataWithContent(testMail);
         assertThat(testee)
             .extracting(Message::getPreview, Message::getSize, Message::getSubject, Message::getHeaders, Message::getDate)
-            .containsExactly("(Empty)", 0L, "", ImmutableMap.of("MIME-Version", "1.0"), INTERNAL_DATE);
+            .containsExactly("(Empty)", Number.ZERO, "", ImmutableMap.of("MIME-Version", "1.0"), INTERNAL_DATE);
     }
 
     @Test
@@ -550,7 +550,7 @@ public class MessageFactoryTest {
         Message testee = messageFactory.fromMetaDataWithContent(testMail);
         assertThat(testee)
             .extracting(Message::getPreview, Message::getSize, Message::getSubject, Message::getHeaders, Message::getDate)
-            .containsExactly("(Empty)", 1010L, "", ImmutableMap.of("MIME-Version", "1.0"), INTERNAL_DATE);
+            .containsExactly("(Empty)", Number.lenientFactory().fromLong(1010L), "", ImmutableMap.of("MIME-Version", "1.0"), INTERNAL_DATE);
     }
 
     @Test
