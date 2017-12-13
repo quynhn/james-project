@@ -31,14 +31,14 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 public class NumberTest {
     @Test
     public void fromIntShouldReturnMinValueWhenNegativeValueWithLenient() throws Exception {
-        assertThat(Number.lenientFactory().fromInt(-1).asInt())
-            .isEqualTo(0);
+        assertThat(Number.lenientFactory().fromInt(-1))
+            .isEqualTo(Number.ZERO);
     }
 
     @Test
     public void fromLongShouldReturnMinValueWhenNegativeValueWithLenient() throws Exception {
-        assertThat(Number.lenientFactory().fromLong(-1).asLong())
-            .isEqualTo(0);
+        assertThat(Number.lenientFactory().fromLong(-1))
+            .isEqualTo(Number.ZERO);
     }
 
     @Test
