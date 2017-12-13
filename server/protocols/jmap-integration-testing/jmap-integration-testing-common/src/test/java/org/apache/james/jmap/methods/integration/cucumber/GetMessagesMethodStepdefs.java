@@ -333,6 +333,11 @@ public class GetMessagesMethodStepdefs {
         userStepdefs.execWithUser(username, () -> appendMessage(messageName, mailbox, "eml/inlinedWithoutContentDisposition.eml"));
     }
 
+    @Given("^\"([^\"]*)\" has a message \"([^\"]*)\" in the \"([^\"]*)\" mailbox with image inlined attachments$")
+    public void test1(String username, String messageName, String mailbox) throws Exception {
+        userStepdefs.execWithUser(username, () -> appendMessage(messageName, mailbox, "eml/Photos_LinTo.eml"));
+    }
+
     @Given("^\"([^\"]*)\" has a message \"([^\"]*)\" in \"([^\"]*)\" mailbox with specific charset$")
     public void appendMessageWithSpecificCharset(String username, String messageName, String mailbox) throws Throwable {
         userStepdefs.execWithUser(username, () -> appendMessageWithSpecificCharset(messageName, mailbox));

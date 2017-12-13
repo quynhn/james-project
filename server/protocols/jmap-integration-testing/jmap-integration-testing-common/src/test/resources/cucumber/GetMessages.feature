@@ -408,3 +408,17 @@ Feature: GetMessages method
       |cid      |null                          |
       |name     |"encrypted.asc"               |
       |isInline |true                          |
+
+  Scenario: Testing
+    Given "alice@domain.tld" has a message "m1" in the "INBOX" mailbox with image inlined attachments
+    When "alice@domain.tld" ask for messages "m1"
+    Then no error is returned
+    And the list should contain 1 message
+    And the hasAttachment of the message is "true"
+    And the list of attachments of the message contains 12 attachments
+    And the first attachment is:
+    |key      | value                        |
+    |type     |"image/jpeg"    |
+    |cid      |null                          |
+    |name     |"IMG_6112.JPG"               |
+    |isInline |true                          |
