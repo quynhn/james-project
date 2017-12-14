@@ -18,10 +18,7 @@
  ****************************************************************/
 package org.apache.james.transport.mailets;
 
-import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Optional;
 
 import javax.mail.internet.MimeMessage;
 
@@ -32,10 +29,9 @@ import org.apache.james.mailets.configuration.CommonProcessors;
 import org.apache.james.mailets.configuration.MailetConfiguration;
 import org.apache.james.mailets.configuration.MailetContainer;
 import org.apache.james.mailets.configuration.ProcessorConfiguration;
-import org.apache.james.transport.mailets.amqp.AmqpRule;
 import org.apache.james.transport.matchers.All;
 import org.apache.james.transport.matchers.RecipientIsLocal;
-import org.apache.james.transport.matchers.SMTPAuthSuccessful;
+import org.apache.james.util.scanner.SpamAssassinInvoker;
 import org.apache.james.util.streams.ContainerNames;
 import org.apache.james.util.streams.SwarmGenericContainer;
 import org.apache.james.utils.DataProbeImpl;
@@ -52,33 +48,32 @@ import org.junit.rules.TemporaryFolder;
 
 import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
+import com.jayway.awaitility.core.ConditionFactory;
 
-public class ContactExtractorTest {
+public class SpamAssassinTest {
+    private static final String LOCALHOST_IP = "127.0.0.1";
+    private static final int IMAP_PORT = 1143;
+    private static final int SMTP_PORT = 1025;
 
     public static final String JAMES_ORG = "james.org";
     public static final String SENDER = "sender@" + JAMES_ORG;
     public static final String TO = "to@" + JAMES_ORG;
-    public static final String TO2 = "to2@" + JAMES_ORG;
-    public static final String CC = "cc@" + JAMES_ORG;
-    public static final String CC2 = "cc2@" + JAMES_ORG;
-    public static final String BCC = "bcc@" + JAMES_ORG;
-    public static final String BCC2 = "bcc2@" + JAMES_ORG;
     public static final String PASSWORD = "secret";
-    public static final String EXCHANGE = "collector:email";
-    public static final String ROUTING_KEY = "";
 
-    public SwarmGenericContainer rabbit = new SwarmGenericContainer(ContainerNames.RABBITMQ);
-    public AmqpRule amqpRule = new AmqpRule(rabbit, EXCHANGE, ROUTING_KEY);
-    public TemporaryFolder folder = new TemporaryFolder();
+    public SwarmGenericContainer spamAssassinContainer = new SwarmGenericContainer(ContainerNames.SPAMASSASSIN)
+        .portBinding(783, 783)
+        .withAffinityToContainer();
+
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Rule
-    public RuleChain chain = RuleChain.outerRule(rabbit).around(amqpRule).around(folder);
+    public final RuleChain chain = RuleChain.outerRule(temporaryFolder).around(spamAssassinContainer);
 
     private TemporaryJamesServer jamesServer;
+    private ConditionFactory calmlyAwait;
 
     @Before
     public void setup() throws Exception {
-        String attribute = "ExtractedContacts";
         MailetContainer mailets = MailetContainer
             .builder()
             .threads(5)
@@ -89,16 +84,9 @@ public class ContactExtractorTest {
                 ProcessorConfiguration.builder()
                     .state("transport")
                     .addMailet(MailetConfiguration.builder()
-                        .matcher(SMTPAuthSuccessful.class)
-                        .mailet(ContactExtractor.class)
-                        .addProperty(ContactExtractor.Configuration.ATTRIBUTE, attribute)
-                        .build())
-                    .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
-                        .mailet(AmqpForwardAttribute.class)
-                        .addProperty(AmqpForwardAttribute.URI_PARAMETER_NAME, amqpRule.getAmqpUri())
-                        .addProperty(AmqpForwardAttribute.EXCHANGE_PARAMETER_NAME, EXCHANGE)
-                        .addProperty(AmqpForwardAttribute.ATTRIBUTE_PARAMETER_NAME, attribute)
+                        .mailet(SpamAssassin.class)
+                        .addProperty(SpamAssassin.SPAMD_HOST, spamAssassinContainer.getContainerIp())
                         .build())
                     .addMailet(MailetConfiguration.builder()
                         .matcher(All.class)
@@ -115,16 +103,14 @@ public class ContactExtractorTest {
                         .build())
                     .build())
             .build();
-        jamesServer = TemporaryJamesServer.builder().build(folder, mailets);
+        jamesServer = TemporaryJamesServer.builder().build(temporaryFolder, mailets);
+        Duration slowPacedPollInterval = Duration.FIVE_HUNDRED_MILLISECONDS;
+        calmlyAwait = Awaitility.with().pollInterval(slowPacedPollInterval).and().with().pollDelay(slowPacedPollInterval).await();
+
         DataProbeImpl probe = jamesServer.getProbe(DataProbeImpl.class);
         probe.addDomain(JAMES_ORG);
         probe.addUser(SENDER, PASSWORD);
         probe.addUser(TO, PASSWORD);
-        probe.addUser(TO2, PASSWORD);
-        probe.addUser(CC, PASSWORD);
-        probe.addUser(CC2, PASSWORD);
-        probe.addUser(BCC, PASSWORD);
-        probe.addUser(BCC2, PASSWORD);
     }
 
     @After
@@ -133,35 +119,31 @@ public class ContactExtractorTest {
     }
 
     @Test
-    public void recipientsShouldBePublishedToAmqpWhenSendingEmail() throws Exception {
+    public void test() throws Exception {
         MimeMessage message = MimeMessageBuilder.mimeMessageBuilder()
             .setSender(SENDER)
-            .addToRecipient(TO, "John To2 <" + TO2 + ">")
-            .addCcRecipient(CC, "John Cc2 <" + CC2 + ">")
-            .addBccRecipient(BCC, "John Bcc2 <" + BCC2 + ">")
-            .setSubject("Contact collection Rocks")
-            .setText("This is my email")
+            .addToRecipient(TO)
+            .setSubject("This is the subject")
+            .setText("This is -SPAM- my email")
             .build();
         FakeMail mail = FakeMail.builder()
             .mimeMessage(message)
             .sender(new MailAddress(SENDER))
-            .recipients(new MailAddress(TO), new MailAddress(TO2), new MailAddress(CC), new MailAddress(CC2), new MailAddress(BCC), new MailAddress(BCC2))
+            .recipients(new MailAddress(TO))
             .build();
-        try (SMTPMessageSender messageSender = SMTPMessageSender.authentication("localhost", 1025, JAMES_ORG, SENDER, PASSWORD);
-                IMAPMessageReader imap = new IMAPMessageReader("localhost", 1143)) {
+
+        try (SMTPMessageSender messageSender = SMTPMessageSender.noAuthentication(LOCALHOST_IP, SMTP_PORT, JAMES_ORG);
+             IMAPMessageReader imapMessageReader = new IMAPMessageReader(LOCALHOST_IP, IMAP_PORT)) {
 
             messageSender.sendMessage(mail);
-            Awaitility.await().pollDelay(Duration.FIVE_HUNDRED_MILLISECONDS)
-                .atMost(Duration.ONE_MINUTE)
-                .until(() -> imap.userReceivedMessage(TO, PASSWORD));
 
-            Optional<String> actual = amqpRule.readContent();
-            assertThat(actual).isNotEmpty();
-            assertThatJson(actual.get()).isEqualTo("{"
-                    + "\"userEmail\" : \"sender@james.org\", "
-                    + "\"emails\" : [ \"to@james.org\", \"John To2 <to2@james.org>\", \"cc@james.org\", \"John Cc2 <cc2@james.org>\", \"bcc@james.org\", \"John Bcc2 <bcc2@james.org>\" ]"
-                    + "}");
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(messageSender::messageHasBeenSent);
+            calmlyAwait.atMost(Duration.ONE_MINUTE).until(() -> imapMessageReader.userReceivedMessage(TO, PASSWORD));
+            String processedMessage = imapMessageReader.readFirstMessageHeadersInInbox(TO, PASSWORD);
+
+            assertThat(processedMessage).contains(SpamAssassinInvoker.FLAG_MAIL_ATTRIBUTE_NAME);
         }
+
     }
 
 }
