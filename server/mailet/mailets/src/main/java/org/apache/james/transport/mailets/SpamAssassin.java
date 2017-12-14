@@ -22,6 +22,7 @@ package org.apache.james.transport.mailets;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.james.transport.mailets.managesieve.ManageSieveMailet;
 import org.apache.james.util.scanner.SpamAssassinInvoker;
 import org.apache.mailet.Experimental;
@@ -29,6 +30,8 @@ import org.apache.mailet.Mail;
 import org.apache.mailet.base.GenericMailet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Sends the message through daemonized SpamAssassin (spamd), visit <a
@@ -57,6 +60,10 @@ import org.slf4j.LoggerFactory;
 @Experimental
 public class SpamAssassin extends GenericMailet {
     private static final Logger LOGGER = LoggerFactory.getLogger(ManageSieveMailet.class);
+    public static final String SPAMD_HOST = "spamdHost";
+    public static final String SPAMD_PORT = "spamdPort";
+    public static final String DEFAULT_HOST = "127.0.0.1";
+    public static final int DEFAULT_PORT = 783;
 
     String spamdHost;
     int spamdPort;
@@ -65,18 +72,18 @@ public class SpamAssassin extends GenericMailet {
      * @see org.apache.mailet.base.GenericMailet#init()
      */
     public void init() throws MessagingException {
-        spamdHost = getInitParameter("spamdHost");
-        if (spamdHost == null || spamdHost.equals("")) {
-            spamdHost = "127.0.0.1";
+        spamdHost = getInitParameter(SPAMD_HOST);
+        if (StringUtils.isEmpty(spamdHost)) {
+            spamdHost = DEFAULT_HOST;
         }
 
-        String port = getInitParameter("spamdPort");
-        if (port == null || port.equals("")) {
-            spamdPort = 783;
+        String port = getInitParameter(SPAMD_PORT);
+        if (StringUtils.isEmpty(port)) {
+            spamdPort = DEFAULT_PORT;
         } else {
 
             try {
-                spamdPort = Integer.parseInt(getInitParameter("spamdPort"));
+                spamdPort = Integer.parseInt(port);
             } catch (NumberFormatException e) {
                 throw new MessagingException("Please configure a valid port. Not valid: " + spamdPort);
             }
@@ -111,5 +118,15 @@ public class SpamAssassin extends GenericMailet {
      */
     public String getMailetInfo() {
         return "Checks message against SpamAssassin";
+    }
+
+    @VisibleForTesting
+    String getSpamdHost() {
+        return spamdHost;
+    }
+
+    @VisibleForTesting
+    int getSpamdPort() {
+        return spamdPort;
     }
 }
