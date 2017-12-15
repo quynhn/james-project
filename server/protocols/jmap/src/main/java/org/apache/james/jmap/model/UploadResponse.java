@@ -61,7 +61,7 @@ public class UploadResponse {
         }
 
         public Builder size(long size) {
-            this.size = Number.lenientFactory().fromLong(size);
+            this.size = Number.fromOutboundLong(size);
             return this;
         }
 

@@ -69,7 +69,7 @@ public class Attachment {
         }
 
         public Builder size(long size) {
-            this.size = Number.strictFactory().fromLong(size);
+            this.size = Number.fromLong(size);
             return this;
         }
 
@@ -90,12 +90,12 @@ public class Attachment {
         }
 
         public Builder width(long width) {
-            this.width = Number.strictFactory().fromLong(width);
+            this.width = Number.fromLong(width);
             return this;
         }
 
         public Builder height(long height) {
-            this.height = Number.strictFactory().fromLong(height);
+            this.height = Number.fromLong(height);
             return this;
         }
 
