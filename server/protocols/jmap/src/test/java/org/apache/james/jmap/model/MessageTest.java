@@ -101,7 +101,7 @@ public class MessageTest {
     @Test
     public void buildShouldWorkWhenMandatoryFieldsArePresent() {
         Instant currentDate = Instant.now();
-        Number messageSize = Number.strictFactory().fromLong(123);
+        Number messageSize = Number.fromLong(123);
         Message expected = new Message(TestMessageId.of(1), BlobId.of("blobId"), "threadId", ImmutableList.of(InMemoryId.of(456)), Optional.empty(), false, ImmutableMap.of("key", "value"), Optional.empty(),
                 ImmutableList.of(), ImmutableList.of(), ImmutableList.of(), ImmutableList.of(), "subject", currentDate, messageSize, "preview", Optional.empty(), Optional.empty(),
                 ImmutableList.of(), ImmutableMap.of(), Keywords.DEFAULT_VALUE);
@@ -164,7 +164,7 @@ public class MessageTest {
         Keywords keywords = Keywords.factory()
             .from(Keyword.DRAFT, Keyword.ANSWERED, Keyword.FLAGGED);
 
-        Number messageSize = Number.strictFactory().fromLong(123);
+        Number messageSize = Number.fromLong(123);
         Message expected = new Message(
             TestMessageId.of(1),
             BlobId.of("blobId"),

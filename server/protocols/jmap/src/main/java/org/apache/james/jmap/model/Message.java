@@ -163,7 +163,7 @@ public class Message {
         }
 
         public Builder size(long size) {
-            this.size = Number.lenientFactory().fromLong(size);
+            this.size = Number.fromOutboundLong(size);
             return this;
         }
 
