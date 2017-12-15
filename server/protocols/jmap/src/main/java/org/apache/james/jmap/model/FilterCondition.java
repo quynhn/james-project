@@ -118,12 +118,12 @@ public class FilterCondition implements Filter {
         }
 
         public Builder minSize(int minSize) {
-            this.minSize = Number.strictFactory().fromInt(minSize);
+            this.minSize = Number.fromInt(minSize);
             return this;
         }
 
         public Builder maxSize(int maxSize) {
-            this.maxSize = Number.strictFactory().fromInt(maxSize);
+            this.maxSize = Number.fromInt(maxSize);
             return this;
         }
 
