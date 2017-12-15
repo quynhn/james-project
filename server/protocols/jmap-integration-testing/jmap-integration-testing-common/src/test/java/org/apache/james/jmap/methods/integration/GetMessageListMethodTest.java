@@ -1905,7 +1905,7 @@ public abstract class GetMessageListMethodTest {
     public void getMessageListShouldAcceptLessThan2Pow53NumberForPosition() throws Exception {
         given()
             .header("Authorization", aliceAccessToken.serialize())
-            .body("[[\"getMessageList\", {\"position\":" + Number.MAX_LONG_VALUE + "}, \"#0\"]]")
+            .body("[[\"getMessageList\", {\"position\":" + Number.MAX_VALUE + "}, \"#0\"]]")
         .when()
             .post("/jmap")
         .then()
@@ -1917,7 +1917,7 @@ public abstract class GetMessageListMethodTest {
     public void getMessageListShouldErrorWhenPositionOver2Pow53() throws Exception {
         given()
             .header("Authorization", aliceAccessToken.serialize())
-            .body("[[\"getMessageList\", {\"position\":" + Number.MAX_LONG_VALUE + 1 + "}, \"#0\"]]")
+            .body("[[\"getMessageList\", {\"position\":" + Number.MAX_VALUE + 1 + "}, \"#0\"]]")
         .when()
             .post("/jmap")
         .then()

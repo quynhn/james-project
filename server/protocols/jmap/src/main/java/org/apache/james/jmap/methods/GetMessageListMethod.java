@@ -125,11 +125,12 @@ public class GetMessageListMethod implements Method {
         GetMessageListResponse.Builder builder = GetMessageListResponse.builder();
         try {
             MultimailboxesSearchQuery searchQuery = convertToSearchQuery(messageListRequest);
+            Long postionValue = messageListRequest.getPosition().map(Number::asLong).orElse(DEFAULT_POSITION);
             mailboxManager.search(searchQuery,
                 mailboxSession,
-                messageListRequest.getLimit().map(Number::asInt).orElse(maximumLimit) + messageListRequest.getPosition().map(Number::asLong).orElse(DEFAULT_POSITION))
+                postionValue + messageListRequest.getLimit().map(Number::asInt).orElse(maximumLimit))
                 .stream()
-                .skip(messageListRequest.getPosition().map(Number::asLong).orElse(DEFAULT_POSITION))
+                .skip(postionValue)
                 .forEach(builder::messageId);
             return builder.build();
         } catch (MailboxException e) {
