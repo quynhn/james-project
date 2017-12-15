@@ -35,57 +35,40 @@ public class Number {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(Number.class);
 
-    public interface Factory {
-        Number fromInt(int value);
-        Number fromLong(long value);
+    public static Number fromInt(int value) {
+        Preconditions.checkState(value >= ZERO_VALUE,
+            "value should be positive and less than 2^31 or empty");
+        return new Number(value);
     }
 
-    public static class StrictFactory implements Factory {
-        public Number fromInt(int value) {
-            Preconditions.checkState(value >= ZERO_VALUE,
-                "value should be positive and less than 2^31 or empty");
-            return new Number(value);
-        }
-
-        public Number fromLong(long value) {
-            Preconditions.checkState(value >= ZERO_VALUE && value <= MAX_LONG_VALUE,
-                "value should be positive and less than 2^53 or empty");
-            return new Number(value);
-        }
+    public static Number fromLong(long value) {
+        Preconditions.checkState(value >= ZERO_VALUE && value <= MAX_VALUE,
+            "value should be positive and less than 2^53 or empty");
+        return new Number(value);
     }
 
-    public static class LenientFactory implements Factory {
-        public Number fromInt(int value) {
-            if (value < ZERO_VALUE) {
-                LOGGER.warn("Received a negative Number");
-                return new Number(ZERO_VALUE);
-            }
-            return new Number(value);
+    public static Number fromOutboundInt(int value) {
+        if (value < ZERO_VALUE) {
+            LOGGER.warn("Received a negative Number");
+            return new Number(ZERO_VALUE);
         }
-
-        public Number fromLong(long value) {
-            if (value < ZERO_VALUE) {
-                LOGGER.warn("Received a negative Number");
-                return new Number(ZERO_VALUE);
-            }
-            if (value > MAX_LONG_VALUE) {
-                LOGGER.warn("Received a too big Number");
-                return new Number(MAX_LONG_VALUE);
-            }
-            return new Number(value);
-        }
+        return new Number(value);
     }
 
-    public static Factory lenientFactory() {
-        return new LenientFactory();
-    }
-
-    public static Factory strictFactory() {
-        return new StrictFactory();
+    public static Number fromOutboundLong(long value) {
+        if (value < ZERO_VALUE) {
+            LOGGER.warn("Received a negative Number");
+            return new Number(ZERO_VALUE);
+        }
+        if (value > MAX_VALUE) {
+            LOGGER.warn("Received a too big Number");
+            return new Number(MAX_VALUE);
+        }
+        return new Number(value);
     }
 
     private static final int ZERO_VALUE = 0;
-    public static final long MAX_LONG_VALUE = LongMath.pow(2, 53);
+    public static final long MAX_VALUE = LongMath.pow(2, 53);
     public static final Number ZERO = new Number(ZERO_VALUE);
 
     private final long value;

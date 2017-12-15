@@ -24,73 +24,69 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 
-import com.google.common.math.LongMath;
-
-import nl.jqno.equalsverifier.EqualsVerifier;
-
 public class NumberTest {
     @Test
     public void fromIntShouldReturnMinValueWhenNegativeValueWithLenient() throws Exception {
-        assertThat(Number.lenientFactory().fromInt(-1))
+        assertThat(Number.fromOutboundLong(-1))
             .isEqualTo(Number.ZERO);
     }
 
     @Test
     public void fromLongShouldReturnMinValueWhenNegativeValueWithLenient() throws Exception {
-        assertThat(Number.lenientFactory().fromLong(-1))
+        assertThat(Number.fromOutboundLong(-1))
             .isEqualTo(Number.ZERO);
     }
 
     @Test
     public void fromIntShouldThrowWhenNegativeValueWithStrict() throws Exception {
         assertThatThrownBy(() ->
-            Number.strictFactory().fromInt(-1))
+            Number.fromInt(-1))
             .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     public void fromIntShouldReturnIntegerValue() throws Exception {
-        assertThat(Number.strictFactory().fromInt(1).asLong())
+        assertThat(Number.fromInt(1).asLong())
             .isEqualTo(1);
     }
 
     @Test
     public void fromLongShouldThrowWhenNegativeValue() throws Exception {
         assertThatThrownBy(() ->
-            Number.strictFactory().fromLong(-1))
+            Number.fromLong(-1))
             .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     public void fromLongShouldThrowWhenOver2Pow53Value() throws Exception {
         assertThatThrownBy(() ->
-            Number.strictFactory().fromLong(Number.MAX_LONG_VALUE + 1))
+            Number.fromLong(Number.MAX_VALUE + 1))
             .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     public void fromLongShouldReturnLongValue() throws Exception {
-        assertThat(Number.strictFactory().fromLong(1).asLong())
+        assertThat(Number.fromLong(1).asLong())
             .isEqualTo(1);
     }
 
     @Test
     public void ensureLessThanShouldThrowWhenOverSpecifiedValue() throws Exception {
         assertThatThrownBy(() ->
-            Number.strictFactory().fromInt(11).ensureLessThan(10))
+            Number.fromInt(11).ensureLessThan(10))
             .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     public void ensureLessThanShouldReturnNumberWhenEqualValue() throws Exception {
-        Number number = Number.strictFactory().fromInt(10);
+        Number number = Number.fromInt(10);
         assertThat(number.ensureLessThan(10))
             .isEqualTo(number);
     }
 
     @Test
     public void ensureLessThanShouldReturnNumberWhenLessThanMaxValue() throws Exception {
-        Number number = Number.strictFactory().fromInt(10);
+        Number number = Number.fromInt(10);
         assertThat(number.ensureLessThan(11))
             .isEqualTo(number);
     }
