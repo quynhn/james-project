@@ -139,7 +139,7 @@ public class GetMailboxesMethodTest {
                 .extracting(GetMailboxesResponse.class::cast)
                 .flatExtracting(GetMailboxesResponse::getList)
                 .extracting(Mailbox::getId, Mailbox::getName, Mailbox::getUnreadMessages)
-                .containsOnly(Tuple.tuple(InMemoryId.of(1), mailboxPath.getName(), Number.lenientFactory().fromLong(2L)));
+                .containsOnly(Tuple.tuple(InMemoryId.of(1), mailboxPath.getName(), Number.fromLong(2L)));
     }
 
     @Test
@@ -306,7 +306,7 @@ public class GetMailboxesMethodTest {
                 .extracting(GetMailboxesResponse.class::cast)
                 .flatExtracting(GetMailboxesResponse::getList)
                 .extracting(Mailbox::getTotalMessages)
-                .containsExactly(Number.strictFactory().fromLong(2L));
+                .containsExactly(Number.fromLong(2L));
     }
 
     @Test
@@ -333,7 +333,7 @@ public class GetMailboxesMethodTest {
                 .extracting(GetMailboxesResponse.class::cast)
                 .flatExtracting(GetMailboxesResponse::getList)
                 .extracting(Mailbox::getUnreadMessages)
-                .containsExactly(Number.strictFactory().fromLong(2L));
+                .containsExactly(Number.fromLong(2L));
     }
 
     @Test

@@ -139,22 +139,22 @@ public class Mailbox {
         }
 
         public Builder totalMessages(long totalMessages) {
-            this.totalMessages = Optional.of(Number.lenientFactory().fromLong(totalMessages));
+            this.totalMessages = Optional.of(Number.fromOutboundLong(totalMessages));
             return this;
         }
 
         public Builder unreadMessages(long unreadMessages) {
-            this.unreadMessages = Optional.of(Number.lenientFactory().fromLong(unreadMessages));
+            this.unreadMessages = Optional.of(Number.fromOutboundLong(unreadMessages));
             return this;
         }
 
         public Builder totalThreads(long totalThreads) {
-            this.totalThreads = Optional.of(Number.lenientFactory().fromLong(totalThreads));
+            this.totalThreads = Optional.of(Number.fromOutboundLong(totalThreads));
             return this;
         }
 
         public Builder unreadThreads(long unreadThreads) {
-            this.unreadThreads = Optional.of(Number.lenientFactory().fromLong(unreadThreads));
+            this.unreadThreads = Optional.of(Number.fromOutboundLong(unreadThreads));
             return this;
         }
 

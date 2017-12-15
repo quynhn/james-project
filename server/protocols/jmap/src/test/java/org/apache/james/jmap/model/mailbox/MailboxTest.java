@@ -63,10 +63,10 @@ public class MailboxTest {
 
     @Test
     public void buildShouldWork() {
-        Number totalMessages = Number.strictFactory().fromLong(456);
-        Number unreadMessages = Number.strictFactory().fromLong(789);
-        Number totalThreads = Number.strictFactory().fromLong(741);
-        Number unreadThreads = Number.strictFactory().fromLong(852);
+        Number totalMessages = Number.fromLong(456);
+        Number unreadMessages = Number.fromLong(789);
+        Number totalThreads = Number.fromLong(741);
+        Number unreadThreads = Number.fromLong(852);
         Mailbox expectedMailbox = new Mailbox(InMemoryId.of(1), "name", Optional.of(InMemoryId.of(0)), Optional.of(Role.DRAFTS), SortOrder.of(123),
             true, true, true, true, true, true, true,
             totalMessages, unreadMessages, totalThreads, unreadThreads,
@@ -156,7 +156,7 @@ public class MailboxTest {
                 .totalMessages(1234)
                 .build();
 
-        Number expectedTotalMessages = Number.lenientFactory().fromLong(1234);
+        Number expectedTotalMessages = Number.fromLong(1234);
         assertThat(mailbox.getTotalMessages()).isEqualTo(expectedTotalMessages);
     }
 
@@ -168,7 +168,7 @@ public class MailboxTest {
             .unreadMessages(1234)
             .build();
 
-        Number expectedTotalMessages = Number.lenientFactory().fromLong(1234);
+        Number expectedTotalMessages = Number.fromLong(1234);
         assertThat(mailbox.getUnreadMessages()).isEqualTo(expectedTotalMessages);
     }
 
