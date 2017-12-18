@@ -33,7 +33,7 @@ public class NumberTest {
 
     @Test
     public void fromOutboundLongShouldSanitizeTooBigNumbers() throws Exception {
-        assertThat(Number.fromOutboundLong(Number.MAX_VALUE  + 1))
+        assertThat(Number.fromOutboundLong(Number.MAX_VALUE  + 1).asLong())
             .isEqualTo(Number.MAX_VALUE);
     }
 

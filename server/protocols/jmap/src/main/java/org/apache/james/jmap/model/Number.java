@@ -24,12 +24,10 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.math.LongMath;
-import com.google.common.primitives.Ints;
 
 public class Number {
 
@@ -72,11 +70,6 @@ public class Number {
     @JsonValue
     public long asLong() {
         return value;
-    }
-
-    @JsonIgnore
-    public int asInt() {
-        return Ints.checkedCast(value);
     }
 
     @Override
