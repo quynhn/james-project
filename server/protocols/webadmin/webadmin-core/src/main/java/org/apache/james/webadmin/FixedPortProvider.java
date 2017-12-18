@@ -19,16 +19,36 @@
 
 package org.apache.james.webadmin;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Objects;
 
-import org.junit.Test;
+import org.apache.james.util.Port;
 
-public class RandomPortTest {
+public class FixedPortProvider implements PortProvider {
 
-    @Test
-    public void toIntShouldReturnTwoTimeTheSameResult() {
-        RandomPort testee = new RandomPort();
-        assertThat(testee.toInt()).isEqualTo(testee.toInt());
+    private final int port;
+
+    public FixedPortProvider(int port) {
+        Port.assertValid(port);
+        this.port = port;
     }
 
+    @Override
+    public int toInt() {
+        return port;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (o instanceof FixedPortProvider) {
+            FixedPortProvider that = (FixedPortProvider) o;
+
+            return Objects.equals(this.port, that.port);
+        }
+        return false;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(port);
+    }
 }

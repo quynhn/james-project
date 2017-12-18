@@ -19,27 +19,39 @@
 
 package org.apache.james.webadmin;
 
-import java.io.IOException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.james.metrics.api.MetricFactory;
-import org.apache.james.webadmin.authentication.NoAuthenticationFilter;
+import org.junit.Test;
 
-import com.google.common.collect.ImmutableSet;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class WebAdminUtils {
+public class FixedPortProviderTest {
 
-    public static WebAdminConfiguration webAdminConfigurationForTesting() {
-        return WebAdminConfiguration.builder()
-            .enabled()
-            .port(new RandomPortProvider())
-            .build();
+    @Test
+    public void toIntShouldThrowOnNegativePort() {
+        assertThatThrownBy(() -> new FixedPortProvider(-1)).isInstanceOf(IllegalArgumentException.class);
     }
 
-    public static WebAdminServer createWebAdminServer(MetricFactory metricFactory, Routes... routes) throws IOException {
-        return new WebAdminServer(webAdminConfigurationForTesting(),
-            ImmutableSet.copyOf(routes),
-            new NoAuthenticationFilter(),
-            metricFactory);
+    @Test
+    public void toIntShouldThrowOnNullPort() {
+        assertThatThrownBy(() -> new FixedPortProvider(0)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void toIntShouldThrowOnTooBigNumbers() {
+        assertThatThrownBy(() -> new FixedPortProvider(65536)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void toIntShouldReturnedDesiredPort() {
+        int expectedPort = 452;
+        assertThat(new FixedPortProvider(expectedPort).toInt()).isEqualTo(expectedPort);
+    }
+
+    @Test
+    public void shouldMatchBeanContract() {
+        EqualsVerifier.forClass(FixedPortProvider.class).verify();
     }
 
 }

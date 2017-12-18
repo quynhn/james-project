@@ -123,7 +123,7 @@ public class WebAdminServer implements Configurable {
         service.awaitInitialization();
     }
 
-    public Port getPort() {
+    public PortProvider getPort() {
         return configuration.getPort();
     }
 }

@@ -19,32 +19,16 @@
 
 package org.apache.james.webadmin;
 
-import java.io.IOException;
-import java.net.ServerSocket;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.base.Throwables;
+import org.junit.Test;
 
-public class RandomPort implements Port {
+public class RandomPortProviderTest {
 
-    public static int findFreePort() {
-        try (ServerSocket socket = new ServerSocket(0)) {
-            return socket.getLocalPort();
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    private final Supplier<Integer> portSupplier;
-
-    public RandomPort() {
-        portSupplier = Suppliers.memoize(RandomPort::findFreePort);
-    }
-
-    @Override
-    public int toInt() {
-        return portSupplier.get();
+    @Test
+    public void toIntShouldReturnTwoTimeTheSameResult() {
+        RandomPortProvider testee = new RandomPortProvider();
+        assertThat(testee.toInt()).isEqualTo(testee.toInt());
     }
 
 }

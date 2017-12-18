@@ -29,7 +29,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class WebAdminConfigurationTest {
 
-    public static final FixedPort PORT = new FixedPort(80);
+    public static final FixedPortProvider PORT = new FixedPortProvider(80);
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();

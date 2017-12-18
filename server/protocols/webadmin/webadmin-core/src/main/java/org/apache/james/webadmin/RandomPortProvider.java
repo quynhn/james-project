@@ -19,8 +19,32 @@
 
 package org.apache.james.webadmin;
 
-public interface Port {
+import java.io.IOException;
+import java.net.ServerSocket;
 
-    int toInt();
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.base.Throwables;
+
+public class RandomPortProvider implements PortProvider {
+
+    public static int findFreePort() {
+        try (ServerSocket socket = new ServerSocket(0)) {
+            return socket.getLocalPort();
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private final Supplier<Integer> portSupplier;
+
+    public RandomPortProvider() {
+        portSupplier = Suppliers.memoize(RandomPortProvider::findFreePort);
+    }
+
+    @Override
+    public int toInt() {
+        return portSupplier.get();
+    }
 
 }

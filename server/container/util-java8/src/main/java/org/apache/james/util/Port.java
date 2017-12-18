@@ -17,41 +17,27 @@
  * under the License.                                           *
  ****************************************************************/
 
-package org.apache.james.webadmin;
+package org.apache.james.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import java.util.Random;
 
-import org.junit.Test;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Range;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
+public class Port {
+    public static final int MAX_PORT_VALUE = 65535;
+    public static final int PRIVILEGED_PORT_BOUND = 1024;
+    private static final Range<Integer> VALID_PORT_RANGE = Range.closed(1, MAX_PORT_VALUE);
 
-public class FixedPortTest {
-
-    @Test
-    public void toIntShouldThrowOnNegativePort() {
-        assertThatThrownBy(() -> new FixedPort(-1)).isInstanceOf(IllegalArgumentException.class);
+    public static int generateValidUnprivilegedPort() {
+        return new Random().nextInt(Port.MAX_PORT_VALUE - PRIVILEGED_PORT_BOUND) + PRIVILEGED_PORT_BOUND;
     }
 
-    @Test
-    public void toIntShouldThrowOnNullPort() {
-        assertThatThrownBy(() -> new FixedPort(0)).isInstanceOf(IllegalArgumentException.class);
+    public static void assertValid(int port) {
+        Preconditions.checkArgument(isValid(port), "Port should be between 0 and 65535");
     }
 
-    @Test
-    public void toIntShouldThrowOnTooBigNumbers() {
-        assertThatThrownBy(() -> new FixedPort(65536)).isInstanceOf(IllegalArgumentException.class);
+    public static boolean isValid(int port) {
+        return VALID_PORT_RANGE.contains(port);
     }
-
-    @Test
-    public void toIntShouldReturnedDesiredPort() {
-        int expectedPort = 452;
-        assertThat(new FixedPort(expectedPort).toInt()).isEqualTo(expectedPort);
-    }
-
-    @Test
-    public void shouldMatchBeanContract() {
-        EqualsVerifier.forClass(FixedPort.class).verify();
-    }
-
 }

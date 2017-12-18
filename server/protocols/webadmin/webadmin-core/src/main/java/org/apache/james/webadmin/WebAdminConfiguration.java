@@ -42,7 +42,7 @@ public class WebAdminConfiguration {
 
     public static class Builder {
         private Optional<Boolean> enabled = Optional.empty();
-        private Optional<Port> port = Optional.empty();
+        private Optional<PortProvider> port = Optional.empty();
         private Optional<Boolean> enableCORS = Optional.empty();
         private Optional<TlsConfiguration> tlsConfiguration = Optional.empty();
         private Optional<String> urlCORSOrigin = Optional.empty();
@@ -58,8 +58,8 @@ public class WebAdminConfiguration {
             return this;
         }
 
-        public Builder port(Port port) {
-            this.port = Optional.of(port);
+        public Builder port(PortProvider portProvider) {
+            this.port = Optional.of(portProvider);
             return this;
         }
 
@@ -111,14 +111,14 @@ public class WebAdminConfiguration {
     }
 
     private final boolean enabled;
-    private final Optional<Port> port;
+    private final Optional<PortProvider> port;
     private final Optional<TlsConfiguration> tlsConfiguration;
     private final boolean enableCORS;
     private final String urlCORSOrigin;
     private final String host;
 
     @VisibleForTesting
-    WebAdminConfiguration(boolean enabled, Optional<Port> port, Optional<TlsConfiguration> tlsConfiguration,
+    WebAdminConfiguration(boolean enabled, Optional<PortProvider> port, Optional<TlsConfiguration> tlsConfiguration,
                           boolean enableCORS, String urlCORSOrigin, String host) {
         this.enabled = enabled;
         this.port = port;
@@ -136,7 +136,7 @@ public class WebAdminConfiguration {
         return urlCORSOrigin;
     }
 
-    public Port getPort() {
+    public PortProvider getPort() {
         return port.orElseThrow(() -> new IllegalStateException("No port was specified"));
     }
 
