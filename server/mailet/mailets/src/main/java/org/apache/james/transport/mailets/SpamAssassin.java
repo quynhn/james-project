@@ -91,7 +91,7 @@ public class SpamAssassin extends GenericMailet {
         try {
             MimeMessage message = mail.getMessage();
 
-            // Invoke spamassian connection and scan the message
+            // Invoke SpamAssassin connection and scan the message
             SpamAssassinInvoker sa = new SpamAssassinInvoker(spamdHost, spamdPort);
             sa.scanMail(message);
 
