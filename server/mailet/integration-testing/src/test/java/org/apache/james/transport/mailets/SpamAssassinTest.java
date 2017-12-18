@@ -70,7 +70,7 @@ public class SpamAssassinTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Rule
-    public final RuleChain chain = RuleChain.outerRule(temporaryFolder).around(spamAssassinContainer);
+    public RuleChain chain = RuleChain.outerRule(temporaryFolder).around(spamAssassinContainer);
 
     private TemporaryJamesServer jamesServer;
     private ConditionFactory calmlyAwait;
