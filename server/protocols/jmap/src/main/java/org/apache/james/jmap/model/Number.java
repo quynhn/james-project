@@ -33,12 +33,6 @@ public class Number {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(Number.class);
 
-    public static Number fromInt(int value) {
-        Preconditions.checkState(value >= ZERO_VALUE,
-            "value should be positive and less than 2^31");
-        return new Number(value);
-    }
-
     public static Number fromLong(long value) {
         Preconditions.checkState(value >= ZERO_VALUE && value <= MAX_VALUE,
             "value should be positive and less than 2^53");
