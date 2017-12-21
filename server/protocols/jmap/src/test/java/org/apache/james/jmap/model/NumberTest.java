@@ -26,7 +26,7 @@ import org.junit.Test;
 
 public class NumberTest {
     @Test
-    public void fromLongShouldReturnMinValueWhenNegativeValueWithLenient() throws Exception {
+    public void fromOutboundLongShouldReturnMinValueWhenNegativeValue() throws Exception {
         assertThat(Number.fromOutboundLong(-1))
             .isEqualTo(Number.ZERO);
     }
