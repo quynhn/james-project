@@ -19,8 +19,14 @@
 
 package org.apache.james.webadmin;
 
-public interface PortProvider {
+import org.junit.Test;
 
-    int toInt();
+public class RandomPortSupplierTest {
+
+    @Test
+    public void toIntShouldReturnTwoTimeTheSameResult() {
+        RandomPortSupplier testee = new RandomPortSupplier();
+        assertThat(testee.toInt()).isEqualTo(testee.toInt());
+    }
 
 }

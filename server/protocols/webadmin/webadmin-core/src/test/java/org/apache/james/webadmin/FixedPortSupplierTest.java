@@ -19,39 +19,38 @@
 
 package org.apache.james.webadmin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
-public class FixedPortProviderTest {
+public class FixedPortSupplierTest {
 
     @Test
     public void toIntShouldThrowOnNegativePort() {
-        assertThatThrownBy(() -> new FixedPortProvider(-1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new FixedPortSupplier(-1)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void toIntShouldThrowOnNullPort() {
-        assertThatThrownBy(() -> new FixedPortProvider(0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new FixedPortSupplier(0)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void toIntShouldThrowOnTooBigNumbers() {
-        assertThatThrownBy(() -> new FixedPortProvider(65536)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new FixedPortSupplier(65536)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void toIntShouldReturnedDesiredPort() {
         int expectedPort = 452;
-        assertThat(new FixedPortProvider(expectedPort).toInt()).isEqualTo(expectedPort);
+        assertThat(new FixedPortSupplier(expectedPort).toInt()).isEqualTo(expectedPort);
     }
 
     @Test
     public void shouldMatchBeanContract() {
-        EqualsVerifier.forClass(FixedPortProvider.class).verify();
+        EqualsVerifier.forClass(FixedPortSupplier.class).verify();
     }
 
 }

@@ -40,4 +40,15 @@ public class Port {
     public static boolean isValid(int port) {
         return VALID_PORT_RANGE.contains(port);
     }
+
+    private final int value;
+
+    public Port(int value) {
+        assertValid(value);
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
 }

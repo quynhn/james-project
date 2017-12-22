@@ -19,36 +19,33 @@
 
 package org.apache.james.webadmin;
 
-import java.util.Objects;
+import java.io.IOException;
+import java.net.ServerSocket;
 
 import org.apache.james.util.Port;
 
-public class FixedPortProvider implements PortProvider {
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.base.Throwables;
 
-    private final int port;
+public class RandomPortSupplier implements PortSupplier {
 
-    public FixedPortProvider(int port) {
-        Port.assertValid(port);
-        this.port = port;
-    }
-
-    @Override
-    public int toInt() {
-        return port;
-    }
-
-    @Override
-    public final boolean equals(Object o) {
-        if (o instanceof FixedPortProvider) {
-            FixedPortProvider that = (FixedPortProvider) o;
-
-            return Objects.equals(this.port, that.port);
+    public static int findFreePort() {
+        try (ServerSocket socket = new ServerSocket(0)) {
+            return socket.getLocalPort();
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
-        return false;
+    }
+
+    private final Supplier<Integer> portSupplier;
+
+    public RandomPortSupplier() {
+        portSupplier = Suppliers.memoize(RandomPortSupplier::findFreePort);
     }
 
     @Override
-    public final int hashCode() {
-        return Objects.hash(port);
+    public Port get() {
+        return new Port(portSupplier.get());
     }
 }
