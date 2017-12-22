@@ -34,6 +34,7 @@
 
     <modules>
         <module>jmap-integration-testing-common</module>
+        <module>memory-jmap-integration-testing</module>
     </modules>
 
     <profiles>

@@ -19,6 +19,8 @@
 
 package org.apache.james.webadmin;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 
 public class RandomPortSupplierTest {
@@ -26,7 +28,7 @@ public class RandomPortSupplierTest {
     @Test
     public void toIntShouldReturnTwoTimeTheSameResult() {
         RandomPortSupplier testee = new RandomPortSupplier();
-        assertThat(testee.toInt()).isEqualTo(testee.toInt());
+        assertThat(testee.get().getValue()).isEqualTo(testee.get().getValue());
     }
 
 }

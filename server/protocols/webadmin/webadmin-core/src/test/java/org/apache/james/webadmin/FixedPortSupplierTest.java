@@ -19,6 +19,7 @@
 
 package org.apache.james.webadmin;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
@@ -45,7 +46,7 @@ public class FixedPortSupplierTest {
     @Test
     public void toIntShouldReturnedDesiredPort() {
         int expectedPort = 452;
-        assertThat(new FixedPortSupplier(expectedPort).toInt()).isEqualTo(expectedPort);
+        assertThat(new FixedPortSupplier(expectedPort).get().getValue()).isEqualTo(expectedPort);
     }
 
     @Test

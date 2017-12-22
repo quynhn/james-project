@@ -34,7 +34,7 @@ public class Port {
     }
 
     public static void assertValid(int port) {
-        Preconditions.checkArgument(isValid(port), "Port should be between 0 and 65535");
+        Preconditions.checkArgument(isValid(port), "Port should be between 1 and 65535");
     }
 
     public static boolean isValid(int port) {
