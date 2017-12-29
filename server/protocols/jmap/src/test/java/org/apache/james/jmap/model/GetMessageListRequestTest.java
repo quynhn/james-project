@@ -31,14 +31,14 @@ import com.google.common.collect.ImmutableList;
 
 public class GetMessageListRequestTest {
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void builderShouldThrowWhenPositionIsNegative() {
-        GetMessageListRequest.builder().position(-1L).build();
+        GetMessageListRequest.builder().position(-1L);
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void builderShouldThrowWhenLimitIsNegative() {
-        GetMessageListRequest.builder().limit(-1).build();
+        GetMessageListRequest.builder().limit(-1);
     }
 
     @Test(expected=NotImplementedException.class)
