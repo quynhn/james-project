@@ -39,7 +39,7 @@ import org.apache.james.mailbox.elasticsearch.json.MessageToElasticSearchJson;
 import org.apache.james.mailbox.elasticsearch.search.ElasticSearchSearcher;
 import org.apache.james.mailbox.exception.MailboxException;
 import org.apache.james.mailbox.model.MailboxId;
-import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageResults;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.UpdatedFlags;
 import org.apache.james.mailbox.store.mail.MessageMapperFactory;
@@ -88,26 +88,29 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
         Optional<Long> noLimit = Optional.empty();
         return searcher
                 .search(ImmutableList.of(mailbox.getMailboxId()), searchQuery, noLimit)
+                .getSearchResultStream()
                 .map(SearchResult::getMessageUid)
                 .iterator();
     }
     
     @Override
-    public List<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit)
+    public MessageResults search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit)
             throws MailboxException {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
 
         if (mailboxIds.isEmpty()) {
-            return ImmutableList.of();
+            return MessageResults.DEFAULT;
         }
 
-        return searcher.search(mailboxIds, searchQuery, Optional.empty())
+        ElasticSearchSearcher.SearchResult searchResult = searcher.search(mailboxIds, searchQuery, Optional.empty());
+
+        return new MessageResults(searchResult.getTotal(), searchResult.getSearchResultStream()
             .peek(this::logIfNoMessageId)
             .map(SearchResult::getMessageId)
             .map(Optional::get)
             .distinct()
             .limit(limit)
-            .collect(Guavate.toImmutableList());
+            .collect(Guavate.toImmutableList()));
     }
 
     @Override

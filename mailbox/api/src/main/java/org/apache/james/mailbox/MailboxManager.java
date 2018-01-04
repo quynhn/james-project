@@ -30,8 +30,8 @@ import org.apache.james.mailbox.exception.MailboxNotFoundException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
-import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageRange;
+import org.apache.james.mailbox.model.MessageResults;
 import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
 import org.apache.james.mailbox.model.search.MailboxQuery;
 
@@ -236,7 +236,7 @@ public interface MailboxManager extends RequestAware, MailboxListenerSupport, Ri
      *            the context for this call, not null
      * @throws MailboxException
      */
-    List<MessageId> search(MultimailboxesSearchQuery expression, MailboxSession session, long limit) throws MailboxException;
+    MessageResults search(MultimailboxesSearchQuery expression, MailboxSession session, long limit) throws MailboxException;
 
     /**
      * Does the given mailbox exist?

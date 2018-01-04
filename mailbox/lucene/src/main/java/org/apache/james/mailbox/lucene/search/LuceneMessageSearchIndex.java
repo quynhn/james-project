@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.mail.Flags;
@@ -50,6 +51,7 @@ import org.apache.james.mailbox.exception.UnsupportedSearchException;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageRange;
+import org.apache.james.mailbox.model.MessageResults;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.SearchQuery.AllCriterion;
 import org.apache.james.mailbox.model.SearchQuery.AttachmentCriterion;
@@ -465,20 +467,27 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
 
     @Override
-    public List<MessageId> search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
+    public MessageResults search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
+        List<MessageId> allMessageInMailboxes = searchAllMessageInMailboxes(session, mailboxIds, searchQuery).collect(Guavate.toImmutableList());
+        return new MessageResults(allMessageInMailboxes.size(),
+            allMessageInMailboxes
+                .stream()
+                .limit(Long.valueOf(limit).intValue())
+                .collect(Guavate.toImmutableList()));
+    }
+
+    private Stream<MessageId> searchAllMessageInMailboxes(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery) throws MailboxException {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
         if (mailboxIds.isEmpty()) {
-            return ImmutableList.of();
+            return Stream.of();
         }
 
         return searchMultimap(mailboxIds, searchQuery)
             .stream()
             .map(searchResult -> searchResult.getMessageId().get())
-            .filter(SearchUtil.distinct())
-            .limit(Long.valueOf(limit).intValue())
-            .collect(Guavate.toImmutableList());
+            .filter(SearchUtil.distinct());
     }
-    
+
     private List<SearchResult> searchMultimap(Collection<MailboxId> mailboxIds, SearchQuery searchQuery) throws MailboxException {
         ImmutableList.Builder<SearchResult> results = ImmutableList.builder();
         IndexSearcher searcher = null;

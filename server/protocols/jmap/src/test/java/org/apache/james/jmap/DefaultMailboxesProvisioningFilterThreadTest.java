@@ -37,8 +37,8 @@ import org.apache.james.mailbox.model.MailboxAnnotationKey;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxMetaData;
 import org.apache.james.mailbox.model.MailboxPath;
-import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageRange;
+import org.apache.james.mailbox.model.MessageResults;
 import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
 import org.apache.james.mailbox.model.TestId;
 import org.apache.james.mailbox.model.search.MailboxQuery;
@@ -270,7 +270,7 @@ public class DefaultMailboxesProvisioningFilterThreadTest {
         }
 
         @Override
-        public List<MessageId> search(MultimailboxesSearchQuery expression, MailboxSession session, long limit) throws MailboxException {
+        public MessageResults search(MultimailboxesSearchQuery expression, MailboxSession session, long limit) throws MailboxException {
             return null;
         }
 

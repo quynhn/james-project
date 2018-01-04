@@ -26,8 +26,8 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.james.backends.es.ElasticSearchConstants;
 import org.apache.james.backends.es.AliasName;
+import org.apache.james.backends.es.ElasticSearchConstants;
 import org.apache.james.backends.es.TypeName;
 import org.apache.james.backends.es.search.ScrollIterable;
 import org.apache.james.mailbox.MessageUid;
@@ -46,6 +46,9 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
+import org.elasticsearch.search.aggregations.metrics.cardinality.CardinalityBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +57,8 @@ public class ElasticSearchSearcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchSearcher.class);
     private static final TimeValue TIMEOUT = new TimeValue(60000);
     private static final int DEFAULT_SIZE = 100;
+    private static final String CARDINALITY_ARGUMENT = "agg";
+    private static final int METRIC_AGGREGATIONS = 0;
 
     private final Client client;
     private final QueryConverter queryConverter;
@@ -82,18 +87,24 @@ public class ElasticSearchSearcher {
         this.typeName = typeName;
     }
 
-    public Stream<MessageSearchIndex.SearchResult> search(Collection<MailboxId> mailboxIds, SearchQuery query,
+    public SearchResult search(Collection<MailboxId> mailboxIds, SearchQuery query,
                                                           Optional<Long> limit) throws MailboxException {
         SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder(client, mailboxIds, query, limit);
+        Cardinality cardinality = searchRequestBuilder.get()
+            .getAggregations()
+            .get(CARDINALITY_ARGUMENT);
+
         Stream<MessageSearchIndex.SearchResult> pairStream = new ScrollIterable(client, searchRequestBuilder).stream()
             .flatMap(this::transformResponseToUidStream);
 
-        return limit.map(pairStream::limit)
-            .orElse(pairStream);
+        return new SearchResult(cardinality.getValue(), limit.map(pairStream::limit)
+            .orElse(pairStream));
     }
 
     private SearchRequestBuilder getSearchRequestBuilder(Client client, Collection<MailboxId> users,
                                                          SearchQuery query, Optional<Long> limit) {
+        CardinalityBuilder aggregation = AggregationBuilders.cardinality(CARDINALITY_ARGUMENT)
+            .field(JsonMessageConstants.MESSAGE_ID);
         return query.getSorts()
             .stream()
             .reduce(
@@ -102,7 +113,8 @@ public class ElasticSearchSearcher {
                     .setScroll(TIMEOUT)
                     .addFields(JsonMessageConstants.UID, JsonMessageConstants.MAILBOX_ID, JsonMessageConstants.MESSAGE_ID)
                     .setQuery(queryConverter.from(users, query))
-                    .setSize(computeRequiredSize(limit)),
+                    .setSize(computeRequiredSize(limit))
+                    .addAggregation(aggregation),
                 (searchBuilder, sort) -> searchBuilder.addSort(SortConverter.convertSort(sort)),
                 (partialResult1, partialResult2) -> partialResult1);
     }
@@ -144,4 +156,21 @@ public class ElasticSearchSearcher {
         }
     }
 
+    public class SearchResult {
+        private final long total;
+        private final Stream<MessageSearchIndex.SearchResult> searchResultStream;
+
+        public SearchResult(long total, Stream<MessageSearchIndex.SearchResult> searchResultStream) {
+            this.total = total;
+            this.searchResultStream = searchResultStream;
+        }
+
+        public long getTotal() {
+            return total;
+        }
+
+        public Stream<MessageSearchIndex.SearchResult> getSearchResultStream() {
+            return searchResultStream;
+        }
+    }
 }

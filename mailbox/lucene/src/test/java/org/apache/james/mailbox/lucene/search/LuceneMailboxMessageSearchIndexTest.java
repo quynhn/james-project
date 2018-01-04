@@ -25,7 +25,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -39,6 +38,7 @@ import org.apache.james.mailbox.model.MailboxACL;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
+import org.apache.james.mailbox.model.MessageResults;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.SearchQuery.AddressType;
 import org.apache.james.mailbox.model.SearchQuery.DateResolution;
@@ -283,9 +283,9 @@ public class LuceneMailboxMessageSearchIndexTest {
         SearchQuery query = new SearchQuery();
         query.andCriteria(SearchQuery.bodyContains("My Body"));
 
-        List<MessageId> result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, LIMIT);
+        MessageResults result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, LIMIT);
 
-        assertThat(result).containsOnly(id1, id2);
+        assertThat(result.getMessageIds()).containsOnly(id1, id2);
     }
 
     @Test
@@ -293,12 +293,12 @@ public class LuceneMailboxMessageSearchIndexTest {
         SearchQuery query = new SearchQuery();
         query.andCriteria(SearchQuery.bodyContains("My Body"));
 
-        List<MessageId> result = index.search(session,
+        MessageResults result = index.search(session,
                 ImmutableList.of(mailbox.getMailboxId(), mailbox3.getMailboxId()),
                 query,
                 LIMIT);
 
-        assertThat(result).containsOnly(id1);
+        assertThat(result.getMessageIds()).containsOnly(id1);
     }
 
     @Test
@@ -306,10 +306,10 @@ public class LuceneMailboxMessageSearchIndexTest {
         SearchQuery query = new SearchQuery();
         query.andCriteria(SearchQuery.all());
 
-        List<MessageId> result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, LIMIT);
+        MessageResults result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, LIMIT);
 
         // The query is not limited to one mailbox and we have 5 indexed messages
-        assertThat(result).hasSize(5);
+        assertThat(result.getMessageIds()).hasSize(5);
     }
 
     @Test
@@ -318,9 +318,9 @@ public class LuceneMailboxMessageSearchIndexTest {
         query.andCriteria(SearchQuery.all());
 
         int limit = 1;
-        List<MessageId> result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, limit);
+        MessageResults result = index.search(session, ImmutableList.of(mailbox.getMailboxId(), mailbox2.getMailboxId(), mailbox3.getMailboxId()), query, limit);
 
-        assertThat(result).hasSize(limit);
+        assertThat(result.getMessageIds()).hasSize(limit);
     }
     
     @Test

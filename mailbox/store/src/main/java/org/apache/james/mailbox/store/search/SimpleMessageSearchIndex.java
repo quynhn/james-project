@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-import com.github.fge.lambdas.Throwing;
 import org.apache.james.mailbox.MailboxManager.MessageCapabilities;
 import org.apache.james.mailbox.MailboxManager.SearchCapabilities;
 import org.apache.james.mailbox.MailboxSession;
@@ -38,6 +37,7 @@ import org.apache.james.mailbox.extractor.TextExtractor;
 import org.apache.james.mailbox.model.MailboxId;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageRange;
+import org.apache.james.mailbox.model.MessageResults;
 import org.apache.james.mailbox.model.SearchQuery;
 import org.apache.james.mailbox.model.SearchQuery.ConjunctionCriterion;
 import org.apache.james.mailbox.model.SearchQuery.Criterion;
@@ -51,6 +51,7 @@ import org.apache.james.mailbox.store.mail.MessageMapperFactory;
 import org.apache.james.mailbox.store.mail.model.Mailbox;
 import org.apache.james.mailbox.store.mail.model.MailboxMessage;
 
+import com.github.fge.lambdas.Throwing;
 import com.github.steveash.guavate.Guavate;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -144,14 +145,22 @@ public class SimpleMessageSearchIndex implements MessageSearchIndex {
     }
 
     @Override
-    public List<MessageId> search(MailboxSession session, final Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
+    public MessageResults search(MailboxSession session, final Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
+        List<MessageId> searchAllMessageInMailboxes = searchAllMessageInMailboxes(session, mailboxIds, searchQuery)
+            .collect(Guavate.toImmutableList());
+
+        return new MessageResults(searchAllMessageInMailboxes.size(),
+            getAsMessageIds(searchAllMessageInMailboxes.stream(), limit));
+    }
+
+    private Stream<MessageId> searchAllMessageInMailboxes(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery) throws MailboxException {
         MailboxMapper mailboxManager = mailboxMapperFactory.getMailboxMapper(session);
 
         Stream<Mailbox> filteredMailboxes = mailboxIds
             .stream()
             .map(Throwing.function(mailboxManager::findMailboxById).sneakyThrow());
 
-        return getAsMessageIds(searchResults(session, filteredMailboxes, searchQuery), limit);
+        return getAsStreamOfMessageIds(searchResults(session, filteredMailboxes, searchQuery));
     }
 
     private List<SearchResult> searchResults(MailboxSession session, Stream<Mailbox> mailboxes, SearchQuery query) throws MailboxException {
@@ -167,12 +176,14 @@ public class SimpleMessageSearchIndex implements MessageSearchIndex {
         }
     }
 
-    private List<MessageId> getAsMessageIds(List<SearchResult> temp, long limit) {
-        return temp.stream()
-            .map(searchResult -> searchResult.getMessageId().get())
-            .filter(SearchUtil.distinct())
-            .limit(Long.valueOf(limit).intValue())
+    private List<MessageId> getAsMessageIds(Stream<MessageId> temp, long limit) {
+        return temp.limit(Long.valueOf(limit).intValue())
             .collect(Guavate.toImmutableList());
     }
 
+    private Stream<MessageId> getAsStreamOfMessageIds(List<SearchResult> temp) {
+        return temp.stream()
+            .map(searchResult -> searchResult.getMessageId().get())
+            .filter(SearchUtil.distinct());
+    }
 }

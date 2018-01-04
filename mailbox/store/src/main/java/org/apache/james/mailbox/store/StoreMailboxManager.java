@@ -59,6 +59,7 @@ import org.apache.james.mailbox.model.MailboxPath;
 import org.apache.james.mailbox.model.MessageId;
 import org.apache.james.mailbox.model.MessageId.Factory;
 import org.apache.james.mailbox.model.MessageRange;
+import org.apache.james.mailbox.model.MessageResults;
 import org.apache.james.mailbox.model.MultimailboxesSearchQuery;
 import org.apache.james.mailbox.model.search.MailboxNameExpression;
 import org.apache.james.mailbox.model.search.MailboxQuery;
@@ -694,7 +695,7 @@ public class StoreMailboxManager implements MailboxManager {
     }
 
     @Override
-    public List<MessageId> search(MultimailboxesSearchQuery expression, MailboxSession session, long limit) throws MailboxException {
+    public MessageResults search(MultimailboxesSearchQuery expression, MailboxSession session, long limit) throws MailboxException {
         ImmutableSet<MailboxId> wantedMailboxesId =
             getInMailboxes(expression.getInMailboxes(), session)
                 .filter(id -> !expression.getNotInMailboxes().contains(id))

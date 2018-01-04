@@ -612,7 +612,7 @@ public abstract class MailboxManagerTest {
             .build();
 
 
-        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT))
+        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT).getMessageIds())
             .containsOnly(cacahueteMessageId, pirouetteMessageId);
     }
 
@@ -647,7 +647,7 @@ public abstract class MailboxManagerTest {
             .from(new SearchQuery())
             .build();
 
-        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT))
+        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT).getMessageIds())
             .containsOnly(messageId);
     }
 
@@ -682,7 +682,7 @@ public abstract class MailboxManagerTest {
             .from(new SearchQuery())
             .build();
 
-        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT))
+        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT).getMessageIds())
             .isEmpty();
     }
 
@@ -710,7 +710,7 @@ public abstract class MailboxManagerTest {
             .from(new SearchQuery())
             .build();
 
-        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT))
+        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT).getMessageIds())
             .isEmpty();
     }
 
@@ -738,7 +738,7 @@ public abstract class MailboxManagerTest {
             .inMailboxes(otherMailboxId)
             .build();
 
-        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT))
+        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT).getMessageIds())
             .isEmpty();
     }
 
@@ -765,7 +765,7 @@ public abstract class MailboxManagerTest {
             .notInMailboxes(otherMailboxId)
             .build();
 
-        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT))
+        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT).getMessageIds())
             .isEmpty();
     }
 
@@ -793,7 +793,7 @@ public abstract class MailboxManagerTest {
             .notInMailboxes(otherMailboxId)
             .build();
 
-        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT))
+        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT).getMessageIds())
             .isEmpty();
     }
 
@@ -833,7 +833,7 @@ public abstract class MailboxManagerTest {
             .inMailboxes(searchedMailboxId)
             .build();
 
-        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT))
+        assertThat(mailboxManager.search(multiMailboxesQuery, session, DEFAULT_MAXIMUM_LIMIT).getMessageIds())
             .containsExactly(messageId);
     }
 
