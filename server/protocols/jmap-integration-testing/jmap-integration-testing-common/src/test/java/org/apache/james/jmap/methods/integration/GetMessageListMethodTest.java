@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import java.io.ByteArrayInputStream;
@@ -1893,6 +1894,77 @@ public abstract class GetMessageListMethodTest {
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize(), message1.getMessageId().serialize()));
+    }
+
+    @Test
+    public void getMessageListShouldReturnTotalOfFoundMessageIds() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, alice, "mailbox");
+
+        mailboxProbe.appendMessage(alice, MailboxPath.forUser(alice, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+
+        await();
+
+        given()
+            .header("Authorization", aliceAccessToken.serialize())
+            .body("[[\"getMessageList\", {}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", hasSize(1))
+            .body(ARGUMENTS + ".total", is(1));
+    }
+
+    @Test
+    public void getMessageListShouldReturnTotalOfFoundMessageIdsWhenTotalMatchesIsOverTherLimit() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, alice, "mailbox");
+
+        mailboxProbe.appendMessage(alice, MailboxPath.forUser(alice, "mailbox"),
+            new ByteArrayInputStream("Subject: test 1\r\n\r\ntestmail 1".getBytes()), new Date(), false, new Flags());
+
+        mailboxProbe.appendMessage(alice, MailboxPath.forUser(alice, "mailbox"),
+            new ByteArrayInputStream("Subject: test 2\r\n\r\ntestmail 2".getBytes()), new Date(), false, new Flags());
+
+        await();
+
+        given()
+            .header("Authorization", aliceAccessToken.serialize())
+            .body("[[\"getMessageList\", {\"limit\":1}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", hasSize(1))
+            .body(ARGUMENTS + ".total", is(2));
+    }
+
+    @Test
+    public void test() throws Exception {
+        mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, alice, "mailbox");
+
+        LocalDate date = LocalDate.now();
+        mailboxProbe.appendMessage(alice, MailboxPath.forUser(alice, "mailbox"),
+            new ByteArrayInputStream("Subject: test1\r\n\r\ntestmail 1".getBytes()), convertToDate(date.plusDays(1)), false, new Flags());
+        ComposedMessageId message2 = mailboxProbe.appendMessage(alice, MailboxPath.forUser(alice, "mailbox"),
+            new ByteArrayInputStream("Subject: test2\r\n\r\ntestmail 2".getBytes()), convertToDate(date), false, new Flags());
+        mailboxProbe.appendMessage(alice, MailboxPath.forUser(alice, "mailbox"),
+            new ByteArrayInputStream("Subject: test3\r\n\r\ntestmail 3".getBytes()), convertToDate(date.minusDays(1)), false, new Flags());
+        await();
+
+        given()
+            .header("Authorization", aliceAccessToken.serialize())
+            .body("[[\"getMessageList\", {\"position\":1, \"limit\":1, \"sort\":[\"date desc\"]}, \"#0\"]]")
+            .when()
+            .post("/jmap")
+            .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", hasSize(1))
+            .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize()))
+            .body(ARGUMENTS + ".total", is(3));
     }
 
     private Date convertToDate(LocalDate localDate) {

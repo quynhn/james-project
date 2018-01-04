@@ -59,11 +59,6 @@ public class GetMailboxMessageListResponseTest {
     }
 
     @Test(expected=NotImplementedException.class)
-    public void builderShouldThrowWhenTotal() {
-        GetMessageListResponse.builder().total(0);
-    }
-
-    @Test(expected=NotImplementedException.class)
     public void builderShouldThrowWhenThreadIds() {
         GetMessageListResponse.builder().threadIds(null);
     }
@@ -75,12 +70,13 @@ public class GetMailboxMessageListResponseTest {
                 .build();
         List<String> sort = ImmutableList.of("date desc");
         List<MessageId> messageIds = ImmutableList.of(TestMessageId.of(3), TestMessageId.of(4));
-        GetMessageListResponse expectedGetMessageListResponse = new GetMessageListResponse(null, filterCondition, sort, false, null, false, 0, 0, ImmutableList.of(), messageIds);
+        GetMessageListResponse expectedGetMessageListResponse = new GetMessageListResponse(null, filterCondition, sort, false, null, false, 0, messageIds.size(), ImmutableList.of(), messageIds);
 
         GetMessageListResponse getMessageListResponse = GetMessageListResponse.builder()
             .filter(filterCondition)
             .sort(sort)
             .messageIds(messageIds)
+            .total(messageIds.size())
             .build();
         assertThat(getMessageListResponse).isEqualToComparingFieldByField(expectedGetMessageListResponse);
     }

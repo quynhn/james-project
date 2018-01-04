@@ -43,7 +43,7 @@ public class GetMessageListResponse implements Method.Response {
         private String state;
         private boolean canCalculateUpdates;
         private int position;
-        private int total;
+        private long total;
         private final ImmutableList.Builder<String> threadIds;
         private final ImmutableList.Builder<MessageId> messageIds;
 
@@ -83,8 +83,9 @@ public class GetMessageListResponse implements Method.Response {
             throw new NotImplementedException();
         }
 
-        public Builder total(int total) {
-            throw new NotImplementedException();
+        public Builder total(long total) {
+            this.total = total;
+            return this;
         }
 
         public Builder threadIds(List<String> threadIds) {
@@ -114,12 +115,12 @@ public class GetMessageListResponse implements Method.Response {
     private final String state;
     private final boolean canCalculateUpdates;
     private final int position;
-    private final int total;
+    private final long total;
     private final List<String> threadIds;
     private final List<MessageId> messageIds;
 
     @VisibleForTesting GetMessageListResponse(String accountId, Filter filter, List<String> sort, boolean collapseThreads, String state,
-            boolean canCalculateUpdates, int position, int total, List<String> threadIds, List<MessageId> messageIds) {
+            boolean canCalculateUpdates, int position, long total, List<String> threadIds, List<MessageId> messageIds) {
 
         this.accountId = accountId;
         this.filter = filter;
@@ -161,7 +162,7 @@ public class GetMessageListResponse implements Method.Response {
         return position;
     }
 
-    public int getTotal() {
+    public long getTotal() {
         return total;
     }
 
