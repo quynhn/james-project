@@ -1942,7 +1942,7 @@ public abstract class GetMessageListMethodTest {
     }
 
     @Test
-    public void test() throws Exception {
+    public void getMessageListShouldReturnTotalOfFoundMessageIdsWhenLimitationAndPosition() throws Exception {
         mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, alice, "mailbox");
 
         LocalDate date = LocalDate.now();
@@ -1957,14 +1957,39 @@ public abstract class GetMessageListMethodTest {
         given()
             .header("Authorization", aliceAccessToken.serialize())
             .body("[[\"getMessageList\", {\"position\":1, \"limit\":1, \"sort\":[\"date desc\"]}, \"#0\"]]")
-            .when()
+        .when()
             .post("/jmap")
-            .then()
+        .then()
             .statusCode(200)
             .body(NAME, equalTo("messageList"))
             .body(ARGUMENTS + ".messageIds", hasSize(1))
             .body(ARGUMENTS + ".messageIds", contains(message2.getMessageId().serialize()))
             .body(ARGUMENTS + ".total", is(3));
+    }
+
+    @Test
+    public void getMessageListShouldReturnTotalOfFoundMessageIdsWhenMessageBelongingToMultipleMailboxes() throws Exception {
+        MailboxId mailboxId = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, alice, "mailbox");
+        MailboxId mailboxId2 = mailboxProbe.createMailbox(MailboxConstants.USER_NAMESPACE, alice, "mailbox2");
+
+        ComposedMessageId message = mailboxProbe.appendMessage(alice, MailboxPath.forUser(alice, "mailbox"),
+            new ByteArrayInputStream("Subject: test\r\n\r\ntestmail".getBytes()), new Date(), false, new Flags());
+
+        jmapServer.getProbe(JmapGuiceProbe.class).setInMailboxes(message.getMessageId(), alice, mailboxId, mailboxId2);
+
+        await();
+
+        given()
+            .header("Authorization", aliceAccessToken.serialize())
+            .body("[[\"getMessageList\", {\"position\":0, \"limit\":1, \"filter\":{\"inMailboxes\":[\"" + mailboxId.serialize() + "\", \"" + mailboxId2.serialize()+ "\"]}}, \"#0\"]]")
+        .when()
+            .post("/jmap")
+        .then()
+            .statusCode(200)
+            .body(NAME, equalTo("messageList"))
+            .body(ARGUMENTS + ".messageIds", hasSize(1))
+            .body(ARGUMENTS + ".messageIds", contains(message.getMessageId().serialize()))
+            .body(ARGUMENTS + ".total", is(1));
     }
 
     private Date convertToDate(LocalDate localDate) {
