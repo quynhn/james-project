@@ -26,9 +26,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.es.ElasticSearchIndexer;
 import org.apache.james.mailbox.MailboxManager.MessageCapabilities;
 import org.apache.james.mailbox.MailboxManager.SearchCapabilities;
@@ -88,7 +90,7 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
         Optional<Long> noLimit = Optional.empty();
         return searcher
                 .search(ImmutableList.of(mailbox.getMailboxId()), searchQuery, noLimit)
-                .getSearchResultStream()
+                .getRight()
                 .map(SearchResult::getMessageUid)
                 .iterator();
     }
@@ -102,9 +104,9 @@ public class ElasticSearchListeningMessageSearchIndex extends ListeningMessageSe
             return MessageResults.DEFAULT;
         }
 
-        ElasticSearchSearcher.SearchResult searchResult = searcher.search(mailboxIds, searchQuery, Optional.empty());
+        Pair<Long, Stream<SearchResult>> searchResult = searcher.search(mailboxIds, searchQuery, Optional.empty());
 
-        return new MessageResults(searchResult.getTotal(), searchResult.getSearchResultStream()
+        return new MessageResults(searchResult.getLeft(), searchResult.getRight()
             .peek(this::logIfNoMessageId)
             .map(SearchResult::getMessageId)
             .map(Optional::get)

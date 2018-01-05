@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.backends.es.AliasName;
 import org.apache.james.backends.es.ElasticSearchConstants;
 import org.apache.james.backends.es.TypeName;
@@ -87,8 +88,8 @@ public class ElasticSearchSearcher {
         this.typeName = typeName;
     }
 
-    public SearchResult search(Collection<MailboxId> mailboxIds, SearchQuery query,
-                                                          Optional<Long> limit) throws MailboxException {
+    public Pair<Long, Stream<MessageSearchIndex.SearchResult>> search(Collection<MailboxId> mailboxIds, SearchQuery query,
+                                    Optional<Long> limit) throws MailboxException {
         SearchRequestBuilder searchRequestBuilder = getSearchRequestBuilder(client, mailboxIds, query, limit);
         Cardinality cardinality = searchRequestBuilder.get()
             .getAggregations()
@@ -97,7 +98,7 @@ public class ElasticSearchSearcher {
         Stream<MessageSearchIndex.SearchResult> pairStream = new ScrollIterable(client, searchRequestBuilder).stream()
             .flatMap(this::transformResponseToUidStream);
 
-        return new SearchResult(cardinality.getValue(), limit.map(pairStream::limit)
+        return Pair.of(cardinality.getValue(), limit.map(pairStream::limit)
             .orElse(pairStream));
     }
 
@@ -153,24 +154,6 @@ public class ElasticSearchSearcher {
             return Optional.ofNullable(hit.field(JsonMessageConstants.MESSAGE_ID));
         } else {
             return Optional.empty();
-        }
-    }
-
-    public class SearchResult {
-        private final long total;
-        private final Stream<MessageSearchIndex.SearchResult> searchResultStream;
-
-        public SearchResult(long total, Stream<MessageSearchIndex.SearchResult> searchResultStream) {
-            this.total = total;
-            this.searchResultStream = searchResultStream;
-        }
-
-        public long getTotal() {
-            return total;
-        }
-
-        public Stream<MessageSearchIndex.SearchResult> getSearchResultStream() {
-            return searchResultStream;
         }
     }
 }

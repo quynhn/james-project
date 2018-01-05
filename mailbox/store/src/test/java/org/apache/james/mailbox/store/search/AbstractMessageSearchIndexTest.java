@@ -342,6 +342,20 @@ public abstract class AbstractMessageSearchIndexTest {
     }
 
     @Test
+    public void searchingMessageInMultipleMailboxShouldReturnTotalNumberOfMessageWhenOverLimitation() throws Exception {
+        SearchQuery searchQuery = new SearchQuery();
+
+        int limit = 10;
+        long result = messageSearchIndex.search(session,
+            ImmutableList.of(mailbox2.getMailboxId(), mailbox.getMailboxId()),
+            searchQuery,
+            limit).getTotal();
+
+        assertThat(result)
+            .isEqualTo(12);
+    }
+
+    @Test
     public void whenEmptyListOfMailboxGivenSearchShouldReturnEmpty() throws MailboxException {
         SearchQuery searchQuery = new SearchQuery();
 

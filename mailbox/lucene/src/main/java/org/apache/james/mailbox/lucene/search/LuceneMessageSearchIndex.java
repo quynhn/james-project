@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -36,12 +37,12 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.james.mailbox.MailboxManager;
 import org.apache.james.mailbox.MailboxManager.SearchCapabilities;
 import org.apache.james.mailbox.MailboxSession;
@@ -461,6 +462,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
 
         return searchMultimap(ImmutableList.of(mailbox.getMailboxId()), searchQuery)
+            .getRight()
             .stream()
             .map(SearchResult::getMessageUid)
             .iterator();
@@ -468,34 +470,30 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
 
     @Override
     public MessageResults search(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery, long limit) throws MailboxException {
-        List<MessageId> allMessageInMailboxes = searchAllMessageInMailboxes(session, mailboxIds, searchQuery).collect(Guavate.toImmutableList());
-        return new MessageResults(allMessageInMailboxes.size(),
-            allMessageInMailboxes
-                .stream()
-                .limit(Long.valueOf(limit).intValue())
-                .collect(Guavate.toImmutableList()));
-    }
-
-    private Stream<MessageId> searchAllMessageInMailboxes(MailboxSession session, Collection<MailboxId> mailboxIds, SearchQuery searchQuery) throws MailboxException {
         Preconditions.checkArgument(session != null, "'session' is mandatory");
         if (mailboxIds.isEmpty()) {
-            return Stream.of();
+            return MessageResults.DEFAULT;
         }
 
-        return searchMultimap(mailboxIds, searchQuery)
+        Pair<Long, List<SearchResult>> searchMultimap = searchMultimap(mailboxIds, searchQuery);
+        return new MessageResults(searchMultimap.getLeft(), searchMultimap.getRight()
             .stream()
             .map(searchResult -> searchResult.getMessageId().get())
-            .filter(SearchUtil.distinct());
+            .filter(SearchUtil.distinct())
+            .limit(Long.valueOf(limit).intValue())
+            .collect(Guavate.toImmutableList()));
     }
 
-    private List<SearchResult> searchMultimap(Collection<MailboxId> mailboxIds, SearchQuery searchQuery) throws MailboxException {
+    private Pair<Long, List<SearchResult>> searchMultimap(Collection<MailboxId> mailboxIds, SearchQuery searchQuery) throws MailboxException {
         ImmutableList.Builder<SearchResult> results = ImmutableList.builder();
         IndexSearcher searcher = null;
 
         Query inMailboxes = buildQueryFromMailboxes(mailboxIds);
-        
+        Long total = 0L;
         try {
-            searcher = new IndexSearcher(IndexReader.open(writer, true));
+            IndexReader indexReader = IndexReader.open(writer, true);
+            searcher = new IndexSearcher(indexReader);
+            BitSet bits = new BitSet(indexReader.maxDoc());
             BooleanQuery query = new BooleanQuery();
             query.add(inMailboxes, BooleanClause.Occur.MUST);
             // Not return flags documents
@@ -514,8 +512,10 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
                 MessageUid uid = MessageUid.of(Long.valueOf(doc.get(UID_FIELD)));
                 MailboxId mailboxId = mailboxIdFactory.fromString(doc.get(MAILBOX_ID_FIELD));
                 Optional<MessageId> messageId = toMessageId(Optional.ofNullable(doc.get(MESSAGE_ID_FIELD)));
+                bits.set(messageId.hashCode());
                 results.add(new SearchResult(messageId, mailboxId, uid));
             }
+            total = Long.valueOf(bits.cardinality());
         } catch (IOException e) {
             throw new MailboxException("Unable to search the mailbox", e);
         } finally {
@@ -527,7 +527,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
                 }
             }
         }
-        return results.build();
+        return Pair.of(total, results.build());
     }
 
     private Optional<MessageId> toMessageId(Optional<String> messageIdField) {
