@@ -22,8 +22,12 @@ import java.io.Reader;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.cn.smart.SentenceTokenizer;
+import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.analysis.ngram.NGramTokenFilter;
+import org.apache.lucene.analysis.shingle.ShingleFilter;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 
 /**
 *
@@ -44,16 +48,18 @@ public final class StrictImapSearchAnalyzer extends Analyzer {
     public StrictImapSearchAnalyzer() {
         this(3, 40);
     }
+
+    @Override
+    protected TokenStreamComponents createComponents(String fieldName, Reader reader) {
+        Tokenizer source = new StandardTokenizer(reader);
+        NGramTokenFilter nGramTokenFilter = new NGramTokenFilter(new UpperCaseFilter(new SentenceTokenizer(reader)), minTokenLength, maxTokenLength);
+
+        return new TokenStreamComponents(source, nGramTokenFilter);
+    }
+
     public StrictImapSearchAnalyzer(int minTokenLength, int maxTokenLength) {
         this.minTokenLength = minTokenLength;
         this.maxTokenLength = maxTokenLength;
     }
 
-   /**
-    * @see org.apache.lucene.analysis.Analyzer#tokenStream(java.lang.String, java.io.Reader)
-    */
-   public TokenStream tokenStream(String fieldName, Reader reader) {
-       return new NGramTokenFilter(new UpperCaseFilter(new SentenceTokenizer(reader)), minTokenLength, maxTokenLength);
-   }
-   
 }

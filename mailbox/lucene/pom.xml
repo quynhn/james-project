@@ -82,7 +82,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers</artifactId>
+            <artifactId>lucene-analyzers-common</artifactId>
             <version>${lucene.version}</version>
         </dependency>
         <dependency>
@@ -93,7 +93,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-smartcn</artifactId>
-            <version>${lucene.version}</version>
+            <version>${lucene.version3}</version>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>

@@ -94,9 +94,9 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.NumericField;
+import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -116,6 +116,7 @@ import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
@@ -324,36 +325,36 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     private final static String MEDIA_TYPE_MESSAGE = "message"; 
     private final static String DEFAULT_ENCODING = "US-ASCII";
     
-    private final static SortField UID_SORT = new SortField(UID_FIELD, SortField.LONG);
-    private final static SortField UID_SORT_REVERSE = new SortField(UID_FIELD, SortField.LONG, true);
+    private final static SortField UID_SORT = new SortField(UID_FIELD, SortField.Type.LONG);
+    private final static SortField UID_SORT_REVERSE = new SortField(UID_FIELD, SortField.Type.LONG, true);
 
-    private final static SortField SIZE_SORT = new SortField(SIZE_FIELD, SortField.LONG);
-    private final static SortField SIZE_SORT_REVERSE = new SortField(SIZE_FIELD, SortField.LONG, true);
+    private final static SortField SIZE_SORT = new SortField(SIZE_FIELD, SortField.Type.LONG);
+    private final static SortField SIZE_SORT_REVERSE = new SortField(SIZE_FIELD, SortField.Type.LONG, true);
 
-    private final static SortField FIRST_CC_MAILBOX_SORT = new SortField(FIRST_CC_MAILBOX_NAME_FIELD, SortField.STRING);
-    private final static SortField FIRST_CC_MAILBOX_SORT_REVERSE = new SortField(FIRST_CC_MAILBOX_NAME_FIELD, SortField.STRING, true);
+    private final static SortField FIRST_CC_MAILBOX_SORT = new SortField(FIRST_CC_MAILBOX_NAME_FIELD, SortField.Type.STRING);
+    private final static SortField FIRST_CC_MAILBOX_SORT_REVERSE = new SortField(FIRST_CC_MAILBOX_NAME_FIELD, SortField.Type.STRING, true);
 
-    private final static SortField FIRST_TO_MAILBOX_SORT = new SortField(FIRST_TO_MAILBOX_NAME_FIELD, SortField.STRING);
-    private final static SortField FIRST_TO_MAILBOX_SORT_REVERSE = new SortField(FIRST_TO_MAILBOX_NAME_FIELD, SortField.STRING, true);
+    private final static SortField FIRST_TO_MAILBOX_SORT = new SortField(FIRST_TO_MAILBOX_NAME_FIELD, SortField.Type.STRING);
+    private final static SortField FIRST_TO_MAILBOX_SORT_REVERSE = new SortField(FIRST_TO_MAILBOX_NAME_FIELD, SortField.Type.STRING, true);
 
-    private final static SortField FIRST_FROM_MAILBOX_SORT = new SortField(FIRST_FROM_MAILBOX_NAME_FIELD, SortField.STRING);
-    private final static SortField FIRST_FROM_MAILBOX_SORT_REVERSE = new SortField(FIRST_FROM_MAILBOX_NAME_FIELD, SortField.STRING, true);
+    private final static SortField FIRST_FROM_MAILBOX_SORT = new SortField(FIRST_FROM_MAILBOX_NAME_FIELD, SortField.Type.STRING);
+    private final static SortField FIRST_FROM_MAILBOX_SORT_REVERSE = new SortField(FIRST_FROM_MAILBOX_NAME_FIELD, SortField.Type.STRING, true);
 
     
-    private final static SortField ARRIVAL_MAILBOX_SORT = new SortField(INTERNAL_DATE_FIELD_MILLISECOND_RESOLUTION, SortField.LONG);
-    private final static SortField ARRIVAL_MAILBOX_SORT_REVERSE = new SortField(INTERNAL_DATE_FIELD_MILLISECOND_RESOLUTION, SortField.LONG, true);
+    private final static SortField ARRIVAL_MAILBOX_SORT = new SortField(INTERNAL_DATE_FIELD_MILLISECOND_RESOLUTION, SortField.Type.LONG);
+    private final static SortField ARRIVAL_MAILBOX_SORT_REVERSE = new SortField(INTERNAL_DATE_FIELD_MILLISECOND_RESOLUTION, SortField.Type.LONG, true);
 
-    private final static SortField BASE_SUBJECT_SORT = new SortField(BASE_SUBJECT_FIELD, SortField.STRING);
-    private final static SortField BASE_SUBJECT_SORT_REVERSE = new SortField(BASE_SUBJECT_FIELD, SortField.STRING, true);
+    private final static SortField BASE_SUBJECT_SORT = new SortField(BASE_SUBJECT_FIELD, SortField.Type.STRING);
+    private final static SortField BASE_SUBJECT_SORT_REVERSE = new SortField(BASE_SUBJECT_FIELD, SortField.Type.STRING, true);
     
-    private final static SortField SENT_DATE_SORT = new SortField(SENT_DATE_SORT_FIELD_MILLISECOND_RESOLUTION, SortField.LONG);
-    private final static SortField SENT_DATE_SORT_REVERSE = new SortField(SENT_DATE_SORT_FIELD_MILLISECOND_RESOLUTION, SortField.LONG, true);
+    private final static SortField SENT_DATE_SORT = new SortField(SENT_DATE_SORT_FIELD_MILLISECOND_RESOLUTION, SortField.Type.LONG);
+    private final static SortField SENT_DATE_SORT_REVERSE = new SortField(SENT_DATE_SORT_FIELD_MILLISECOND_RESOLUTION, SortField.Type.LONG, true);
     
-    private final static SortField FIRST_TO_MAILBOX_DISPLAY_SORT = new SortField(FIRST_TO_MAILBOX_DISPLAY_FIELD, SortField.STRING);
-    private final static SortField FIRST_TO_MAILBOX_DISPLAY_SORT_REVERSE = new SortField(FIRST_TO_MAILBOX_DISPLAY_FIELD, SortField.STRING, true);
+    private final static SortField FIRST_TO_MAILBOX_DISPLAY_SORT = new SortField(FIRST_TO_MAILBOX_DISPLAY_FIELD, SortField.Type.STRING);
+    private final static SortField FIRST_TO_MAILBOX_DISPLAY_SORT_REVERSE = new SortField(FIRST_TO_MAILBOX_DISPLAY_FIELD, SortField.Type.STRING, true);
 
-    private final static SortField FIRST_FROM_MAILBOX_DISPLAY_SORT = new SortField(FIRST_FROM_MAILBOX_DISPLAY_FIELD, SortField.STRING);
-    private final static SortField FIRST_FROM_MAILBOX_DISPLAY_SORT_REVERSE = new SortField(FIRST_FROM_MAILBOX_DISPLAY_FIELD, SortField.STRING, true);
+    private final static SortField FIRST_FROM_MAILBOX_DISPLAY_SORT = new SortField(FIRST_FROM_MAILBOX_DISPLAY_FIELD, SortField.Type.STRING);
+    private final static SortField FIRST_FROM_MAILBOX_DISPLAY_SORT_REVERSE = new SortField(FIRST_FROM_MAILBOX_DISPLAY_FIELD, SortField.Type.STRING, true);
     
     private final MailboxId.Factory mailboxIdFactory;
     private final MessageId.Factory messageIdFactory;
@@ -417,7 +418,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     }
     
     protected IndexWriterConfig createConfig(Analyzer analyzer, boolean dropIndexOnStart) {
-        IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_31, analyzer);
+        IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_4, analyzer);
         if (dropIndexOnStart) {
             config.setOpenMode(OpenMode.CREATE);
         } else {
@@ -506,6 +507,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
 
             // query for all the documents sorted as specified in the SearchQuery
             TopDocs docs = searcher.search(query, null, maxQueryResults, createSort(searchQuery.getSorts()));
+            System.out.println("GIIIIIIIIIIIII: " + docs.totalHits);
             ScoreDoc[] sDocs = docs.scoreDocs;
             for (ScoreDoc sDoc : sDocs) {
                 Document doc = searcher.doc(sDoc.doc);
@@ -518,14 +520,6 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
             total = Long.valueOf(bits.cardinality());
         } catch (IOException e) {
             throw new MailboxException("Unable to search the mailbox", e);
-        } finally {
-            if (searcher != null) {
-                try {
-                    searcher.close();
-                } catch (IOException e) {
-                    // ignore on close
-                }
-            }
         }
         return Pair.of(total, results.build());
     }
@@ -558,24 +552,24 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
     private Document createMessageDocument(final MailboxSession session, final MailboxMessage membership) throws MailboxException{
         final Document doc = new Document();
         // TODO: Better handling
-        doc.add(new Field(USERS, session.getUser().getUserName().toUpperCase(Locale.US), Store.YES, Index.NOT_ANALYZED));
-        doc.add(new Field(MAILBOX_ID_FIELD, membership.getMailboxId().serialize().toUpperCase(Locale.US), Store.YES, Index.NOT_ANALYZED));
-        doc.add(new NumericField(UID_FIELD,Store.YES, true).setLongValue(membership.getUid().asLong()));
-        doc.add(new Field(HAS_ATTACHMENT_FIELD, Boolean.toString(hasAttachment(membership)), Store.YES, Index.NOT_ANALYZED));
-        doc.add(new Field(MESSAGE_ID_FIELD, SearchUtil.getSerializedMessageIdIfSupportedByUnderlyingStorageOrNull(membership), Store.YES, Index.NOT_ANALYZED));
+        doc.add(new TextField(USERS, session.getUser().getUserName().toUpperCase(Locale.US), Store.YES));
+        doc.add(new TextField(MAILBOX_ID_FIELD, membership.getMailboxId().serialize().toUpperCase(Locale.US), Store.YES));
+        doc.add(new LongField(UID_FIELD, membership.getUid().asLong(), Store.YES));
+        doc.add(new TextField(HAS_ATTACHMENT_FIELD, Boolean.toString(hasAttachment(membership)), Store.YES));
+        doc.add(new TextField(MESSAGE_ID_FIELD, SearchUtil.getSerializedMessageIdIfSupportedByUnderlyingStorageOrNull(membership), Store.YES));
 
         // create an unqiue key for the document which can be used later on updates to find the document
-        doc.add(new Field(ID_FIELD, membership.getMailboxId().serialize().toUpperCase(Locale.US) +"-" + Long.toString(membership.getUid().asLong()), Store.YES, Index.NOT_ANALYZED));
+        doc.add(new TextField(ID_FIELD, membership.getMailboxId().serialize().toUpperCase(Locale.US) +"-" + Long.toString(membership.getUid().asLong()), Store.YES));
 
-        doc.add(new Field(INTERNAL_DATE_FIELD_YEAR_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.YEAR), Store.NO, Index.NOT_ANALYZED));
-        doc.add(new Field(INTERNAL_DATE_FIELD_MONTH_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.MONTH), Store.NO, Index.NOT_ANALYZED));
-        doc.add(new Field(INTERNAL_DATE_FIELD_DAY_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.DAY), Store.NO, Index.NOT_ANALYZED));
-        doc.add(new Field(INTERNAL_DATE_FIELD_HOUR_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.HOUR), Store.NO, Index.NOT_ANALYZED));
-        doc.add(new Field(INTERNAL_DATE_FIELD_MINUTE_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.MINUTE), Store.NO, Index.NOT_ANALYZED));
-        doc.add(new Field(INTERNAL_DATE_FIELD_SECOND_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.SECOND), Store.NO, Index.NOT_ANALYZED));
-        doc.add(new Field(INTERNAL_DATE_FIELD_MILLISECOND_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.MILLISECOND), Store.NO, Index.NOT_ANALYZED));
+        doc.add(new TextField(INTERNAL_DATE_FIELD_YEAR_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.YEAR), Store.NO));
+        doc.add(new TextField(INTERNAL_DATE_FIELD_MONTH_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.MONTH), Store.NO));
+        doc.add(new TextField(INTERNAL_DATE_FIELD_DAY_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.DAY), Store.NO));
+        doc.add(new TextField(INTERNAL_DATE_FIELD_HOUR_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.HOUR), Store.NO));
+        doc.add(new TextField(INTERNAL_DATE_FIELD_MINUTE_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.MINUTE), Store.NO));
+        doc.add(new TextField(INTERNAL_DATE_FIELD_SECOND_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.SECOND), Store.NO));
+        doc.add(new TextField(INTERNAL_DATE_FIELD_MILLISECOND_RESOLUTION, DateTools.dateToString(membership.getInternalDate(), DateTools.Resolution.MILLISECOND), Store.NO));
 
-        doc.add(new NumericField(SIZE_FIELD,Store.YES, true).setLongValue(membership.getFullContentOctets()));
+        doc.add(new LongField(SIZE_FIELD, membership.getFullContentOctets(), Store.YES));
 
         // content handler which will index the headers and the body of the message
         SimpleContentHandler handler = new SimpleContentHandler() {
@@ -597,8 +591,8 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
                     String headerName = f.getName().toUpperCase(Locale.US);
                     String headerValue = f.getBody().toUpperCase(Locale.US);
                     String fullValue =  f.toString().toUpperCase(Locale.US);
-                    doc.add(new Field(HEADERS_FIELD, fullValue, Store.NO, Index.ANALYZED));
-                    doc.add(new Field(PREFIX_HEADER_FIELD + headerName, headerValue, Store.NO, Index.ANALYZED));
+                    doc.add(new TextField(HEADERS_FIELD, fullValue, Store.NO));
+                    doc.add(new TextField(PREFIX_HEADER_FIELD + headerName, headerValue, Store.NO));
                     
                     if (f instanceof DateTimeField) {
                         // We need to make sure we convert it to GMT
@@ -641,7 +635,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
                                     if (address instanceof org.apache.james.mime4j.dom.address.Mailbox) {
                                         org.apache.james.mime4j.dom.address.Mailbox mailbox = (org.apache.james.mime4j.dom.address.Mailbox) address;
                                         String value = AddressFormatter.DEFAULT.encode(mailbox).toUpperCase(Locale.US);
-                                        doc.add(new Field(field, value, Store.NO, Index.ANALYZED));
+                                        doc.add(new TextField(field, value, Store.NO));
                                         if (i == 0) {
                                             String mailboxAddress = SearchUtil.getMailboxAddress(mailbox);
                                             String mailboxDisplay = SearchUtil.getDisplayAddress(mailbox);
@@ -663,7 +657,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
                                         for (int a = 0; a < mList.size(); a++) {
                                             org.apache.james.mime4j.dom.address.Mailbox mailbox = mList.get(a);
                                             String value = AddressFormatter.DEFAULT.encode(mailbox).toUpperCase(Locale.US);
-                                            doc.add(new Field(field, value, Store.NO, Index.ANALYZED));
+                                            doc.add(new TextField(field, value, Store.NO));
 
                                             if (i == 0 && a == 0) {
                                                 String mailboxAddress = SearchUtil.getMailboxAddress(mailbox);
@@ -685,32 +679,32 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
                                 }
 
                             
-                            doc.add(new Field(field, headerValue, Store.NO, Index.ANALYZED));
+                            doc.add(new TextField(field, headerValue, Store.NO));
 
                     } else if (headerName.equalsIgnoreCase("Subject")) {
-                        doc.add(new Field(BASE_SUBJECT_FIELD, SearchUtil.getBaseSubject(headerValue), Store.YES, Index.NOT_ANALYZED));
+                        doc.add(new TextField(BASE_SUBJECT_FIELD, SearchUtil.getBaseSubject(headerValue), Store.YES));
                     } 
                 }
                 if (sentDate == null) {
                     sentDate = membership.getInternalDate();
                 } else {
                     
-                    doc.add(new Field(SENT_DATE_FIELD_YEAR_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.YEAR), Store.NO, Index.NOT_ANALYZED));
-                    doc.add(new Field(SENT_DATE_FIELD_MONTH_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.MONTH), Store.NO, Index.NOT_ANALYZED));
-                    doc.add(new Field(SENT_DATE_FIELD_DAY_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.DAY), Store.NO, Index.NOT_ANALYZED));
-                    doc.add(new Field(SENT_DATE_FIELD_HOUR_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.HOUR), Store.NO, Index.NOT_ANALYZED));
-                    doc.add(new Field(SENT_DATE_FIELD_MINUTE_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.MINUTE), Store.NO, Index.NOT_ANALYZED));
-                    doc.add(new Field(SENT_DATE_FIELD_SECOND_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.SECOND), Store.NO, Index.NOT_ANALYZED));
-                    doc.add(new Field(SENT_DATE_FIELD_MILLISECOND_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.MILLISECOND), Store.NO, Index.NOT_ANALYZED));
+                    doc.add(new TextField(SENT_DATE_FIELD_YEAR_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.YEAR), Store.NO));
+                    doc.add(new TextField(SENT_DATE_FIELD_MONTH_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.MONTH), Store.NO));
+                    doc.add(new TextField(SENT_DATE_FIELD_DAY_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.DAY), Store.NO));
+                    doc.add(new TextField(SENT_DATE_FIELD_HOUR_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.HOUR), Store.NO));
+                    doc.add(new TextField(SENT_DATE_FIELD_MINUTE_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.MINUTE), Store.NO));
+                    doc.add(new TextField(SENT_DATE_FIELD_SECOND_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.SECOND), Store.NO));
+                    doc.add(new TextField(SENT_DATE_FIELD_MILLISECOND_RESOLUTION, DateTools.dateToString(sentDate, DateTools.Resolution.MILLISECOND), Store.NO));
                     
                 }
-                doc.add(new Field(SENT_DATE_SORT_FIELD_MILLISECOND_RESOLUTION,DateTools.dateToString(sentDate, DateTools.Resolution.MILLISECOND), Store.NO, Index.NOT_ANALYZED));
+                doc.add(new TextField(SENT_DATE_SORT_FIELD_MILLISECOND_RESOLUTION,DateTools.dateToString(sentDate, DateTools.Resolution.MILLISECOND), Store.NO));
 
-                doc.add(new Field(FIRST_FROM_MAILBOX_NAME_FIELD, firstFromMailbox, Store.YES, Index.NOT_ANALYZED));
-                doc.add(new Field(FIRST_TO_MAILBOX_NAME_FIELD, firstToMailbox, Store.YES, Index.NOT_ANALYZED));
-                doc.add(new Field(FIRST_CC_MAILBOX_NAME_FIELD, firstCcMailbox, Store.YES, Index.NOT_ANALYZED));
-                doc.add(new Field(FIRST_FROM_MAILBOX_DISPLAY_FIELD, firstFromDisplay, Store.YES, Index.NOT_ANALYZED));
-                doc.add(new Field(FIRST_TO_MAILBOX_DISPLAY_FIELD, firstToDisplay, Store.YES, Index.NOT_ANALYZED));
+                doc.add(new TextField(FIRST_FROM_MAILBOX_NAME_FIELD, firstFromMailbox, Store.YES));
+                doc.add(new TextField(FIRST_TO_MAILBOX_NAME_FIELD, firstToMailbox, Store.YES));
+                doc.add(new TextField(FIRST_CC_MAILBOX_NAME_FIELD, firstCcMailbox, Store.YES));
+                doc.add(new TextField(FIRST_FROM_MAILBOX_DISPLAY_FIELD, firstFromDisplay, Store.YES));
+                doc.add(new TextField(FIRST_TO_MAILBOX_DISPLAY_FIELD, firstToDisplay, Store.YES));
            
             }
 
@@ -734,7 +728,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
                     BufferedReader bodyReader = new BufferedReader(new InputStreamReader(in, charset));
                     String line = null;
                     while((line = bodyReader.readLine()) != null) {
-                        doc.add(new Field(BODY_FIELD,  line.toUpperCase(Locale.US),Store.NO, Index.ANALYZED));
+                        doc.add(new TextField(BODY_FIELD,  line.toUpperCase(Locale.US),Store.NO));
                     }
                     
                 }
@@ -897,9 +891,9 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
         case ON:
             return new TermQuery(new Term(field ,value));
         case BEFORE: 
-            return new TermRangeQuery(field, DateTools.dateToString(MIN_DATE, dRes), value, true, false);
+            return new TermRangeQuery(field, new BytesRef(DateTools.dateToString(MIN_DATE, dRes)), new BytesRef(value), true, false);
         case AFTER: 
-            return new TermRangeQuery(field, value, DateTools.dateToString(MAX_DATE, dRes), false, true);
+            return new TermRangeQuery(field, new BytesRef(value), new BytesRef(DateTools.dateToString(MAX_DATE, dRes)), false, true);
         default:
             throw new UnsupportedSearchException();
         }
@@ -1022,14 +1016,6 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
             return createUidQuery((UidCriterion) SearchQuery.uid(nRanges));
         } catch (IOException e) {
             throw new MailboxException("Unable to search mailbox " + inMailboxes, e);
-        } finally {
-            if (searcher != null) {
-                try {
-                    searcher.close();
-                } catch (IOException e) {
-                    // ignore on close
-                }
-            }
         }
     }
     
@@ -1299,7 +1285,7 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
             for (ScoreDoc sDoc : sDocs) {
                 Document doc = searcher.doc(sDoc.doc);
 
-                if (doc.getFieldable(FLAGS_FIELD) == null) {
+                if (doc.getField(FLAGS_FIELD) == null) {
                     doc.removeFields(FLAGS_FIELD);
                     indexFlags(doc, f);
 
@@ -1310,12 +1296,6 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
         } catch (IOException e) {
             throw new MailboxException("Unable to add messages in index", e);
 
-        } finally {
-            try {
-                IOUtils.closeWhileHandlingException(searcher);
-            } catch (IOException e) {
-                //can't happen anyway
-            }
         }
         
     }
@@ -1325,9 +1305,9 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
      */
     private Document createFlagsDocument(MailboxMessage message) {
         Document doc = new Document();
-        doc.add(new Field(ID_FIELD, "flags-" + message.getMailboxId().serialize() +"-" + Long.toString(message.getUid().asLong()), Store.YES, Index.NOT_ANALYZED));
-        doc.add(new Field(MAILBOX_ID_FIELD, message.getMailboxId().serialize(), Store.YES, Index.NOT_ANALYZED));
-        doc.add(new NumericField(UID_FIELD,Store.YES, true).setLongValue(message.getUid().asLong()));
+        doc.add(new TextField(ID_FIELD, "flags-" + message.getMailboxId().serialize() +"-" + Long.toString(message.getUid().asLong()), Store.YES));
+        doc.add(new TextField(MAILBOX_ID_FIELD, message.getMailboxId().serialize(), Store.YES));
+        doc.add(new LongField(UID_FIELD, message.getUid().asLong(), Store.YES));
         
         indexFlags(doc, message.createFlags());
         return doc;
@@ -1344,17 +1324,17 @@ public class LuceneMessageSearchIndex extends ListeningMessageSearchIndex {
         Flag[] flags = f.getSystemFlags();
         for (Flag flag : flags) {
             fString.add(toString(flag));
-            doc.add(new Field(FLAGS_FIELD, toString(flag), Store.NO, Index.NOT_ANALYZED));
+            doc.add(new TextField(FLAGS_FIELD, toString(flag), Store.NO));
         }
         
         String[] userFlags = f.getUserFlags();
         for (String userFlag : userFlags) {
-            doc.add(new Field(FLAGS_FIELD, userFlag, Store.NO, Index.NOT_ANALYZED));
+            doc.add(new TextField(FLAGS_FIELD, userFlag, Store.NO));
         }
         
         // if no flags are there we just use a empty field
         if (flags.length == 0 && userFlags.length == 0) {
-            doc.add(new Field(FLAGS_FIELD, "",Store.NO, Index.NOT_ANALYZED));
+            doc.add(new TextField(FLAGS_FIELD, "",Store.NO));
         }
         
     }

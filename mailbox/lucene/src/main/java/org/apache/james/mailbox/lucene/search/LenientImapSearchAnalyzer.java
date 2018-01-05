@@ -20,12 +20,11 @@ package org.apache.james.mailbox.lucene.search;
 
 import java.io.Reader;
 
-
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.WhitespaceTokenizer;
+import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.core.KeywordTokenizer;
+import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
-import org.apache.lucene.util.Version;
 
 /**
  * This {@link Analyzer} is not 100% conform with RFC3501 but does
@@ -33,6 +32,13 @@ import org.apache.lucene.util.Version;
  *
  */
 public final class LenientImapSearchAnalyzer extends Analyzer{
+    @Override
+    protected TokenStreamComponents createComponents(String fieldName, Reader reader) {
+        Tokenizer source = new KeywordTokenizer(reader);
+        ShingleFilter shingleFilter = new ShingleFilter(new UpperCaseFilter(new WhitespaceTokenizer(reader)), 2, maxTokenLength);
+
+        return new TokenStreamComponents(source, shingleFilter);
+    }
 
     public final static int DEFAULT_MAX_TOKEN_LENGTH = 4;
     
@@ -47,8 +53,8 @@ public final class LenientImapSearchAnalyzer extends Analyzer{
         this(DEFAULT_MAX_TOKEN_LENGTH);
     }
     
-    @Override
-    public TokenStream tokenStream(String arg0, Reader reader) {
-        return new ShingleFilter(new UpperCaseFilter(new WhitespaceTokenizer(Version.LUCENE_31, reader)), 2, maxTokenLength);
-    }
+//    @Override
+//    public TokenStream tokenStream(String arg0, Reader reader) {
+//        return new ShingleFilter(new UpperCaseFilter(new WhitespaceTokenizer(Version.LUCENE_31, reader)), 2, maxTokenLength);
+//    }
 }
